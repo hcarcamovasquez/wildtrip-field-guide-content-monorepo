@@ -1,0 +1,43 @@
+---
+import type { PublicDetailSpecie } from '../../../lib/public/repositories'
+import type { ConservationStatus } from '../../../lib/utils/conservation-status'
+
+interface Props {
+  species: PublicDetailSpecie
+  conservationStatuses: ConservationStatus[]
+}
+
+const { species, conservationStatuses } = Astro.props
+
+const getConservationStatus = (value: string) => {
+  return conservationStatuses.find((status) => status.value === value)
+}
+---
+
+<header class="mb-8">
+  <div class="mb-4 flex items-center justify-between">
+    <a
+      href="/content/species"
+      class="hover:text-primary-700 font-medium text-primary dark:text-emerald-400 dark:hover:text-emerald-300"
+    >
+      ← Volver a Especies
+    </a>
+    {
+      species.conservationStatus && (
+        <span
+          class={`rounded-full px-3 py-1 text-xs font-medium ${getConservationStatus(species.conservationStatus)?.bgClass || 'bg-gray-500'} ${getConservationStatus(species.conservationStatus)?.textClass || 'text-white'} ${getConservationStatus(species.conservationStatus)?.darkBgClass || ''} ${getConservationStatus(species.conservationStatus)?.darkTextClass || ''}`}
+        >
+          {getConservationStatus(species.conservationStatus)?.label || 'Desconocido'}
+        </span>
+      )
+    }
+  </div>
+
+  <h1 class="mb-2 text-4xl font-bold text-gray-900 dark:text-white">{species.commonName}</h1>
+  <p class="text-xl text-gray-500 italic dark:text-gray-400">{species.scientificName}</p>
+  {
+    species.commonName && species.commonName !== species.commonName && (
+      <p class="mt-1 text-lg text-gray-600 dark:text-gray-300">{species.commonName}</p>
+    )
+  }
+</header>

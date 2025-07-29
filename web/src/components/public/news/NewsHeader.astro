@@ -1,0 +1,43 @@
+---
+import { categoryLabels, categoryColors, formatDate } from '../../../lib/utils/news-constants'
+
+export interface Props {
+  title: string
+  category?: string
+  author?: string | null
+  publishedAt?: Date | null
+  summary?: string | null
+}
+
+const { title, category, author, publishedAt, summary } = Astro.props
+---
+
+<header class="mb-8">
+  <div class="mb-4 flex items-center justify-between">
+    <a
+      href="/content/news"
+      class="hover:text-primary-700 font-medium text-primary dark:text-emerald-400 dark:hover:text-emerald-300"
+    >
+      ← Volver a Noticias
+    </a>
+    {
+      category && (
+        <span
+          class={`rounded-full px-3 py-1 text-sm font-medium ${categoryColors[category] || 'bg-gray-500 text-white'}`}
+        >
+          {categoryLabels[category] || 'General'}
+        </span>
+      )
+    }
+  </div>
+
+  <h1 class="mb-4 text-4xl font-bold text-gray-900 dark:text-white">{title}</h1>
+
+  <div class="mb-4 flex items-center text-sm text-gray-600 dark:text-gray-400">
+    {author && <span>Por {author}</span>}
+    {author && publishedAt && <span class="mx-2">•</span>}
+    {publishedAt && <time>{formatDate(publishedAt)}</time>}
+  </div>
+
+  {summary && <p class="text-xl leading-relaxed text-gray-700 dark:text-gray-300">{summary}</p>}
+</header>

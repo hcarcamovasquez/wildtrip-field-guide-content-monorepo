@@ -1,0 +1,126 @@
+---
+import NewsContent from '../../../../components/public/news/NewsContent.astro'
+import NewsFeaturedImage from '../../../../components/public/news/NewsFeaturedImage.astro'
+import NewsHeader from '../../../../components/public/news/NewsHeader.astro'
+import NewsShare from '../../../../components/public/news/NewsShare.astro'
+import NewsTags from '../../../../components/public/news/NewsTags.astro'
+import Layout from '../../../../layouts/Layout.astro'
+import { ManageNewsRepository } from '../../../../lib/private/repositories/ManageNewsRepository'
+import { canAccessRoute, type Role } from '../../../../lib/utils/permissions'
+
+const { id } = Astro.params
+
+if (!id || isNaN(parseInt(id))) {
+  return Astro.redirect('/404')
+}
+
+// Check authentication for preview
+const user = Astro.locals.user
+
+if (!user) {
+  return Astro.redirect('/sign-in')
+}
+
+// Check if user has permission to manage news
+if (!canAccessRoute(user.role as Role, '/manage/news')) {
+  return Astro.redirect('/unauthorized')
+}
+
+// Get news by ID from private repository
+const privateNews = await ManageNewsRepository.findById(parseInt(id))
+if (!privateNews) {
+  return Astro.redirect('/404')
+}
+
+// Check if there's content to preview
+// Always allow preview for any existing content
+
+// Use draft data if available and status is published
+let previewData = privateNews
+
+if (privateNews.status === 'published' && privateNews.hasDraft && privateNews.draftData) {
+  // Merge draft data, ensuring all draft fields override published fields
+  const draftData = privateNews.draftData as any
+  previewData = {
+    ...privateNews,
+    // Apply all draft fields
+    title: draftData.title || privateNews.title,
+    slug: draftData.slug || privateNews.slug,
+    category: draftData.category || privateNews.category,
+    author: draftData.author !== undefined ? draftData.author : privateNews.author,
+    summary: draftData.summary || privateNews.summary,
+    content: draftData.content || privateNews.content,
+    // Handle the image field mapping (featuredImage in form -> mainImage in DB)
+    mainImage:
+      draftData.featuredImage !== undefined
+        ? typeof draftData.featuredImage === 'string'
+          ? { url: draftData.featuredImage, id: '', galleryId: 0 }
+          : draftData.featuredImage
+        : draftData.mainImage || privateNews.mainImage,
+    tags: draftData.tags || privateNews.tags,
+  }
+}
+
+// Transform to match public API structure
+const newsData = {
+  id: previewData.id,
+  title: previewData.title,
+  slug: previewData.slug,
+  category: previewData.category,
+  author: previewData.author,
+  summary: previewData.summary,
+  content: previewData.content,
+  mainImage: previewData.mainImage,
+  tags: previewData.tags || [],
+  publishedAt: previewData.publishedAt || previewData.createdAt,
+  status: previewData.status,
+  hasDraft: privateNews.hasDraft,
+}
+---
+
+<Layout title={newsData.title} description={newsData.summary}>
+  {/* Preview notice banner */}
+  <div class="sticky top-0 z-50 bg-orange-500 text-white">
+    <div class="mx-auto max-w-4xl px-4 py-2 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-center">
+        <div class="flex items-center gap-2">
+          <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+            ></path>
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+            ></path>
+          </svg>
+          <span class="text-sm font-medium">
+            {
+              newsData.hasDraft && newsData.status === 'published'
+                ? 'Vista previa del borrador - Los cambios no son públicos hasta que se publiquen'
+                : 'Vista previa'
+            }
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <article class="mx-auto max-w-4xl bg-white px-4 py-8 sm:px-6 lg:px-8 dark:bg-gray-900">
+    <NewsHeader
+      title={newsData.title}
+      category={newsData.category}
+      author={newsData.author}
+      publishedAt={newsData.publishedAt}
+      summary={newsData.summary}
+    />
+
+    <NewsFeaturedImage mainImageUrl={newsData.mainImage?.url} title={newsData.title} />
+
+    <NewsContent content={newsData.content} />
+
+    <NewsTags tags={newsData.tags} />
+
+    <NewsShare title={newsData.title} url={Astro.url} />
+  </article>
+</Layout>

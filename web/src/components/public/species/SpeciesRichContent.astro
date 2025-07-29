@@ -1,0 +1,22 @@
+---
+import { renderContentBlock } from '../../../lib/utils/render-content'
+import type { PublicDetailSpecie } from '../../../lib/public/repositories/SpeciesRepository'
+
+interface Props {
+  species: PublicDetailSpecie
+}
+
+const { species } = Astro.props
+---
+
+{
+  species.richContent && species.richContent.blocks && species.richContent.blocks.length > 0 && (
+    <section class="mb-8">
+      <div class="prose prose-lg max-w-none dark:prose-invert">
+        {species.richContent.blocks.map((block) => (
+          <div set:html={renderContentBlock(block)} />
+        ))}
+      </div>
+    </section>
+  )
+}

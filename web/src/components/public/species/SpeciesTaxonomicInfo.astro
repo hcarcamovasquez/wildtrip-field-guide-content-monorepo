@@ -1,0 +1,88 @@
+---
+import type { PublicDetailSpecie } from '../../../lib/public/repositories/SpeciesRepository'
+import type { ConservationStatus } from '../../../lib/utils/conservation-status'
+
+interface Props {
+  species: PublicDetailSpecie
+  conservationStatuses: ConservationStatus[]
+}
+
+const { species, conservationStatuses } = Astro.props
+
+const getConservationStatus = (value: string) => {
+  return conservationStatuses.find((status) => status.value === value)
+}
+---
+
+<section class="mb-8">
+  <h2 class="mb-4 text-2xl font-bold text-gray-900 dark:text-white">Información Taxonómica</h2>
+  <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+    <div class="rounded-lg bg-gray-50 p-4 dark:bg-gray-800">
+      <h3 class="mb-2 font-semibold text-gray-900 dark:text-white">Clasificación</h3>
+      <dl class="space-y-1 text-sm text-gray-700 dark:text-gray-300">
+        {
+          species.kingdom && (
+            <div>
+              <dt class="inline font-medium text-gray-900 dark:text-white">Reino:</dt>{' '}
+              <dd class="inline">{species.kingdom}</dd>
+            </div>
+          )
+        }
+        {
+          species.phylum && (
+            <div>
+              <dt class="inline font-medium text-gray-900 dark:text-white">Filo:</dt>{' '}
+              <dd class="inline">{species.phylum}</dd>
+            </div>
+          )
+        }
+        {
+          species.class && (
+            <div>
+              <dt class="inline font-medium text-gray-900 dark:text-white">Clase:</dt>{' '}
+              <dd class="inline">{species.class}</dd>
+            </div>
+          )
+        }
+        {
+          species.order && (
+            <div>
+              <dt class="inline font-medium text-gray-900 dark:text-white">Orden:</dt>{' '}
+              <dd class="inline">{species.order}</dd>
+            </div>
+          )
+        }
+        {
+          species.family && (
+            <div>
+              <dt class="inline font-medium text-gray-900 dark:text-white">Familia:</dt>{' '}
+              <dd class="inline">{species.family}</dd>
+            </div>
+          )
+        }
+      </dl>
+    </div>
+
+    <div class="rounded-lg bg-gray-50 p-4 dark:bg-gray-800">
+      <h3 class="mb-2 font-semibold text-gray-900 dark:text-white">Información Ecológica</h3>
+      <dl class="space-y-1 text-sm text-gray-700 dark:text-gray-300">
+        {
+          species.habitat && (
+            <div>
+              <dt class="inline font-medium text-gray-900 dark:text-white">Hábitat:</dt>{' '}
+              <dd class="inline">{species.habitat}</dd>
+            </div>
+          )
+        }
+        {
+          species.conservationStatus && (
+            <div>
+              <dt class="inline font-medium text-gray-900 dark:text-white">Estado:</dt>{' '}
+              <dd class="inline">{getConservationStatus(species.conservationStatus)?.label || 'Desconocido'}</dd>
+            </div>
+          )
+        }
+      </dl>
+    </div>
+  </div>
+</section>

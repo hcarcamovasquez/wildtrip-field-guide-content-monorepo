@@ -1,0 +1,18 @@
+---
+import type { PublicDetailSpecie } from '../../../lib/public/repositories/SpeciesRepository'
+
+interface Props {
+  species: PublicDetailSpecie
+}
+
+const { species } = Astro.props
+---
+
+{
+  species.distinctiveFeatures && (
+    <div class="mb-8">
+      <h2 class="mb-4 text-2xl font-bold text-gray-900 dark:text-white">Características distintivas</h2>
+      <p class="leading-relaxed text-gray-700 dark:text-gray-300">{species.distinctiveFeatures}</p>
+    </div>
+  )
+}

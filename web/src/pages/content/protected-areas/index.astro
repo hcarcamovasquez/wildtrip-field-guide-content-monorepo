@@ -1,0 +1,71 @@
+---
+import Footer from '../../../components/public/Footer.astro'
+import Header from '../../../components/public/Header.astro'
+import PageHeader from '../../../components/public/PageHeader.astro'
+import ProtectedAreaFilters from '../../../components/public/protected-area/ProtectedAreaFilters.astro'
+import ProtectedAreaGrid from '../../../components/public/protected-area/ProtectedAreaGrid.astro'
+import Layout from '../../../layouts/Layout.astro'
+import { publicProtectedAreasRepository } from '../../../lib/public/repositories'
+
+// Get URL parameters
+const url = new URL(Astro.request.url)
+const searchParams = url.searchParams
+
+const page = Math.max(1, parseInt(searchParams.get('page') || '1'))
+const search = searchParams.get('search') || ''
+const type = searchParams.get('type') as
+  | 'national_park'
+  | 'national_reserve'
+  | 'natural_monument'
+  | 'nature_sanctuary'
+  | 'all'
+const region = searchParams.get('region') || ''
+
+// Use repository to fetch data
+const { data: allAreas, pagination } = await publicProtectedAreasRepository.findPublishedWithPagination({
+  page,
+  search,
+  type,
+  region,
+})
+
+// Get unique regions for filter
+const uniqueRegions = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j']
+
+// Helper function to build URL with params
+function buildUrl(params: Record<string, string | number>) {
+  const newParams = new URLSearchParams()
+
+  // Keep existing params
+  if (search) newParams.set('search', search)
+  if (type && type !== 'all') newParams.set('type', type)
+  if (region && region !== 'all') newParams.set('region', region)
+
+  // Override with new params
+  Object.entries(params).forEach(([key, value]) => {
+    if (value && value !== 'all' && value !== '') {
+      newParams.set(key, value.toString())
+    } else {
+      newParams.delete(key)
+    }
+  })
+
+  const queryString = newParams.toString()
+  return queryString ? `?${queryString}` : ''
+}
+---
+
+<Layout title="Áreas Protegidas de Chile - Guía de Campo Chile">
+  <Header slot="header" />
+  <Footer slot="footer" />
+
+  <PageHeader
+    title="Áreas Protegidas de Chile"
+    subtitle="Descubre los parques y reservas que protegen nuestra biodiversidad"
+    iconText="Parques y Reservas"
+  >
+    <ProtectedAreaFilters search={search} type={type} region={region} uniqueRegions={uniqueRegions} />
+
+    <ProtectedAreaGrid areas={allAreas} pagination={pagination} buildUrl={buildUrl} />
+  </PageHeader>
+</Layout>

@@ -1,0 +1,31 @@
+---
+import type { PublicDetailSpecie } from '../../../lib/public/repositories/SpeciesRepository'
+
+interface Props {
+  species: PublicDetailSpecie
+}
+
+const { species } = Astro.props
+---
+
+{
+  species.references && species.references.length > 0 && (
+    <section class="mb-8">
+      <h2 class="mb-4 text-2xl font-bold text-gray-900 dark:text-white">Referencias</h2>
+      <ul class="space-y-2">
+        {species.references.map((ref) => (
+          <li class="text-sm text-gray-700 dark:text-gray-300">
+            <a
+              href={ref.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              class="hover:text-primary-700 text-primary underline dark:text-emerald-400 dark:hover:text-emerald-300"
+            >
+              {ref.title}
+            </a>
+          </li>
+        ))}
+      </ul>
+    </section>
+  )
+}

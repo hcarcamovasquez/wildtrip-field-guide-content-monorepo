@@ -1,0 +1,162 @@
+---
+import '../styles/global.css'
+
+export interface Props {
+  title: string
+  description?: string | undefined | null
+  image?: string;
+  type?: 'website' | 'article';
+  publishedTime?: string;
+  modifiedTime?: string;
+  author?: string;
+  noindex?: boolean;
+  canonical?: string;
+  jsonLd?: any;
+}
+
+const {
+  title,
+  description = 'WildTrip Guia de Campo - Tu guía de biodiversidad y áreas protegidas de Chile',
+  image = '/default-og-image.jpg',
+  type = 'website',
+  publishedTime,
+  modifiedTime,
+  author,
+  noindex = false,
+  canonical,
+  jsonLd
+} = Astro.props;
+
+const siteUrl = 'https://guiadecampo.cl';
+const fullImageUrl = image.startsWith('http') ? image : `${siteUrl}${image}`;
+const canonicalUrl = canonical || Astro.url.href;
+const isDev = import.meta.env.DEV;
+---
+
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content={description} />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    {isDev &&
+        <meta name="generator" content={Astro.generator}/>}
+    <title>{title} - WildTrip Guia de Campo</title>
+
+    <!-- Canonical URL -->
+    <link rel="canonical" href={canonicalUrl}/>
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content={type}/>
+    <meta property="og:url" content={canonicalUrl}/>
+    <meta property="og:title" content={`${title} - WildTrip Guia de Campo`}/>
+    <meta property="og:description" content={description}/>
+    <meta property="og:image" content={fullImageUrl}/>
+    <meta property="og:site_name" content="WildTrip Guia de Campo"/>
+    <meta property="og:locale" content="es_CL"/>
+    {publishedTime &&
+        <meta property="article:published_time" content={publishedTime}/>}
+    {modifiedTime &&
+        <meta property="article:modified_time" content={modifiedTime}/>}
+    {author &&
+        <meta property="article:author" content={author}/>}
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image"/>
+    <meta property="twitter:url" content={canonicalUrl}/>
+    <meta property="twitter:title" content={`${title} - WildTrip Guia de Campo`}/>
+    <meta property="twitter:description" content={description}/>
+    <meta property="twitter:image" content={fullImageUrl}/>
+
+    <!-- Additional SEO tags -->
+    <meta name="robots" content={noindex ? 'noindex, nofollow' : 'index, follow'}/>
+    <meta name="googlebot" content={noindex ? 'noindex, nofollow' : 'index, follow'}/>
+    <meta name="language" content="Spanish"/>
+    <meta name="author" content="WildTrip Guia de Campo"/>
+
+    <!-- JSON-LD Structured Data -->
+    {jsonLd && <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />}
+
+    <!-- Prevent FOUC (Flash of Unstyled Content) for dark mode -->
+    <script is:inline>
+      // This script runs immediately to prevent flash of incorrect theme
+      ;(function () {
+        try {
+          // Get theme from localStorage
+          const storedTheme = localStorage.getItem('theme')
+
+          // Get system preference
+          const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
+
+          // Determine which theme to use
+          let theme
+          if (storedTheme) {
+            // Use stored preference
+            theme = storedTheme
+          } else {
+            // Use system preference
+            theme = systemPrefersDark ? 'dark' : 'light'
+          }
+
+          // Apply theme immediately to documentElement
+          if (theme === 'dark') {
+            document.documentElement.classList.add('dark')
+          } else {
+            document.documentElement.classList.remove('dark')
+          }
+
+          // Store the theme for consistency
+          if (!storedTheme) {
+            localStorage.setItem('theme', theme)
+          }
+        } catch {
+          // Fallback to system preference if localStorage is not available
+          if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            document.documentElement.classList.add('dark')
+          }
+        }
+      })()
+    </script>
+  </head>
+  <body>
+    <div class="flex min-h-screen flex-col bg-white text-gray-900 dark:bg-gray-900 dark:text-gray-100">
+      <slot name="header" />
+      <main class="flex-grow">
+        <slot />
+      </main>
+      <slot name="footer" />
+    </div>
+  </body>
+</html>
+
+<style>
+  html,
+  body {
+    margin: 0;
+    width: 100%;
+    height: 100%;
+  }
+</style>
+
+<script>
+  // Remove no-transitions class after page loads to enable animations
+  document.addEventListener('DOMContentLoaded', () => {
+    // Small delay to ensure all styles are applied
+    setTimeout(() => {
+      document.documentElement.classList.remove('no-transitions')
+    }, 50)
+  })
+
+  // Listen for system theme changes after page loads
+  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+    // Only apply system changes if user hasn't set a preference
+    if (!localStorage.getItem('theme')) {
+      if (e.matches) {
+        document.documentElement.classList.add('dark')
+      } else {
+        document.documentElement.classList.remove('dark')
+      }
+    }
+  })
+</script>

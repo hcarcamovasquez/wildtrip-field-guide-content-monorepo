@@ -1,0 +1,61 @@
+---
+import Footer from '../../../components/public/Footer.astro'
+import Header from '../../../components/public/Header.astro'
+import NewsFilters from '../../../components/public/news/NewsFilters.astro'
+import NewsGrid from '../../../components/public/news/NewsGrid.astro'
+import PageHeader from '../../../components/public/PageHeader.astro'
+import Layout from '../../../layouts/Layout.astro'
+import { publicNewsRepository } from '../../../lib/public/repositories'
+
+// Get URL parameters
+const url = new URL(Astro.request.url)
+const searchParams = url.searchParams
+
+const page = Math.max(1, parseInt(searchParams.get('page') || '1'))
+const search = searchParams.get('search') || ''
+const category =
+  (searchParams.get('category') as 'education' | 'current_events' | 'conservation' | 'research' | 'all') || ''
+
+// Use repository to fetch data
+const { data: allNews, pagination } = await publicNewsRepository.findPublishedWithPagination({
+  page,
+  search,
+  category,
+})
+
+// Helper function to build URL with params
+function buildUrl(params: Record<string, string | number>) {
+  const newParams = new URLSearchParams()
+
+  // Keep existing params
+  if (search) newParams.set('search', search)
+  if (category && category !== 'all') newParams.set('category', category)
+
+  // Override with new params
+  Object.entries(params).forEach(([key, value]) => {
+    if (value && value !== 'all' && value !== '') {
+      newParams.set(key, value.toString())
+    } else {
+      newParams.delete(key)
+    }
+  })
+
+  const queryString = newParams.toString()
+  return queryString ? `?${queryString}` : ''
+}
+---
+
+<Layout title="Noticias de Conservación - Guía de Campo Chile">
+  <Header slot="header" />
+  <Footer slot="footer" />
+
+  <PageHeader
+    title="Noticias de Conservación"
+    subtitle="Mantente informado sobre las últimas novedades en biodiversidad chilena"
+    iconText="Actualidad"
+  >
+    <NewsFilters search={search} category={category} />
+
+    <NewsGrid news={allNews} pagination={pagination} buildUrl={buildUrl} />
+  </PageHeader>
+</Layout>

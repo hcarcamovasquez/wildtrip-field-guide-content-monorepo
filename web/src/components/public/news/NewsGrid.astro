@@ -1,0 +1,59 @@
+---
+import NewsCard from './NewsCard.astro'
+import NewsPagination from './NewsPagination.astro'
+
+export interface Props {
+  news: Array<{
+    slug: string
+    title: string
+    mainImageUrl?: string | null
+    category?: string
+    author?: string
+    publishedAt?: Date
+    summary?: string
+  }>
+  pagination: {
+    page: number
+    totalPages: number
+    total: number
+  }
+  buildUrl: (params: Record<string, string | number>) => string
+}
+
+const { news, pagination, buildUrl } = Astro.props
+const { page, totalPages, total: count } = pagination
+---
+
+<>
+  <!-- Results count -->
+  <div class="mb-4 text-sm text-gray-600 dark:text-gray-400">
+    {
+      count > 0 ? (
+        <span>
+          Mostrando {(page - 1) * 12 + 1} - {Math.min(page * 12, count)} de {count} noticias
+        </span>
+      ) : (
+        <span>No se encontraron noticias</span>
+      )
+    }
+  </div>
+
+  {
+    news.length === 0 ? (
+      <div class="py-12 text-center">
+        <p class="text-lg text-gray-500 dark:text-gray-400">No se encontraron noticias con los filtros aplicados.</p>
+      </div>
+    ) : (
+      <>
+        <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {news.map((newsItem) => (
+            <NewsCard newsItem={newsItem} />
+          ))}
+        </div>
+
+        {/* Pagination */}
+        {totalPages > 1 && <NewsPagination page={page} totalPages={totalPages} buildUrl={buildUrl} />}
+      </>
+    )
+  }
+</>

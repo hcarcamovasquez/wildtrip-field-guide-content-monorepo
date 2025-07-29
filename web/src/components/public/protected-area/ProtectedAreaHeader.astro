@@ -1,0 +1,35 @@
+---
+import { PROTECTED_AREA_TYPES } from '../../../lib/utils/protected-area-types'
+import { getRegionLabel } from '../../../lib/utils/chile-regions'
+
+export interface Props {
+  title: string
+  type?: string
+  region?: string | null
+}
+
+const { title, type, region } = Astro.props
+---
+
+<header class="mb-8">
+  <div class="mb-4 flex items-center justify-between">
+    <a
+      href="/content/protected-areas"
+      class="hover:text-primary-700 font-medium text-primary dark:text-emerald-400 dark:hover:text-emerald-300"
+    >
+      ← Volver a Áreas Protegidas
+    </a>
+    {
+      type && (
+        <span
+          class={`rounded px-3 py-1 text-sm font-medium ${PROTECTED_AREA_TYPES.find((t) => t.value === type)?.color || 'bg-gray-500 text-white'}`}
+        >
+          {PROTECTED_AREA_TYPES.find((t) => t.value === type)?.label || 'Área Protegida'}
+        </span>
+      )
+    }
+  </div>
+
+  <h1 class="mb-2 text-4xl font-bold text-gray-900 dark:text-white">{title}</h1>
+  {region && <p class="text-xl text-gray-600 dark:text-gray-300">{getRegionLabel(region)}</p>}
+</header>

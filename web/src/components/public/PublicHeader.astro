@@ -1,0 +1,237 @@
+---
+import { SignedIn, SignedOut, UserButton } from '@clerk/astro/components'
+import DarkModeToggle from './DarkModeToggle.astro'
+import Clipboard from './icons/Clipboard.astro'
+import Menu from './icons/Menu.astro'
+
+// Get current path to determine active section
+const currentPath = Astro.url.pathname
+const isIndexPage = currentPath === '/'
+
+// Get authentication status and user data
+const userAuth = Astro.locals.auth()
+const hasAuth = userAuth.isAuthenticated
+
+const logo = import.meta.env.PUBLIC_R2_PUBLIC_URL + '/colored_logo.svg'
+---
+
+<header
+  class={`${isIndexPage ? 'fixed top-0 left-0 right-0 z-50 transition-transform duration-300' : ''} bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700`}
+  id="main-header"
+>
+  <nav class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+    <div class="flex h-16 justify-between">
+      <div class="flex items-center">
+        <a href="/" class="flex items-center">
+          <div class="flex flex-col">
+            <span class="text-lg font-bold text-gray-900 dark:text-white">Guía de Campo</span>
+            <div class="flex items-center gap-2">
+              <span class="text-xs text-gray-500 dark:text-gray-400">un servicio de</span>
+              <img src={logo} alt="Wildtrip" class="h-4 w-auto" />
+            </div>
+          </div>
+        </a>
+      </div>
+
+      <div class="hidden sm:flex sm:items-center sm:space-x-8">
+        <!-- Public navigation items -->
+        <a
+          href="/content/species"
+          class={`text-gray-700 dark:text-gray-300 hover:text-primary dark:hover:text-emerald-400 transition-colors px-3 py-2 text-sm font-medium ${
+            currentPath.includes('/content/species')
+              ? 'text-primary dark:text-emerald-400 border-b-2 border-primary dark:border-emerald-400'
+              : ''
+          }`}
+        >
+          Especies
+        </a>
+        <a
+          href="/content/protected-areas"
+          class={`text-gray-700 dark:text-gray-300 hover:text-primary dark:hover:text-emerald-400 transition-colors px-3 py-2 text-sm font-medium ${
+            currentPath.includes('/content/protected-areas')
+              ? 'text-primary dark:text-emerald-400 border-b-2 border-primary dark:border-emerald-400'
+              : ''
+          }`}
+        >
+          Áreas Protegidas
+        </a>
+        <a
+          href="/content/news"
+          class={`text-gray-700 dark:text-gray-300 hover:text-primary dark:hover:text-emerald-400 transition-colors px-3 py-2 text-sm font-medium ${
+            currentPath.includes('/content/news')
+              ? 'text-primary dark:text-emerald-400 border-b-2 border-primary dark:border-emerald-400'
+              : ''
+          }`}
+        >
+          Noticias
+        </a>
+
+        <DarkModeToggle />
+
+        <!-- Clerk Auth Components -->
+        <div class="ml-4 flex items-center gap-4">
+          <SignedOut>
+            <a
+              href="/sign-in"
+              class="px-3 py-2 text-sm font-medium text-gray-700 transition-colors hover:text-primary dark:text-gray-300 dark:hover:text-emerald-400"
+            >
+              Iniciar sesión
+            </a>
+          </SignedOut>
+          <SignedIn>
+            {
+              hasAuth && (
+                <a
+                  href="/manage"
+                  class="flex items-center gap-2 rounded-lg bg-gray-800 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-gray-700 dark:bg-gray-700 dark:hover:bg-gray-600"
+                >
+                  <Clipboard class="h-4 w-4" />
+                  Gestionar
+                </a>
+              )
+            }
+            <UserButton
+              appearance={{
+                elements: {
+                  avatarBox: 'w-8 h-8',
+                },
+              }}
+            />
+          </SignedIn>
+        </div>
+      </div>
+
+      <!-- Mobile menu button -->
+      <div class="flex items-center gap-2 sm:hidden">
+        <SignedIn>
+          {
+            hasAuth && (
+              <a
+                href="/manage"
+                class="rounded-lg p-2 text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700"
+              >
+                <Clipboard class="h-5 w-5" />
+              </a>
+            )
+          }
+          <UserButton
+            appearance={{
+              elements: {
+                avatarBox: 'w-8 h-8',
+              },
+            }}
+          />
+        </SignedIn>
+        <DarkModeToggle />
+        <button
+          type="button"
+          class="inline-flex items-center justify-center rounded-md p-2 text-gray-700 hover:bg-gray-100 hover:text-primary focus:ring-2 focus:ring-primary focus:outline-none focus:ring-inset dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-emerald-400"
+          aria-controls="mobile-menu"
+          aria-expanded="false"
+          id="mobile-menu-button"
+        >
+          <span class="sr-only">Abrir menú principal</span>
+          <Menu class="h-6 w-6" />
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Mobile menu -->
+  <div class="hidden sm:hidden" id="mobile-menu">
+    <div class="space-y-1 border-t border-gray-200 bg-white px-2 pt-2 pb-3 dark:border-gray-700 dark:bg-gray-800">
+      <!-- Public mobile navigation items -->
+      <a
+        href="/content/species"
+        class={`block text-gray-700 dark:text-gray-300 hover:text-primary dark:hover:text-emerald-400 hover:bg-gray-50 dark:hover:bg-gray-700 px-3 py-2 text-base font-medium rounded-md ${
+          currentPath.includes('/content/species')
+            ? 'text-primary dark:text-emerald-400 bg-gray-50 dark:bg-gray-700'
+            : ''
+        }`}
+      >
+        Especies
+      </a>
+      <a
+        href="/content/protected-areas"
+        class={`block text-gray-700 dark:text-gray-300 hover:text-primary dark:hover:text-emerald-400 hover:bg-gray-50 dark:hover:bg-gray-700 px-3 py-2 text-base font-medium rounded-md ${
+          currentPath.includes('/content/protected-areas')
+            ? 'text-primary dark:text-emerald-400 bg-gray-50 dark:bg-gray-700'
+            : ''
+        }`}
+      >
+        Áreas Protegidas
+      </a>
+      <a
+        href="/content/news"
+        class={`block text-gray-700 dark:text-gray-300 hover:text-primary dark:hover:text-emerald-400 hover:bg-gray-50 dark:hover:bg-gray-700 px-3 py-2 text-base font-medium rounded-md ${
+          currentPath.includes('/content/news') ? 'text-primary dark:text-emerald-400 bg-gray-50 dark:bg-gray-700' : ''
+        }`}
+      >
+        Noticias
+      </a>
+
+      <!-- Mobile Clerk Auth Links -->
+      <SignedOut>
+        <div class="mt-2 border-t border-gray-200 pt-2 dark:border-gray-700">
+          <a
+            href="/sign-in"
+            class="block rounded-md px-3 py-2 text-base font-medium text-gray-700 hover:bg-gray-50 hover:text-primary dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-emerald-400"
+          >
+            Iniciar sesión
+          </a>
+        </div>
+      </SignedOut>
+
+      <!-- Mobile Manage Link for Signed In Users -->
+      <SignedIn>
+        <div class="mt-2 border-t border-gray-200 pt-2 dark:border-gray-700">
+          <a
+            href="/manage"
+            class="flex items-center gap-2 rounded-md px-3 py-2 text-base font-medium text-gray-700 hover:bg-gray-50 hover:text-primary dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-emerald-400"
+          >
+            <Clipboard class="h-5 w-5" />
+            Gestionar Contenido
+          </a>
+        </div>
+      </SignedIn>
+    </div>
+  </div>
+</header>
+
+<!-- Spacer for fixed header on index page -->
+{isIndexPage && <div class="h-16" />}
+
+<script>
+  const mobileMenuButton = document.getElementById('mobile-menu-button')
+  const mobileMenu = document.getElementById('mobile-menu')
+
+  mobileMenuButton?.addEventListener('click', () => {
+    const isExpanded = mobileMenuButton.getAttribute('aria-expanded') === 'true'
+    mobileMenuButton.setAttribute('aria-expanded', (!isExpanded).toString())
+    mobileMenu?.classList.toggle('hidden')
+  })
+
+  // Hide/Show navbar on scroll - only for index page
+  const header = document.getElementById('main-header')
+  const isIndexPage = window.location.pathname === '/'
+
+  if (header && isIndexPage) {
+    const hideThreshold = 100 // Start hiding after 100px
+    const showThreshold = 800 // Show again after 800px
+
+    window.addEventListener('scroll', () => {
+      const currentScrollY = window.scrollY
+
+      if (currentScrollY < hideThreshold) {
+        // At the top - show navbar
+        header.style.transform = 'translateY(0)'
+      } else if (currentScrollY > hideThreshold && currentScrollY < showThreshold) {
+        // Between thresholds - hide navbar
+        header.style.transform = 'translateY(-100%)'
+      } else if (currentScrollY > showThreshold) {
+        // Past show threshold - show navbar again
+        header.style.transform = 'translateY(0)'
+      }
+    })
+  }
+</script>

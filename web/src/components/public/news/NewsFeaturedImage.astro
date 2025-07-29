@@ -1,0 +1,26 @@
+---
+import ResponsiveImage from '../ResponsiveImage.astro'
+
+export interface Props {
+  mainImageUrl?: string | null
+  title: string
+}
+
+const { mainImageUrl, title } = Astro.props
+---
+
+{
+  mainImageUrl && (
+    <div class="mb-8">
+      <ResponsiveImage
+        src={mainImageUrl}
+        alt={title}
+        class="h-96 w-full rounded-lg object-cover shadow-lg"
+        sizes="(max-width: 640px) 100vw, (max-width: 1536px) 896px, 1024px"
+        loading="eager"
+        fetchpriority="high"
+        variant="hero"
+      />
+    </div>
+  )
+}

@@ -1,0 +1,129 @@
+---
+import FilterSection from '../FilterSection.astro'
+import { SpeciesFiltersMobile } from './SpeciesFiltersMobile'
+import { CONSERVATION_STATUSES, getConservationStatusLabel } from '../../../lib/utils/conservation-status'
+import { MAIN_GROUPS, getMainGroupLabel } from '../../../lib/utils/species-groups'
+
+export interface Props {
+  search: string
+  conservationStatus: string
+  mainGroup: string
+}
+
+const { search, conservationStatus, mainGroup } = Astro.props
+
+const hasActiveFilters =
+  search || (conservationStatus && conservationStatus !== 'all') || (mainGroup && mainGroup !== 'all')
+---
+
+<!-- Desktop Filters -->
+<div class="hidden lg:block">
+  <FilterSection
+    searchValue={search}
+    searchPlaceholder="Buscar por nombre, nombre científico..."
+    searchLabel="Buscar especies"
+    showActiveFilters={!!hasActiveFilters}
+    formAction="species"
+  >
+    <div slot="filters" class="flex flex-col gap-4 lg:flex-row lg:gap-8">
+      <div class="flex-1 lg:min-w-[250px]">
+        <label for="status" class="mb-3 block text-sm font-semibold text-gray-700 dark:text-gray-300">
+          🛡️ Estado de conservación
+        </label>
+        <select
+          id="status"
+          name="status"
+          class="w-full rounded-xl border-2 border-gray-200 bg-gray-50/50 px-4 py-3 text-base transition-all duration-300 hover:border-gray-300 focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-500/10 focus:outline-none dark:border-gray-600 dark:bg-gray-700/50 dark:text-white dark:hover:border-gray-500 dark:focus:border-emerald-400 dark:focus:bg-gray-700"
+        >
+          <option value="all" selected={!conservationStatus || conservationStatus === 'all'}>
+            Todos los estados
+          </option>
+          {
+            CONSERVATION_STATUSES.map((status) => (
+              <option value={status.value} selected={conservationStatus === status.value}>
+                {status.emoji} {status.label}
+              </option>
+            ))
+          }
+        </select>
+      </div>
+
+      <div class="flex-1 lg:min-w-[250px]">
+        <label for="group" class="mb-3 block text-sm font-semibold text-gray-700 dark:text-gray-300">
+          🌿 Grupo principal
+        </label>
+        <select
+          id="group"
+          name="group"
+          class="w-full rounded-xl border-2 border-gray-200 bg-gray-50/50 px-4 py-3 text-base transition-all duration-300 hover:border-gray-300 focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-500/10 focus:outline-none dark:border-gray-600 dark:bg-gray-700/50 dark:text-white dark:hover:border-gray-500 dark:focus:border-emerald-400 dark:focus:bg-gray-700"
+        >
+          <option value="all" selected={!mainGroup || mainGroup === 'all'}> Todos los grupos </option>
+          {
+            MAIN_GROUPS.map((group) => (
+              <option value={group.value} selected={mainGroup === group.value}>
+                {group.label}
+              </option>
+            ))
+          }
+        </select>
+      </div>
+    </div>
+
+    <div slot="activeFilters">
+      {
+        search && (
+          <span class="inline-flex items-center gap-2 rounded-full bg-emerald-100 px-4 py-2 text-sm font-medium text-emerald-800 shadow-sm transition-all duration-200 hover:bg-emerald-200 hover:shadow-md dark:bg-emerald-900/30 dark:text-emerald-300 dark:hover:bg-emerald-900/40">
+            Búsqueda: "{search}"
+            <button
+              type="button"
+              onclick="document.getElementById('search').value=''; document.querySelector('form').submit();"
+              class="ml-1 rounded-full p-1 text-emerald-600 transition-colors hover:bg-emerald-300/30 dark:text-emerald-400 dark:hover:bg-emerald-800/40"
+              aria-label="Remover búsqueda"
+            >
+              <svg class="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </span>
+        )
+      }
+      {
+        conservationStatus && conservationStatus !== 'all' && (
+          <span class="inline-flex items-center gap-2 rounded-full bg-blue-100 px-4 py-2 text-sm font-medium text-blue-800 shadow-sm transition-all duration-200 hover:bg-blue-200 hover:shadow-md dark:bg-blue-900/30 dark:text-blue-300 dark:hover:bg-blue-900/40">
+            Estado: {getConservationStatusLabel(conservationStatus)}
+            <button
+              type="button"
+              onclick="document.getElementById('status').value='all'; document.querySelector('form').submit();"
+              class="ml-1 rounded-full p-1 text-blue-600 transition-colors hover:bg-blue-300/30 dark:text-blue-400 dark:hover:bg-blue-800/40"
+              aria-label="Remover filtro de estado"
+            >
+              <svg class="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </span>
+        )
+      }
+      {
+        mainGroup && mainGroup !== 'all' && (
+          <span class="inline-flex items-center gap-2 rounded-full bg-purple-100 px-4 py-2 text-sm font-medium text-purple-800 shadow-sm transition-all duration-200 hover:bg-purple-200 hover:shadow-md dark:bg-purple-900/30 dark:text-purple-300 dark:hover:bg-purple-900/40">
+            Grupo: {getMainGroupLabel(mainGroup)}
+            <button
+              type="button"
+              onclick="document.getElementById('group').value='all'; document.querySelector('form').submit();"
+              class="ml-1 rounded-full p-1 text-purple-600 transition-colors hover:bg-purple-300/30 dark:text-purple-400 dark:hover:bg-purple-800/40"
+              aria-label="Remover filtro de grupo"
+            >
+              <svg class="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </span>
+        )
+      }
+    </div>
+  </FilterSection>
+</div>
+
+<!-- Mobile Filters with React/shadcn -->
+<SpeciesFiltersMobile client:load initialSearch={search} initialStatus={conservationStatus} initialGroup={mainGroup} />

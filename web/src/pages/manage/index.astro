@@ -1,0 +1,211 @@
+---
+import PrivateHeader from '../../components/manage/PrivateHeader.astro'
+import Layout from '../../layouts/Layout.astro'
+import { ManageDashboardRepository } from '../../lib/private/repositories/ManageDashboardRepository'
+import { canAccessRoute, type Role } from '../../lib/utils/permissions'
+
+const user = Astro.locals.user
+if (!user) {
+  return Astro.redirect('/sign-in')
+}
+
+// Obtener estadísticas
+const stats = await ManageDashboardRepository.getStats()
+
+// Determinar qué tarjetas mostrar según el rol
+const canManageSpeciesRole = canAccessRoute(user.role as Role, '/manage/species')
+const canManageProtectedAreas = canAccessRoute(user.role as Role, '/manage/protected-areas')
+const canManageNewsRole = canAccessRoute(user.role as Role, '/manage/news')
+
+// Contar cuántas tarjetas se mostrarán
+const visibleCards = [canManageSpeciesRole, canManageProtectedAreas, canManageNewsRole].filter(Boolean).length
+
+// Determinar las columnas del grid según las tarjetas visibles
+const gridCols = visibleCards === 1 ? 'lg:grid-cols-1' : visibleCards === 2 ? 'lg:grid-cols-2' : 'lg:grid-cols-3'
+---
+
+<Layout title="Dashboard - Panel de Administración">
+  <PrivateHeader slot="header" />
+
+  <div class="h-[calc(100vh-112px)] overflow-y-auto">
+    <div class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+      <div class="mb-8">
+        <h1 class="text-3xl font-bold tracking-tight text-gray-900 dark:text-white">Panel de administración</h1>
+        <p class="mt-2 text-base text-gray-600 dark:text-gray-400">Gestiona el contenido de Wildtrip Guida de Campo</p>
+      </div>
+
+      <!-- Tarjetas de estadísticas -->
+      <div class={`grid grid-cols-1 gap-6 sm:grid-cols-2 ${gridCols}`}>
+        <!-- Total de Especies -->
+        {
+          canManageSpeciesRole && (
+            <div class="group relative overflow-hidden rounded-lg border border-gray-200 bg-white transition-all hover:shadow-lg dark:border-gray-700 dark:bg-gray-800">
+              <div class="p-6">
+                <div class="flex items-center justify-between">
+                  <div class="flex-1">
+                    <div class="flex items-center gap-3">
+                      <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-green-100 dark:bg-green-900/30">
+                        <svg
+                          class="h-5 w-5 text-green-600 dark:text-green-400"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"
+                          />
+                        </svg>
+                      </div>
+                      <div>
+                        <h3 class="text-sm font-medium text-gray-900 dark:text-gray-100">Especies</h3>
+                        <p class="text-xs text-gray-500 dark:text-gray-400">Contenido publicado</p>
+                      </div>
+                    </div>
+                    <div class="mt-6">
+                      <p class="text-3xl font-bold text-gray-900 dark:text-white">{stats.speciesCount}</p>
+                      <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Total de especies</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="border-t border-gray-200 bg-gray-50 px-6 py-3 dark:border-gray-700 dark:bg-gray-800/50">
+                <a
+                  href="/manage/species"
+                  class="flex items-center justify-between text-sm font-medium text-gray-700 transition-colors hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"
+                >
+                  <span>Gestionar especies</span>
+                  <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                  </svg>
+                </a>
+              </div>
+            </div>
+          )
+        }
+
+        <!-- Áreas Protegidas -->
+        {
+          canManageProtectedAreas && (
+            <div class="group relative overflow-hidden rounded-lg border border-gray-200 bg-white transition-all hover:shadow-lg dark:border-gray-700 dark:bg-gray-800">
+              <div class="p-6">
+                <div class="flex items-center justify-between">
+                  <div class="flex-1">
+                    <div class="flex items-center gap-3">
+                      <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-100 dark:bg-blue-900/30">
+                        <svg
+                          class="h-5 w-5 text-blue-600 dark:text-blue-400"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                          />
+                        </svg>
+                      </div>
+                      <div>
+                        <h3 class="text-sm font-medium text-gray-900 dark:text-gray-100">Áreas Protegidas</h3>
+                        <p class="text-xs text-gray-500 dark:text-gray-400">Contenido publicado</p>
+                      </div>
+                    </div>
+                    <div class="mt-6">
+                      <p class="text-3xl font-bold text-gray-900 dark:text-white">{stats.protectedAreasCount}</p>
+                      <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Total de áreas</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="border-t border-gray-200 bg-gray-50 px-6 py-3 dark:border-gray-700 dark:bg-gray-800/50">
+                <a
+                  href="/manage/protected-areas"
+                  class="flex items-center justify-between text-sm font-medium text-gray-700 transition-colors hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"
+                >
+                  <span>Gestionar áreas</span>
+                  <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                  </svg>
+                </a>
+              </div>
+            </div>
+          )
+        }
+
+        <!-- Noticias -->
+        {
+          canManageNewsRole && (
+            <div class="group relative overflow-hidden rounded-lg border border-gray-200 bg-white transition-all hover:shadow-lg dark:border-gray-700 dark:bg-gray-800">
+              <div class="p-6">
+                <div class="flex items-center justify-between">
+                  <div class="flex-1">
+                    <div class="flex items-center gap-3">
+                      <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-purple-100 dark:bg-purple-900/30">
+                        <svg
+                          class="h-5 w-5 text-purple-600 dark:text-purple-400"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"
+                          />
+                        </svg>
+                      </div>
+                      <div>
+                        <h3 class="text-sm font-medium text-gray-900 dark:text-gray-100">Noticias</h3>
+                        <p class="text-xs text-gray-500 dark:text-gray-400">Contenido publicado</p>
+                      </div>
+                    </div>
+                    <div class="mt-6">
+                      <p class="text-3xl font-bold text-gray-900 dark:text-white">{stats.newsCount}</p>
+                      <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Total de noticias</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="border-t border-gray-200 bg-gray-50 px-6 py-3 dark:border-gray-700 dark:bg-gray-800/50">
+                <a
+                  href="/manage/news"
+                  class="flex items-center justify-between text-sm font-medium text-gray-700 transition-colors hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"
+                >
+                  <span>Gestionar noticias</span>
+                  <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                  </svg>
+                </a>
+              </div>
+            </div>
+          )
+        }
+      </div>
+
+      {/* Mensaje cuando no hay permisos */}
+      {
+        visibleCards === 0 && (
+          <div class="rounded-lg border border-gray-200 bg-white p-8 text-center dark:border-gray-700 dark:bg-gray-800">
+            <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+              />
+            </svg>
+            <h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">Sin permisos de administración</h3>
+            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+              Tu rol actual no tiene permisos para administrar contenido.
+            </p>
+          </div>
+        )
+      }
+    </div>
+  </div>
+</Layout>

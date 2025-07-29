@@ -1,0 +1,36 @@
+---
+export interface Props {
+  title: string
+  url: URL
+}
+
+const { title, url } = Astro.props
+---
+
+<footer class="mt-12 border-t border-gray-200 pt-8 dark:border-gray-700">
+  <div class="flex flex-col items-start justify-between md:flex-row md:items-center">
+    <div class="mb-4 md:mb-0">
+      <p class="text-sm text-gray-600 dark:text-gray-400">
+        Comparte este artículo para ayudar a difundir la importancia de la conservación
+      </p>
+    </div>
+    <div class="flex space-x-4">
+      <a
+        href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(title)}&url=${encodeURIComponent(url.toString())}`}
+        target="_blank"
+        rel="noopener noreferrer"
+        class="text-sm font-medium text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
+      >
+        Compartir en Twitter
+      </a>
+      <a
+        href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url.toString())}`}
+        target="_blank"
+        rel="noopener noreferrer"
+        class="text-sm font-medium text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
+      >
+        Compartir en Facebook
+      </a>
+    </div>
+  </div>
+</footer>

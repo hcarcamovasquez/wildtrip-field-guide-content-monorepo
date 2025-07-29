@@ -1,0 +1,70 @@
+---
+import Footer from '../../../components/public/Footer.astro'
+import Header from '../../../components/public/Header.astro'
+import ProtectedAreaEcosystems from '../../../components/public/protected-area/ProtectedAreaEcosystems.astro'
+import ProtectedAreaGallery from '../../../components/public/protected-area/ProtectedAreaGallery.astro'
+import ProtectedAreaHeader from '../../../components/public/protected-area/ProtectedAreaHeader.astro'
+import ProtectedAreaHero from '../../../components/public/protected-area/ProtectedAreaHero.astro'
+import ProtectedAreaInfo from '../../../components/public/protected-area/ProtectedAreaInfo.astro'
+import ProtectedAreaLocation from '../../../components/public/protected-area/ProtectedAreaLocation.astro'
+import Layout from '../../../layouts/Layout.astro'
+import { publicProtectedAreasRepository } from '../../../lib/public/repositories'
+import { renderContentBlock } from '../../../lib/utils/render-content'
+
+const { slug } = Astro.params
+
+if (!slug) {
+  return Astro.redirect('/404')
+}
+
+// Fetch protected area data with base content
+const areaData = await publicProtectedAreasRepository.findOneBySlug(slug)
+
+if (!areaData) {
+  return Astro.redirect('/404')
+}
+---
+
+<Layout title={areaData.name} description={areaData.description}>
+  <Header slot="header" />
+  <Footer slot="footer" />
+  <article class="mx-auto max-w-4xl bg-white px-4 py-8 sm:px-6 lg:px-8 dark:bg-gray-900">
+    <ProtectedAreaHeader title={areaData.name} type={areaData.type} region={areaData.region} />
+
+    <ProtectedAreaHero images={areaData.images} mainImageUrl={areaData.mainImageUrl} title={areaData.name} />
+
+    {
+      areaData.description && (
+        <div class="mb-8">
+          <p class="text-lg leading-relaxed text-gray-700 dark:text-gray-300">{areaData.description}</p>
+        </div>
+      )
+    }
+
+    <ProtectedAreaInfo
+      region={areaData.region}
+      area={areaData.area}
+      creationYear={areaData.creationYear}
+      type={areaData.type}
+      visitorInformation={areaData.visitorInformation}
+    />
+
+    <ProtectedAreaEcosystems ecosystems={areaData.ecosystems} />
+
+    {
+      areaData.richContent && areaData.richContent.blocks && areaData.richContent.blocks.length > 0 && (
+        <section class="mb-8">
+          <div class="prose prose-lg max-w-none dark:prose-invert">
+            {areaData.richContent.blocks.map((block) => (
+              <div set:html={renderContentBlock(block)} />
+            ))}
+          </div>
+        </section>
+      )
+    }
+
+    <ProtectedAreaGallery images={areaData.images} title={areaData.name} />
+
+    <ProtectedAreaLocation location={areaData.location} />
+  </article>
+</Layout>

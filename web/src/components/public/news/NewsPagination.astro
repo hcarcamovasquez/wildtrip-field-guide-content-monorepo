@@ -1,0 +1,116 @@
+---
+import ChevronLeft from '../icons/ChevronLeft.astro'
+import ChevronRight from '../icons/ChevronRight.astro'
+import ChevronsLeft from '../icons/ChevronsLeft.astro'
+import ChevronsRight from '../icons/ChevronsRight.astro'
+
+export interface Props {
+  page: number
+  totalPages: number
+  buildUrl: (params: Record<string, string | number>) => string
+}
+
+const { page, totalPages, buildUrl } = Astro.props
+
+// Generate page numbers to show
+function getPageNumbers(current: number, total: number) {
+  const pages: (number | string)[] = []
+  const showPages = 5
+
+  if (total <= showPages) {
+    for (let i = 1; i <= total; i++) {
+      pages.push(i)
+    }
+  } else {
+    pages.push(1)
+
+    const start = Math.max(2, current - 1)
+    const end = Math.min(total - 1, current + 1)
+
+    if (start > 2) pages.push('...')
+
+    for (let i = start; i <= end; i++) {
+      pages.push(i)
+    }
+
+    if (end < total - 1) pages.push('...')
+
+    if (total > 1) pages.push(total)
+  }
+
+  return pages
+}
+
+const pageNumbers = getPageNumbers(page, totalPages)
+---
+
+<div class="mt-8 flex items-center justify-center gap-2">
+  <a
+    href={buildUrl({ page: 1 })}
+    class={`rounded p-2 ${
+      page === 1
+        ? 'cursor-not-allowed text-gray-400'
+        : 'text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700'
+    }`}
+    aria-disabled={page === 1}
+  >
+    <ChevronsLeft className="h-5 w-5" />
+  </a>
+
+  <a
+    href={buildUrl({ page: page - 1 })}
+    class={`rounded p-2 ${
+      page === 1
+        ? 'cursor-not-allowed text-gray-400'
+        : 'text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700'
+    }`}
+    aria-disabled={page === 1}
+  >
+    <ChevronLeft className="h-5 w-5" />
+  </a>
+
+  <div class="flex gap-1">
+    {
+      pageNumbers.map((pageNum) =>
+        pageNum === '...' ? (
+          <span class="px-3 py-2 text-gray-400">...</span>
+        ) : (
+          <a
+            href={buildUrl({ page: pageNum })}
+            class={`rounded-lg px-3 py-2 ${
+              pageNum === page
+                ? 'bg-primary text-white'
+                : 'text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700'
+            }`}
+          >
+            {pageNum}
+          </a>
+        ),
+      )
+    }
+  </div>
+
+  <a
+    href={buildUrl({ page: page + 1 })}
+    class={`rounded p-2 ${
+      page === totalPages
+        ? 'cursor-not-allowed text-gray-400'
+        : 'text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700'
+    }`}
+    aria-disabled={page === totalPages}
+  >
+    <ChevronRight className="h-5 w-5" />
+  </a>
+
+  <a
+    href={buildUrl({ page: totalPages })}
+    class={`rounded p-2 ${
+      page === totalPages
+        ? 'cursor-not-allowed text-gray-400'
+        : 'text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700'
+    }`}
+    aria-disabled={page === totalPages}
+  >
+    <ChevronsRight className="h-5 w-5" />
+  </a>
+</div>

@@ -1,0 +1,202 @@
+---
+import { SignUp } from '@clerk/astro/components'
+
+import BookOpen from '../../components/public/icons/BookOpen.astro'
+import ChevronLeft from '../../components/public/icons/ChevronLeft.astro'
+import Globe from '../../components/public/icons/Globe.astro'
+import Map from '../../components/public/icons/Map.astro'
+import UserPlus from '../../components/public/icons/UserPlus.astro'
+import Users from '../../components/public/icons/Users.astro'
+import AuthLayout from '../../layouts/AuthLayout.astro'
+---
+
+<AuthLayout title="Registrarse">
+  <div class="relative min-h-screen overflow-hidden bg-gradient-to-bl from-blue-50 via-white to-green-50">
+    <!-- Animated background elements - Desktop only -->
+    <div class="absolute inset-0 hidden overflow-hidden lg:block">
+      <!-- Gradient orbs - más grandes y visibles -->
+      <div
+        class="absolute -top-48 -right-48 h-[600px] w-[600px] animate-pulse rounded-full bg-gradient-to-bl from-blue-400/30 to-transparent blur-3xl"
+      >
+      </div>
+      <div
+        class="absolute -bottom-48 -left-48 h-[600px] w-[600px] animate-pulse rounded-full bg-gradient-to-tr from-green-400/30 to-transparent blur-3xl"
+      >
+      </div>
+      <div
+        class="absolute top-1/3 left-1/3 h-[500px] w-[500px] animate-pulse rounded-full bg-gradient-to-br from-blue-300/20 to-green-300/20 blur-3xl"
+      >
+      </div>
+
+      <!-- Floating particles -->
+      <div class="animate-float absolute top-1/4 left-1/4 h-3 w-3 rounded-full bg-green-400/40"></div>
+      <div class="animate-float-delayed absolute top-1/3 right-1/4 h-4 w-4 rounded-full bg-blue-400/40"></div>
+      <div class="animate-float absolute bottom-1/4 left-1/3 h-3 w-3 rounded-full bg-green-400/40"></div>
+      <div class="animate-float-delayed absolute right-1/3 bottom-1/3 h-5 w-5 rounded-full bg-blue-400/30"></div>
+
+      <!-- Grid pattern con mejor contraste -->
+      <div
+        class="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg%20width%3D%2260%22%20height%3D%2260%22%20viewBox%3D%220%200%2060%2060%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cg%3E%3Ccircle%20cx%3D%2230%22%20cy%3D%2230%22%20r%3D%221%22%20fill%3D%22%233b82f6%22%20opacity%3D%220.06%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E')]"
+      >
+      </div>
+    </div>
+
+    <!-- Top navigation bar -->
+    <div class="absolute top-4 right-4 left-4 z-10 flex items-center justify-between">
+      <!-- Back button -->
+      <a
+        href="/"
+        class="inline-flex h-10 items-center justify-center rounded-lg border border-gray-300 bg-white px-4 transition-colors hover:bg-gray-100"
+      >
+        <ChevronLeft class="mr-2 h-4 w-4 text-gray-600" />
+        <span class="text-sm font-medium text-gray-600">Volver</span>
+      </a>
+    </div>
+
+    <!-- Content -->
+    <div class="relative flex min-h-screen">
+      <!-- Left side - Full width on mobile, half on desktop -->
+      <div class="flex flex-1 items-center justify-center px-4 py-12 lg:w-1/2 lg:flex-initial">
+        <div class="mt-1 w-full max-w-md">
+          <!-- Clerk SignUp component -->
+          <div class="translate-y-4 opacity-0 transition-all duration-500" id="sign-up-content">
+            <SignUp
+              path="/sign-up"
+              routing="path"
+              signInUrl="/sign-in"
+              fallbackRedirectUrl="/"
+              appearance={{
+                elements: {
+                  formButtonPrimary: 'bg-emerald-600 hover:bg-emerald-700',
+                  footerActionLink: 'text-emerald-600 hover:text-emerald-700',
+                  card: 'bg-white shadow-xl',
+                  headerTitle: 'text-gray-900',
+                  headerSubtitle: 'text-gray-600',
+                  socialButtonsBlockButton: 'bg-white text-gray-900 border-gray-300',
+                  formFieldLabel: 'text-gray-700',
+                  formFieldInput: 'bg-white border-gray-300 text-gray-900',
+                },
+              }}
+            />
+          </div>
+        </div>
+      </div>
+
+      <!-- Right side - Hidden on mobile, visible on lg+ -->
+      <div class="hidden lg:flex lg:flex-1 lg:items-center lg:justify-center lg:px-8">
+        <div class="max-w-lg translate-x-[20px] opacity-0 transition-all duration-700" id="right-content">
+          <!-- Logo and welcome message -->
+          <div class="mb-8">
+            <div
+              class="mb-6 flex h-24 w-24 items-center justify-center rounded-3xl bg-gradient-to-br from-blue-400 to-blue-600 shadow-2xl shadow-blue-400/30"
+            >
+              <UserPlus class="h-14 w-14 text-white" />
+            </div>
+            <h1 class="text-4xl font-bold text-gray-900">Únete a la aventura</h1>
+            <p class="mt-4 text-lg text-gray-600">
+              Crea tu cuenta y comienza a explorar la biodiversidad de nuestro planeta de manera única.
+            </p>
+          </div>
+
+          <!-- Features grid -->
+          <div class="grid grid-cols-2 gap-4">
+            <div class="rounded-xl bg-white/50 p-4 backdrop-blur-sm">
+              <div class="mb-2 flex h-12 w-12 items-center justify-center rounded-lg bg-green-100">
+                <Globe class="h-6 w-6 text-green-600" />
+              </div>
+              <h3 class="font-medium text-gray-900">Explora especies</h3>
+              <p class="mt-1 text-sm text-gray-600">Miles de especies documentadas</p>
+            </div>
+            <div class="rounded-xl bg-white/50 p-4 backdrop-blur-sm">
+              <div class="mb-2 flex h-12 w-12 items-center justify-center rounded-lg bg-blue-100">
+                <BookOpen class="h-6 w-6 text-blue-600" />
+              </div>
+              <h3 class="font-medium text-gray-900">Aprende más</h3>
+              <p class="mt-1 text-sm text-gray-600">Contenido educativo único</p>
+            </div>
+            <div class="rounded-xl bg-white/50 p-4 backdrop-blur-sm">
+              <div class="mb-2 flex h-12 w-12 items-center justify-center rounded-lg bg-purple-100">
+                <Users class="h-6 w-6 text-purple-600" />
+              </div>
+              <h3 class="font-medium text-gray-900">Comunidad activa</h3>
+              <p class="mt-1 text-sm text-gray-600">Conecta con exploradores</p>
+            </div>
+            <div class="rounded-xl bg-white/50 p-4 backdrop-blur-sm">
+              <div class="mb-2 flex h-12 w-12 items-center justify-center rounded-lg bg-orange-100">
+                <Map class="h-6 w-6 text-orange-600" />
+              </div>
+              <h3 class="font-medium text-gray-900">Áreas protegidas</h3>
+              <p class="mt-1 text-sm text-gray-600">Información geográfica</p>
+            </div>
+          </div>
+
+          <!-- Call to action -->
+          <div class="mt-8 rounded-xl bg-gradient-to-r from-blue-50 to-green-50 p-6">
+            <p class="text-center text-sm text-gray-700">
+              <span class="font-medium">¡Únete hoy!</span> Accede a contenido exclusivo y sé parte de nuestra misión de conservación.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Top decoration - Desktop only -->
+    <div
+      class="absolute top-0 right-0 left-0 hidden h-px bg-gradient-to-r from-transparent via-blue-400/50 to-transparent lg:block"
+    >
+    </div>
+  </div>
+
+  <style>
+    @keyframes pulse {
+      0%,
+      100% {
+        opacity: 0.3;
+      }
+      50% {
+        opacity: 0.5;
+      }
+    }
+
+    @keyframes float {
+      0%,
+      100% {
+        transform: translateY(0);
+      }
+      50% {
+        transform: translateY(-20px);
+      }
+    }
+
+    @keyframes float-delayed {
+      0%,
+      100% {
+        transform: translateY(0);
+      }
+      50% {
+        transform: translateY(-15px);
+      }
+    }
+
+    .animate-pulse {
+      animation: pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+
+    .animate-float {
+      animation: float 6s ease-in-out infinite;
+    }
+
+    .animate-float-delayed {
+      animation: float-delayed 6s ease-in-out infinite;
+      animation-delay: 2s;
+    }
+  </style>
+
+  <script>
+    // Animate content on load
+    setTimeout(() => {
+      document.getElementById('right-content')?.classList.remove('opacity-0', 'translate-x-[20px]')
+      document.getElementById('sign-up-content')?.classList.remove('opacity-0', 'translate-y-4')
+    }, 100)
+  </script>
+</AuthLayout>

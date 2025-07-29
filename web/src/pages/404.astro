@@ -1,0 +1,134 @@
+---
+import { Bird, Mountain, Newspaper, Home, ArrowLeft } from 'lucide-react'
+
+import ChevronLeft from '../components/public/icons/ChevronLeft.astro'
+import Clipboard from '../components/public/icons/Clipboard.astro'
+import Search from '../components/public/icons/Search.astro'
+import Layout from '../layouts/Layout.astro'
+import { canAccessRoute, type Role } from '../lib/utils/permissions'
+
+const currentUser = Astro.locals.user
+const userRole = currentUser?.role as Role | undefined
+---
+
+<Layout title="Página no encontrada - Guía de Campo Chile">
+  <div class="flex min-h-[calc(100vh-4rem)] flex-col items-center justify-center px-4 py-8 sm:px-6 lg:px-8">
+    <div class="mx-auto max-w-2xl space-y-8 text-center">
+      <!-- Error Code -->
+      <div class="animate-pulse">
+        <h1 class="text-8xl leading-none font-bold text-primary md:text-9xl lg:text-[10rem]">404</h1>
+        <div class="mt-6">
+          <h2 class="text-2xl font-bold text-gray-900 md:text-3xl dark:text-white">Página no encontrada</h2>
+          <p class="mt-2 text-base text-gray-600 md:text-lg dark:text-gray-400">
+            Lo sentimos, la página que estás buscando no existe o ha sido movida.
+          </p>
+        </div>
+      </div>
+
+      <!-- Illustration -->
+      <div class="my-10">
+        <Search class="mx-auto h-24 w-24 text-gray-400 md:h-32 md:w-32 dark:text-gray-600" />
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="space-y-4">
+        <!-- Back to Home -->
+        <div>
+          <a
+            href="/"
+            class="inline-flex items-center rounded-md bg-primary px-6 py-3 text-base font-medium text-white transition-colors hover:bg-primary/90 focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:outline-none"
+          >
+            <Home className="mr-2 h-5 w-5" />
+            Volver al inicio
+          </a>
+        </div>
+
+        <!-- Quick Links -->
+        <div class="text-sm">
+          <p class="mb-3 text-gray-500 dark:text-gray-400">O explora nuestro contenido:</p>
+          <div class="flex flex-wrap justify-center gap-2">
+            <a
+              href="/content/species"
+              class="inline-flex items-center rounded-full bg-gray-100 px-3 py-1 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
+            >
+              <Bird className="mr-1.5 h-4 w-4" />
+              Especies
+            </a>
+            <a
+              href="/content/protected-areas"
+              class="inline-flex items-center rounded-full bg-gray-100 px-3 py-1 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
+            >
+              <Mountain className="mr-1.5 h-4 w-4" />
+              Áreas Protegidas
+            </a>
+            <a
+              href="/content/news"
+              class="inline-flex items-center rounded-full bg-gray-100 px-3 py-1 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
+            >
+              <Newspaper className="mr-1.5 h-4 w-4" />
+              Noticias
+            </a>
+          </div>
+        </div>
+
+        <!-- Management Link (if user has permissions) -->
+        {
+          userRole && canAccessRoute(userRole, '/manage') && (
+            <div class="border-t border-gray-200 pt-4 dark:border-gray-700">
+              <a
+                href="/manage"
+                class="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-600 transition-colors hover:text-primary dark:text-gray-400 dark:hover:text-primary"
+              >
+                <Clipboard class="mr-2 h-4 w-4" />
+                Ir al panel de gestión
+              </a>
+            </div>
+          )
+        }
+
+        <!-- Sign In Link (if not signed in) -->
+        {
+          !currentUser && (
+            <div class="border-t border-gray-200 pt-4 dark:border-gray-700">
+              <a
+                href="/sign-in"
+                class="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-600 transition-colors hover:text-primary dark:text-gray-400 dark:hover:text-primary"
+              >
+                <ChevronLeft class="mr-2 h-4 w-4" />
+                Iniciar sesión
+              </a>
+            </div>
+          )
+        }
+      </div>
+
+      <!-- Back Link -->
+      <div class="mt-8">
+        <button
+          onclick="history.back()"
+          class="inline-flex items-center text-sm text-gray-500 transition-colors hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+        >
+          <ArrowLeft className="mr-1.5 h-4 w-4" />
+          Volver a la página anterior
+        </button>
+      </div>
+
+      <!-- Help Text -->
+      <div class="mt-8 text-xs text-gray-400 dark:text-gray-500">
+        <p>¿Crees que esto es un error? Contacta con el administrador del sitio.</p>
+      </div>
+    </div>
+  </div>
+</Layout>
+
+<style>
+  @keyframes pulse {
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.8;
+    }
+  }
+</style>

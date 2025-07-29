@@ -1,0 +1,85 @@
+---
+import FilterSection from '../FilterSection.astro'
+import { NewsFiltersMobile } from './NewsFiltersMobile'
+import { NEWS_CATEGORIES, getNewsCategoryLabel } from '../../../lib/utils/news-constants'
+
+export interface Props {
+  search?: string
+  category?: string
+}
+
+const { search = '', category = 'all' } = Astro.props
+
+const hasActiveFilters = search || (category && category !== 'all')
+---
+
+<!-- Desktop Filters -->
+<div class="hidden lg:block">
+  <FilterSection
+    searchValue={search}
+    searchPlaceholder="Buscar por título, resumen o autor..."
+    searchLabel="Buscar noticias"
+    showActiveFilters={!!hasActiveFilters}
+    formAction="news"
+  >
+    <div slot="filters" class="flex-1 lg:min-w-[250px]">
+      <label for="category" class="mb-3 block text-sm font-semibold text-gray-700 dark:text-gray-300">
+        📰 Categoría
+      </label>
+      <select
+        id="category"
+        name="category"
+        class="w-full rounded-xl border-2 border-gray-200 bg-gray-50/50 px-4 py-3 text-base transition-all duration-300 hover:border-gray-300 focus:border-purple-500 focus:bg-white focus:ring-4 focus:ring-purple-500/10 focus:outline-none dark:border-gray-600 dark:bg-gray-700/50 dark:text-white dark:hover:border-gray-500 dark:focus:border-purple-400 dark:focus:bg-gray-700"
+      >
+        <option value="all" selected={!category || category === 'all'}> Todas las categorías </option>
+        {
+          NEWS_CATEGORIES.map((cat) => (
+            <option value={cat.value} selected={category === cat.value}>
+              {cat.emoji} {cat.label}
+            </option>
+          ))
+        }
+      </select>
+    </div>
+
+    <div slot="activeFilters">
+      {
+        search && (
+          <span class="inline-flex items-center gap-2 rounded-full bg-emerald-100 px-4 py-2 text-sm font-medium text-emerald-800 shadow-sm transition-all duration-200 hover:bg-emerald-200 hover:shadow-md dark:bg-emerald-900/30 dark:text-emerald-300 dark:hover:bg-emerald-900/40">
+            Búsqueda: "{search}"
+            <button
+              type="button"
+              onclick="document.getElementById('search').value=''; document.querySelector('form').submit();"
+              class="ml-1 rounded-full p-1 text-emerald-600 transition-colors hover:bg-emerald-300/30 dark:text-emerald-400 dark:hover:bg-emerald-800/40"
+              aria-label="Remover búsqueda"
+            >
+              <svg class="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </span>
+        )
+      }
+      {
+        category && category !== 'all' && (
+          <span class="inline-flex items-center gap-2 rounded-full bg-purple-100 px-4 py-2 text-sm font-medium text-purple-800 shadow-sm transition-all duration-200 hover:bg-purple-200 hover:shadow-md dark:bg-purple-900/30 dark:text-purple-300 dark:hover:bg-purple-900/40">
+            {getNewsCategoryLabel(category)}
+            <button
+              type="button"
+              onclick="document.getElementById('category').value='all'; document.querySelector('form').submit();"
+              class="ml-1 rounded-full p-1 text-purple-600 transition-colors hover:bg-purple-300/30 dark:text-purple-400 dark:hover:bg-purple-800/40"
+              aria-label="Remover filtro de categoría"
+            >
+              <svg class="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </span>
+        )
+      }
+    </div>
+  </FilterSection>
+</div>
+
+<!-- Mobile Filters with React/shadcn -->
+<NewsFiltersMobile client:load initialSearch={search} initialCategory={category} />

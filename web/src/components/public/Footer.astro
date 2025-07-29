@@ -1,0 +1,81 @@
+---
+const currentYear = new Date().getFullYear()
+const logo = import.meta.env.PUBLIC_R2_PUBLIC_URL + '/colored_logo.svg'
+---
+
+<footer class="bg-gray-900 text-white">
+  <div class="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+    <div class="grid grid-cols-1 gap-8 md:grid-cols-4">
+      <!-- About section -->
+      <div class="col-span-1 md:col-span-2">
+        <div class="mb-4">
+          <div class="flex flex-col">
+            <span class="text-lg font-bold text-white">Guía de Campo</span>
+            <div class="flex items-center gap-2">
+              <span class="text-xs text-gray-400">un servicio de</span>
+              <img src={logo} alt="Wildtrip" class="h-4 w-auto" />
+            </div>
+          </div>
+        </div>
+        <p class="text-sm text-gray-400">
+          Tu guía completa sobre la biodiversidad y áreas protegidas de Chile. Descubre, aprende y contribuye a la
+          conservación de nuestro patrimonio natural.
+        </p>
+      </div>
+
+      <!-- Quick Links -->
+      <div>
+        <h3 class="mb-4 text-lg font-semibold">Enlaces Rápidos</h3>
+        <ul class="space-y-2">
+          <li>
+            <a href="/content/species" class="text-sm text-gray-400 transition-colors hover:text-white"> Especies </a>
+          </li>
+          <li>
+            <a href="/content/protected-areas" class="text-sm text-gray-400 transition-colors hover:text-white">
+              Áreas Protegidas
+            </a>
+          </li>
+          <li>
+            <a href="/content/news" class="text-sm text-gray-400 transition-colors hover:text-white"> Noticias </a>
+          </li>
+          <li>
+            <a href="/acerca-de" class="text-sm text-gray-400 transition-colors hover:text-white"> Acerca de </a>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Contact Info -->
+      <div>
+        <h3 class="mb-4 text-lg font-semibold">Contacto</h3>
+        <ul class="space-y-2 text-sm text-gray-400">
+          <li>
+            <a href="mailto:info@wildtrip.cl" class="transition-colors hover:text-white"> info@wildtrip.cl </a>
+          </li>
+          <li>
+            <a
+              href="https://wildtrip.cl"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="transition-colors hover:text-white"
+            >
+              wildtrip.cl
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Bottom section -->
+    <div class="mt-8 border-t border-gray-800 pt-8">
+      <div class="flex flex-col items-center justify-between md:flex-row">
+        <p class="text-sm text-gray-400">
+          © {currentYear} WildTrip. Todos los derechos reservados.
+        </p>
+        <div class="mt-4 flex space-x-6 md:mt-0">
+          <a href="/privacidad" class="text-sm text-gray-400 transition-colors hover:text-white"> Privacidad </a>
+          <a href="/terminos" class="text-sm text-gray-400 transition-colors hover:text-white"> Términos </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</footer>

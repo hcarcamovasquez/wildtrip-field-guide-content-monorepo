@@ -1,0 +1,46 @@
+---
+import Footer from '../../../components/public/Footer.astro'
+import Header from '../../../components/public/Header.astro'
+import NewsContent from '../../../components/public/news/NewsContent.astro'
+import NewsFeaturedImage from '../../../components/public/news/NewsFeaturedImage.astro'
+import NewsHeader from '../../../components/public/news/NewsHeader.astro'
+import NewsShare from '../../../components/public/news/NewsShare.astro'
+import NewsTags from '../../../components/public/news/NewsTags.astro'
+import Layout from '../../../layouts/Layout.astro'
+import { publicNewsRepository } from '../../../lib/public/repositories'
+
+const { slug } = Astro.params
+
+if (!slug) {
+  return Astro.redirect('/404')
+}
+
+// Fetch news data using repository
+const newsData = await publicNewsRepository.findOneBySlug(slug)
+
+if (!newsData) {
+  return Astro.redirect('/404')
+}
+---
+
+<Layout title={newsData.title} description={newsData.summary}>
+  <Header slot="header" />
+  <Footer slot="footer" />
+  <article class="mx-auto max-w-4xl bg-white px-4 py-8 sm:px-6 lg:px-8 dark:bg-gray-900">
+    <NewsHeader
+      title={newsData.title}
+      category={newsData.category}
+      author={newsData.author}
+      publishedAt={newsData.publishedAt}
+      summary={newsData.summary}
+    />
+
+    <NewsFeaturedImage mainImageUrl={newsData.mainImageUrl} title={newsData.title} />
+
+    <NewsContent content={newsData.content} />
+
+    <NewsTags tags={newsData.tags} />
+
+    <NewsShare title={newsData.title} url={Astro.url} />
+  </article>
+</Layout>

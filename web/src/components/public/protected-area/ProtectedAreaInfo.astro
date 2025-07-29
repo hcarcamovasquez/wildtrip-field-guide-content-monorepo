@@ -1,0 +1,103 @@
+---
+import { PROTECTED_AREA_TYPES } from '../../../lib/utils/protected-area-types'
+import { getRegionLabel } from '../../../lib/utils/chile-regions'
+
+export interface Props {
+  region?: string | null
+  area?: number
+  creationYear?: number
+  type?: string
+  visitorInformation?: {
+    schedule?: string
+    contact?: string
+    entranceFee?: string
+    facilities?: string[]
+  } | null
+}
+
+const { region, area, creationYear, type, visitorInformation } = Astro.props
+---
+
+<section class="mb-8">
+  <h2 class="mb-4 text-2xl font-bold text-gray-900 dark:text-white">Información General</h2>
+  <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
+    <div class="rounded-lg bg-gray-50 p-6 dark:bg-gray-800">
+      <h3 class="mb-4 font-semibold text-gray-900 dark:text-white">Detalles</h3>
+      <dl class="space-y-2 text-sm text-gray-700 dark:text-gray-300">
+        {
+          region && (
+            <div>
+              <dt class="inline font-medium text-gray-900 dark:text-white">Región:</dt>{' '}
+              <dd class="inline">{getRegionLabel(region)}</dd>
+            </div>
+          )
+        }
+        {
+          area && (
+            <div>
+              <dt class="inline font-medium text-gray-900 dark:text-white">Superficie:</dt>{' '}
+              <dd class="inline">{area.toLocaleString()} hectáreas</dd>
+            </div>
+          )
+        }
+        {
+          creationYear && (
+            <div>
+              <dt class="inline font-medium text-gray-900 dark:text-white">Año de creación:</dt>{' '}
+              <dd class="inline">{creationYear}</dd>
+            </div>
+          )
+        }
+        {
+          type && (
+            <div>
+              <dt class="inline font-medium text-gray-900 dark:text-white">Tipo:</dt>{' '}
+              <dd class="inline">{PROTECTED_AREA_TYPES.find((t) => t.value === type)?.label || 'Área Protegida'}</dd>
+            </div>
+          )
+        }
+      </dl>
+    </div>
+
+    {
+      visitorInformation && (
+        <div class="rounded-lg bg-blue-50 p-6 dark:bg-blue-900/20">
+          <h3 class="mb-4 font-semibold text-gray-900 dark:text-white">Información para Visitantes</h3>
+          <dl class="space-y-2 text-sm text-gray-700 dark:text-gray-300">
+            {visitorInformation.schedule && (
+              <div>
+                <dt class="inline font-medium text-gray-900 dark:text-white">Horario:</dt>{' '}
+                <dd class="inline">{visitorInformation.schedule}</dd>
+              </div>
+            )}
+            {visitorInformation.contact && (
+              <div>
+                <dt class="inline font-medium text-gray-900 dark:text-white">Contacto:</dt>{' '}
+                <dd class="inline">{visitorInformation.contact}</dd>
+              </div>
+            )}
+            {visitorInformation.entranceFee && (
+              <div>
+                <dt class="inline font-medium text-gray-900 dark:text-white">Tarifas:</dt>{' '}
+                <dd class="inline">{visitorInformation.entranceFee}</dd>
+              </div>
+            )}
+          </dl>
+
+          {visitorInformation.facilities && visitorInformation.facilities.length > 0 && (
+            <div class="mt-4">
+              <dt class="mb-2 font-medium text-gray-900 dark:text-white">Facilidades:</dt>
+              <div class="flex flex-wrap gap-1">
+                {visitorInformation.facilities.map((facility) => (
+                  <span class="rounded bg-blue-100 px-2 py-1 text-xs text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">
+                    {facility}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )
+    }
+  </div>
+</section>

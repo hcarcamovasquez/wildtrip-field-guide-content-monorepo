@@ -1,0 +1,26 @@
+---
+import type { PublicDetailSpecie } from '../../../lib/public/repositories/SpeciesRepository'
+
+interface Props {
+  species: PublicDetailSpecie
+}
+
+const { species } = Astro.props
+---
+
+{
+  species.images && species.images.length > 0 && (
+    <section class="mb-8">
+      <h2 class="mb-4 text-2xl font-bold text-gray-900 dark:text-white">Galería</h2>
+      <div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+        {species.images.map((image) => (
+          <img
+            src={image}
+            alt={`${species.commonName} - Imagen de galería`}
+            class="h-48 w-full rounded-lg object-cover shadow-md transition-shadow hover:shadow-lg"
+          />
+        ))}
+      </div>
+    </section>
+  )
+}

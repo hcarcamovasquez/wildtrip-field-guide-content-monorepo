@@ -1,0 +1,192 @@
+---
+import { SignIn } from '@clerk/astro/components'
+
+import BookOpen from '../../components/public/icons/BookOpen.astro'
+import CheckCircle from '../../components/public/icons/CheckCircle.astro'
+import ChevronLeft from '../../components/public/icons/ChevronLeft.astro'
+import Users from '../../components/public/icons/Users.astro'
+import AuthLayout from '../../layouts/AuthLayout.astro'
+---
+
+<AuthLayout title="Iniciar sesión">
+  <div class="relative min-h-screen overflow-hidden bg-gradient-to-br from-green-50 via-white to-blue-50">
+    <!-- Animated background elements - Desktop only -->
+    <div class="absolute inset-0 hidden overflow-hidden lg:block">
+      <!-- Gradient orbs - más grandes y visibles -->
+      <div
+        class="absolute -top-48 -left-48 h-[600px] w-[600px] animate-pulse rounded-full bg-gradient-to-br from-green-400/30 to-transparent blur-3xl"
+      >
+      </div>
+      <div
+        class="absolute -right-48 -bottom-48 h-[600px] w-[600px] animate-pulse rounded-full bg-gradient-to-tl from-blue-400/30 to-transparent blur-3xl"
+      >
+      </div>
+      <div
+        class="absolute top-1/2 left-1/2 h-[500px] w-[500px] -translate-x-1/2 -translate-y-1/2 animate-pulse rounded-full bg-gradient-to-br from-green-300/20 to-blue-300/20 blur-3xl"
+      >
+      </div>
+
+      <!-- Grid pattern con mejor contraste -->
+      <div
+        class="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg%20width%3D%2260%22%20height%3D%2260%22%20viewBox%3D%220%200%2060%2060%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cpath%20d%3D%22M30%200v60M0%2030h60%22%20stroke%3D%22%2310b981%22%20stroke-width%3D%220.5%22%20opacity%3D%220.1%22%2F%3E%3C%2Fsvg%3E')]"
+      >
+      </div>
+    </div>
+
+    <!-- Top navigation bar -->
+    <div class="absolute top-4 right-4 left-4 z-10 flex items-center justify-between">
+      <!-- Back button -->
+      <a
+        href="/"
+        class="inline-flex h-10 items-center justify-center rounded-lg border border-gray-300 bg-white px-4 transition-colors hover:bg-gray-100"
+      >
+        <ChevronLeft class="mr-2 h-4 w-4 text-gray-600" />
+        <span class="text-sm font-medium text-gray-600">Volver</span>
+      </a>
+    </div>
+
+    <!-- Content -->
+    <div class="relative flex min-h-screen">
+      <!-- Left side - Hidden on mobile, visible on lg+ -->
+      <div class="hidden lg:flex lg:flex-1 lg:items-center lg:justify-center lg:px-8">
+        <div class="max-w-lg translate-x-[-20px] opacity-0 transition-all duration-700" id="left-content">
+          <!-- Logo and welcome message -->
+          <div class="mb-8">
+            <div
+              class="mb-6 flex h-24 w-24 items-center justify-center rounded-3xl bg-gradient-to-br from-green-400 to-green-600 shadow-2xl shadow-green-400/30"
+            >
+              <BookOpen class="h-14 w-14 text-white" />
+            </div>
+            <h1 class="text-4xl font-bold text-gray-900">Bienvenido de vuelta</h1>
+            <p class="mt-4 text-lg text-gray-600">
+              Ingresa a tu cuenta para continuar explorando la biodiversidad de nuestro planeta.
+            </p>
+          </div>
+
+          <!-- Features list -->
+          <div class="space-y-4">
+            <div class="flex items-start space-x-3">
+              <div class="flex-shrink-0">
+                <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-green-100">
+                  <CheckCircle class="h-6 w-6 text-green-600" />
+                </div>
+              </div>
+              <div>
+                <h3 class="font-medium text-gray-900">Acceso completo</h3>
+                <p class="text-sm text-gray-600">Explora todas las especies y áreas protegidas</p>
+              </div>
+            </div>
+            <div class="flex items-start space-x-3">
+              <div class="flex-shrink-0">
+                <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-100">
+                  <BookOpen class="h-6 w-6 text-blue-600" />
+                </div>
+              </div>
+              <div>
+                <h3 class="font-medium text-gray-900">Contenido educativo</h3>
+                <p class="text-sm text-gray-600">Aprende con recursos actualizados</p>
+              </div>
+            </div>
+            <div class="flex items-start space-x-3">
+              <div class="flex-shrink-0">
+                <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-purple-100">
+                  <Users class="h-6 w-6 text-purple-600" />
+                </div>
+              </div>
+              <div>
+                <h3 class="font-medium text-gray-900">Comunidad activa</h3>
+                <p class="text-sm text-gray-600">Conecta con otros exploradores</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right side - Full width on mobile, half on desktop -->
+      <div class="flex flex-1 items-center justify-center px-4 py-12 lg:w-1/2 lg:flex-initial">
+        <div class="mt-1 w-full max-w-md">
+          <!-- Clerk SignIn component -->
+          <div class="translate-y-4 opacity-0 transition-all duration-500" id="sign-in-content">
+            <SignIn
+              path="/sign-in"
+              routing="path"
+              signUpUrl="/sign-up"
+              fallbackRedirectUrl="/"
+              appearance={{
+                elements: {
+                  formButtonPrimary: 'bg-emerald-600 hover:bg-emerald-700',
+                  footerActionLink: 'text-emerald-600 hover:text-emerald-700',
+                  card: 'bg-white shadow-xl',
+                  headerTitle: 'text-gray-900',
+                  headerSubtitle: 'text-gray-600',
+                  socialButtonsBlockButton: 'bg-white text-gray-900 border-gray-300',
+                  formFieldLabel: 'text-gray-700',
+                  formFieldInput: 'bg-white border-gray-300 text-gray-900',
+                },
+              }}
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom decoration - Desktop only -->
+    <div
+      class="absolute right-0 bottom-0 left-0 hidden h-px bg-gradient-to-r from-transparent via-green-400/50 to-transparent lg:block"
+    >
+    </div>
+  </div>
+
+  <style>
+    @keyframes pulse {
+      0%,
+      100% {
+        opacity: 0.3;
+      }
+      50% {
+        opacity: 0.5;
+      }
+    }
+
+    @keyframes float {
+      0%,
+      100% {
+        transform: translateY(0);
+      }
+      50% {
+        transform: translateY(-20px);
+      }
+    }
+
+    @keyframes float-delayed {
+      0%,
+      100% {
+        transform: translateY(0);
+      }
+      50% {
+        transform: translateY(-15px);
+      }
+    }
+
+    .animate-pulse {
+      animation: pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+
+    .animate-float {
+      animation: float 6s ease-in-out infinite;
+    }
+
+    .animate-float-delayed {
+      animation: float-delayed 6s ease-in-out infinite;
+      animation-delay: 2s;
+    }
+  </style>
+
+  <script>
+    // Animate content on load
+    setTimeout(() => {
+      document.getElementById('left-content')?.classList.remove('opacity-0', 'translate-x-[-20px]')
+      document.getElementById('sign-in-content')?.classList.remove('opacity-0', 'translate-y-4')
+    }, 100)
+  </script>
+</AuthLayout>

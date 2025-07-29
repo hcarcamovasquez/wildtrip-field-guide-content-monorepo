@@ -1,0 +1,35 @@
+---
+import { renderContentBlock } from '../../../lib/utils/render-content'
+import type { RichContent } from '../../../lib/db/schema'
+
+export interface Props {
+  content?: RichContent | null
+}
+
+const { content } = Astro.props
+---
+
+<style>
+  /* Base container */
+  .news-content {
+    font-size: 1.125rem;
+    line-height: 1.75;
+  }
+
+  /* Clearfix para floats */
+  .news-content::after {
+    content: '';
+    display: table;
+    clear: both;
+  }
+</style>
+
+{
+  content && (
+    <div class="news-content">
+      {content.blocks.map((block) => (
+        <Fragment set:html={renderContentBlock(block)} />
+      ))}
+    </div>
+  )
+}

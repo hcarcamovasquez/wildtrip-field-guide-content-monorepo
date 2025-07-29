@@ -1,0 +1,94 @@
+---
+import Footer from '../../../components/public/Footer.astro'
+import Header from '../../../components/public/Header.astro'
+import PageHeader from '../../../components/public/PageHeader.astro'
+import Pagination from '../../../components/public/Pagination.astro'
+import SpeciesFilters from '../../../components/public/species/SpeciesFilters.astro'
+import SpeciesGrid from '../../../components/public/species/SpeciesGrid.astro'
+import Layout from '../../../layouts/Layout.astro'
+import { publicSpeciesRepository } from '../../../lib/public/repositories'
+
+// Get URL parameters
+const url = new URL(Astro.request.url)
+const searchParams = url.searchParams
+
+const page = Math.max(1, parseInt(searchParams.get('page') || '1'))
+const search = searchParams.get('search') || ''
+const conservationStatus = searchParams.get('status') || ''
+const mainGroup = searchParams.get('group') || ''
+
+// Use repository to fetch data
+const { data: allSpecies, pagination } = await publicSpeciesRepository.findAll({
+  page,
+  search,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  conservationStatus: conservationStatus as any,
+  mainGroup,
+})
+
+const { total: count, totalPages } = pagination
+
+// Helper function to build URL with params
+function buildUrl(params: Record<string, string | number>) {
+  const newParams = new URLSearchParams()
+
+  // Keep existing params
+  if (search) newParams.set('search', search)
+  if (conservationStatus && conservationStatus !== 'all') newParams.set('status', conservationStatus)
+  if (mainGroup && mainGroup !== 'all') newParams.set('group', mainGroup)
+
+  // Override with new params
+  Object.entries(params).forEach(([key, value]) => {
+    if (value && value !== 'all' && value !== '') {
+      newParams.set(key, value.toString())
+    } else {
+      newParams.delete(key)
+    }
+  })
+
+  const queryString = newParams.toString()
+  return queryString ? `?${queryString}` : ''
+}
+---
+
+<Layout title="Especies de Chile - Guía de Campo Chile">
+  <Header slot="header" />
+  <Footer slot="footer" />
+
+  <PageHeader title="Especies de Chile" subtitle="Explora la biodiversidad de nuestro país" iconText="Biodiversidad">
+    <!-- Filters -->
+    <SpeciesFilters search={search} conservationStatus={conservationStatus} mainGroup={mainGroup} />
+
+    <!-- Results count -->
+    <div class="mb-4 text-sm text-gray-600 dark:text-gray-400">
+      {
+        count > 0 ? (
+          <span>
+            Mostrando {(page - 1) * 12 + 1} - {Math.min(page * 12, count)} de {count} especies
+          </span>
+        ) : (
+          <span>No se encontraron especies</span>
+        )
+      }
+    </div>
+
+    {
+      allSpecies.length === 0 ? (
+        <div class="py-12 text-center">
+          <p class="text-lg text-gray-500 dark:text-gray-400">
+            {search || conservationStatus || mainGroup
+              ? 'No se encontraron especies con los filtros aplicados.'
+              : 'No hay especies disponibles en este momento.'}
+          </p>
+        </div>
+      ) : (
+        <>
+          <SpeciesGrid species={allSpecies} />
+
+          {/* Pagination */}
+          <Pagination currentPage={page} totalPages={totalPages} buildUrl={buildUrl} />
+        </>
+      )
+    }
+  </PageHeader>
+</Layout>

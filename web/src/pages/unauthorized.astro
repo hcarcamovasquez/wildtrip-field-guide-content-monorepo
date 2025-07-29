@@ -1,0 +1,188 @@
+---
+import { SignedIn, SignedOut } from '@clerk/astro/components'
+
+import AlertTriangle from '../components/public/icons/AlertTriangle.astro'
+import Home from '../components/public/icons/Home.astro'
+import Layout from '../layouts/Layout.astro'
+import { canAccessRoute, type Role } from '../lib/utils/permissions'
+
+const user = Astro.locals.user
+const userRole = user?.role as Role | undefined
+---
+
+<Layout title="Acceso denegado - Panel de Administración">
+  <body class="bg-gray-50 text-gray-900 dark:bg-gray-900 dark:text-gray-100">
+    <script>
+      if (
+        localStorage.theme === 'dark' ||
+        (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)
+      ) {
+        document.documentElement.classList.add('dark')
+      } else {
+        document.documentElement.classList.remove('dark')
+      }
+    </script>
+    <div class="flex min-h-screen flex-col items-center justify-center px-4 sm:px-6 lg:px-8">
+      <div class="w-full max-w-md space-y-8 text-center">
+        <div>
+          <div
+            class="bounce-icon mx-auto flex h-24 w-24 items-center justify-center rounded-full bg-red-100 dark:bg-red-900/20"
+          >
+            <AlertTriangle class="h-12 w-12 text-red-600 dark:text-red-400" />
+          </div>
+          <div class="mt-6">
+            <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Acceso no autorizado</h1>
+            <p class="mt-2 text-lg text-gray-600 dark:text-gray-400">No tienes permisos para acceder a esta página.</p>
+          </div>
+        </div>
+
+        <SignedIn>
+          {
+            user && (
+              <div class="rounded-lg border border-yellow-200 bg-yellow-50 p-4 dark:border-yellow-800 dark:bg-yellow-900/20">
+                <div class="flex items-center">
+                  <div class="flex-shrink-0">
+                    <AlertTriangle class="h-5 w-5 text-yellow-400" />
+                  </div>
+                  <div class="ml-3">
+                    <p class="mt-1 text-xs text-yellow-600 dark:text-yellow-300">
+                      Necesitas permisos adicionales para acceder a esta sección.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )
+          }
+        </SignedIn>
+
+        <div class="space-y-4">
+          <div>
+            <a
+              href="/"
+              class="inline-flex items-center rounded-md border border-transparent bg-primary px-6 py-3 text-base font-medium text-primary-foreground transition-colors hover:bg-primary/90 focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:outline-none"
+            >
+              <Home class="mr-2 h-5 w-5" />
+              Volver al inicio
+            </a>
+          </div>
+
+          <SignedIn>
+            {
+              userRole && canAccessRoute(userRole, '/manage') && (
+                <div>
+                  <a
+                    href="/manage"
+                    class="inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-base font-medium text-gray-700 transition-colors hover:bg-gray-50 focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:outline-none dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
+                  >
+                    <svg class="mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+                      />
+                    </svg>
+                    Ir al panel de gestión
+                  </a>
+                </div>
+              )
+            }
+          </SignedIn>
+
+          <SignedOut>
+            <div class="rounded-lg border border-blue-200 bg-blue-50 p-4 dark:border-blue-800 dark:bg-blue-900/20">
+              <div class="flex items-center">
+                <div class="flex-shrink-0">
+                  <svg class="h-5 w-5 text-blue-400" fill="currentColor" viewBox="0 0 20 20">
+                    <path
+                      fill-rule="evenodd"
+                      d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+                      clip-rule="evenodd"></path>
+                  </svg>
+                </div>
+                <div class="ml-3">
+                  <p class="text-sm text-blue-800 dark:text-blue-200">
+                    Inicia sesión para acceder a contenido adicional.
+                  </p>
+                </div>
+              </div>
+              <div class="mt-4">
+                <a
+                  href="/sign-in"
+                  class="inline-flex items-center rounded-md border border-blue-300 bg-blue-50 px-4 py-2 text-sm font-medium text-blue-700 transition-colors hover:bg-blue-100 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none dark:border-blue-600 dark:bg-blue-900/20 dark:text-blue-300 dark:hover:bg-blue-900/40"
+                >
+                  <svg class="mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"
+                    ></path>
+                  </svg>
+                  Iniciar sesión
+                </a>
+              </div>
+            </div>
+          </SignedOut>
+        </div>
+
+        <div class="border-t border-gray-200 pt-6 dark:border-gray-700">
+          <p class="mb-4 text-sm text-gray-500 dark:text-gray-400">
+            Mientras tanto, puedes explorar nuestro contenido público:
+          </p>
+          <div class="flex flex-wrap justify-center gap-2">
+            <a
+              href="/content/species"
+              class="inline-flex items-center rounded-full bg-gray-100 px-3 py-1 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
+            >
+              🦋 Especies
+            </a>
+            <a
+              href="/content/protected-areas"
+              class="inline-flex items-center rounded-full bg-gray-100 px-3 py-1 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
+            >
+              🏔️ Áreas Protegidas
+            </a>
+            <a
+              href="/content/news"
+              class="inline-flex items-center rounded-full bg-gray-100 px-3 py-1 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
+            >
+              📰 Noticias
+            </a>
+          </div>
+        </div>
+
+        <div class="mt-8 space-y-2 text-xs text-gray-400 dark:text-gray-500">
+          <p>¿Necesitas acceso a esta página?</p>
+          <p>Contacta con el administrador del sitio para solicitar permisos.</p>
+        </div>
+      </div>
+    </div>
+  </body>
+</Layout>
+
+<style>
+  .bounce-icon {
+    animation: bounce 1s infinite;
+  }
+
+  @keyframes bounce {
+    0%,
+    20%,
+    53%,
+    80%,
+    100% {
+      transform: translate3d(0, 0, 0);
+    }
+    40%,
+    43% {
+      transform: translate3d(0, -8px, 0);
+    }
+    70% {
+      transform: translate3d(0, -4px, 0);
+    }
+    90% {
+      transform: translate3d(0, -2px, 0);
+    }
+  }
+</style>

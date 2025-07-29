@@ -1,0 +1,89 @@
+---
+import PrivateHeader from '../../../../components/manage/PrivateHeader.astro'
+import ProtectedAreaForm from '../../../../components/manage/ProtectedAreaForm.tsx'
+import Layout from '../../../../layouts/Layout.astro'
+import { ManageProtectedAreaRepository } from '../../../../lib/private/repositories/ManageProtectedAreaRepository'
+import { canAccessRoute, type Role } from '../../../../lib/utils/permissions'
+
+const { id } = Astro.params
+
+if (!id || isNaN(parseInt(id))) {
+  return Astro.redirect('/404')
+}
+
+const user = Astro.locals.user
+if (!user) {
+  return Astro.redirect('/sign-in')
+}
+
+if (!canAccessRoute(user.role as Role, Astro.url.pathname)) {
+  return Astro.redirect('/unauthorized')
+}
+
+// Fetch protected area data
+let area = await ManageProtectedAreaRepository.findById(parseInt(id))
+
+// If area not found and it's a new creation, wait and retry
+const url = new URL(Astro.request.url)
+const isNew = url.searchParams.get('new') === 'true'
+
+if (!area && isNew) {
+  // Wait 2 seconds and retry
+  await new Promise((resolve) => setTimeout(resolve, 2000))
+  area = await ManageProtectedAreaRepository.findById(parseInt(id))
+}
+
+if (!area) {
+  return Astro.redirect('/manage/protected-areas')
+}
+
+// Prepare data for the form component
+const initialData = {
+  name: area.name,
+  slug: area.slug,
+  type: area.type || 'other',
+  status: area.status || 'draft',
+  area: area.area,
+  creationYear: area.creationYear,
+  description: area.description,
+  ecosystems: area.ecosystems,
+  region: area.region,
+  visitorInformation: area.visitorInformation,
+  richContent: area.richContent,
+  mainImage: area.mainImage,
+  galleryImages: area.galleryImages,
+  // Draft and lock fields
+  hasDraft: area.hasDraft,
+  draftData: area.draftData || {},
+  draftCreatedAt: area.draftCreatedAt?.toISOString(),
+  lockedBy: area.lockedBy?.toString() || undefined,
+  lockExpiresAt: area.lockExpiresAt?.toISOString(),
+  currentUserId: user.id.toString(),
+  lockOwner: area.lockOwner
+    ? {
+        id: area.lockOwner.id.toString(),
+        name: area.lockOwner.fullName || area.lockOwner.username || area.lockOwner.email,
+      }
+    : undefined,
+}
+---
+
+<Layout title={`Editar: ${area.name}`}>
+  <PrivateHeader slot="header" />
+  <div class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+    <div class="mb-8 border-b pb-6">
+      <h1 class="text-3xl font-bold">
+        {area?.richContent?.blocks?.length && area.richContent.blocks.length > 0 ? 'Editar' : 'Completar'} Área Protegida
+      </h1>
+      <p class="mt-2 text-muted-foreground">{area?.name}</p>
+    </div>
+
+    <ProtectedAreaForm
+      initialData={initialData}
+      isEditing={true}
+      areaId={parseInt(id)}
+      currentUserId={user.id.toString()}
+      client:load
+    />
+  </div>
+</Layout>

@@ -1,0 +1,10 @@
+---
+import PublicHeader from './PublicHeader.astro'
+import PrivateHeader from '../manage/PrivateHeader.astro'
+
+// Get current path to determine which header to show
+const currentPath = Astro.url.pathname
+const isManageSection = currentPath.startsWith('/manage')
+---
+
+{isManageSection ? <PrivateHeader /> : <PublicHeader />}

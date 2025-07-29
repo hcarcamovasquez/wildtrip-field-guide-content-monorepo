@@ -1,0 +1,26 @@
+---
+import Footer from '../../../components/public/Footer.astro'
+import Header from '../../../components/public/Header.astro'
+import SpeciesDetail from '../../../components/public/species/SpeciesDetail.astro'
+import Layout from '../../../layouts/Layout.astro'
+import { publicSpeciesRepository } from '../../../lib/public/repositories'
+
+const { slug } = Astro.params
+
+if (!slug) {
+  return Astro.redirect('/404')
+}
+
+// Fetch species data with base content
+const speciesData = await publicSpeciesRepository.findOneBySlug(slug)
+
+if (!speciesData) {
+  return Astro.redirect('/404')
+}
+---
+
+<Layout title={speciesData.commonName} description={speciesData.scientificName}>
+  <Header slot="header" />
+  <Footer slot="footer" />
+  <SpeciesDetail species={speciesData} />
+</Layout>

@@ -1,0 +1,54 @@
+---
+import ProtectedAreaCard from './ProtectedAreaCard.astro'
+import ProtectedAreaPagination from './ProtectedAreaPagination.astro'
+import type { PublicProtectedArea } from '../../../lib/public/repositories'
+
+export interface Props {
+  areas: PublicProtectedArea[]
+  pagination: {
+    page: number
+    totalPages: number
+    total: number
+  }
+  buildUrl: (params: Record<string, string | number>) => string
+}
+
+const { areas, pagination, buildUrl } = Astro.props
+const { page, totalPages, total: count } = pagination
+---
+
+<>
+  <!-- Results count -->
+  <div class="mb-4 text-sm text-gray-600 dark:text-gray-400">
+    {
+      count > 0 ? (
+        <span>
+          Mostrando {(page - 1) * 12 + 1} - {Math.min(page * 12, count)} de {count} áreas protegidas
+        </span>
+      ) : (
+        <span>No se encontraron áreas protegidas</span>
+      )
+    }
+  </div>
+
+  {
+    areas.length === 0 ? (
+      <div class="py-12 text-center">
+        <p class="text-lg text-gray-500 dark:text-gray-400">
+          No se encontraron áreas protegidas con los filtros aplicados.
+        </p>
+      </div>
+    ) : (
+      <>
+        <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          {areas.map((area) => (
+            <ProtectedAreaCard area={area} />
+          ))}
+        </div>
+
+        {/* Pagination */}
+        {totalPages > 1 && <ProtectedAreaPagination page={page} totalPages={totalPages} buildUrl={buildUrl} />}
+      </>
+    )
+  }
+</>

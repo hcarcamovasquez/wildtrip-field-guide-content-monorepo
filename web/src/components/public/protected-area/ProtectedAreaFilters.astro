@@ -1,0 +1,133 @@
+---
+import FilterSection from '../FilterSection.astro'
+import { ProtectedAreaFiltersMobile } from './ProtectedAreaFiltersMobile'
+import { CHILE_REGIONS, getRegionWithNumber } from '../../../lib/utils/chile-regions'
+import { PROTECTED_AREA_TYPES, getProtectedAreaTypeLabel } from '../../../lib/utils/protected-area-types'
+
+export interface Props {
+  search?: string
+  type?: string
+  region?: string
+  uniqueRegions: string[]
+}
+
+const { search = '', type = 'all', region = 'all', uniqueRegions } = Astro.props
+
+const hasActiveFilters = search || (type && type !== 'all') || (region && region !== 'all')
+---
+
+<!-- Desktop Filters -->
+<div class="hidden lg:block">
+  <FilterSection
+    searchValue={search}
+    searchPlaceholder="Buscar por nombre o descripción..."
+    searchLabel="Buscar áreas protegidas"
+    showActiveFilters={!!hasActiveFilters}
+    formAction="protected-areas"
+  >
+    <div slot="filters" class="flex gap-4">
+      <div class="flex-1 lg:min-w-[200px]">
+        <label for="type" class="mb-3 block text-sm font-semibold text-gray-700 dark:text-gray-300">
+          🌲 Tipo de área
+        </label>
+        <select
+          id="type"
+          name="type"
+          class="w-full rounded-xl border-2 border-gray-200 bg-gray-50/50 px-4 py-3 text-base transition-all duration-300 hover:border-gray-300 focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-500/10 focus:outline-none dark:border-gray-600 dark:bg-gray-700/50 dark:text-white dark:hover:border-gray-500 dark:focus:border-blue-400 dark:focus:bg-gray-700"
+        >
+          <option value="all" selected={!type || type === 'all'}> Todos los tipos </option>
+          {
+            PROTECTED_AREA_TYPES.map((areaType) => (
+              <option value={areaType.value} selected={type === areaType.value}>
+                {areaType.emoji} {areaType.label}
+              </option>
+            ))
+          }
+        </select>
+      </div>
+
+      <div class="flex-1 lg:min-w-[200px]">
+        <label for="region" class="mb-3 block text-sm font-semibold text-gray-700 dark:text-gray-300">
+          📍 Región
+        </label>
+        <select
+          id="region"
+          name="region"
+          class="w-full rounded-xl border-2 border-gray-200 bg-gray-50/50 px-4 py-3 text-base transition-all duration-300 hover:border-gray-300 focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-500/10 focus:outline-none dark:border-gray-600 dark:bg-gray-700/50 dark:text-white dark:hover:border-gray-500 dark:focus:border-blue-400 dark:focus:bg-gray-700"
+        >
+          <option value="all" selected={!region || region === 'all'}> Todas las regiones </option>
+          {
+            CHILE_REGIONS.map((r) => (
+              <option value={r.value} selected={region === r.value}>
+                {r.romanNumeral} - {r.label}
+              </option>
+            ))
+          }
+        </select>
+      </div>
+    </div>
+
+    <div slot="activeFilters">
+      {
+        search && (
+          <span class="inline-flex items-center gap-2 rounded-full bg-emerald-100 px-4 py-2 text-sm font-medium text-emerald-800 shadow-sm transition-all duration-200 hover:bg-emerald-200 hover:shadow-md dark:bg-emerald-900/30 dark:text-emerald-300 dark:hover:bg-emerald-900/40">
+            Búsqueda: "{search}"
+            <button
+              type="button"
+              onclick="document.getElementById('search').value=''; document.querySelector('form').submit();"
+              class="ml-1 rounded-full p-1 text-emerald-600 transition-colors hover:bg-emerald-300/30 dark:text-emerald-400 dark:hover:bg-emerald-800/40"
+              aria-label="Remover búsqueda"
+            >
+              <svg class="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </span>
+        )
+      }
+      {
+        type && type !== 'all' && (
+          <span class="inline-flex items-center gap-2 rounded-full bg-blue-100 px-4 py-2 text-sm font-medium text-blue-800 shadow-sm transition-all duration-200 hover:bg-blue-200 hover:shadow-md dark:bg-blue-900/30 dark:text-blue-300 dark:hover:bg-blue-900/40">
+            Tipo: {getProtectedAreaTypeLabel(type)}
+            <button
+              type="button"
+              onclick="document.getElementById('type').value='all'; document.querySelector('form').submit();"
+              class="ml-1 rounded-full p-1 text-blue-600 transition-colors hover:bg-blue-300/30 dark:text-blue-400 dark:hover:bg-blue-800/40"
+              aria-label="Remover filtro de tipo"
+            >
+              <svg class="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </span>
+        )
+      }
+      {
+        region && region !== 'all' && (
+          <span class="inline-flex items-center gap-2 rounded-full bg-purple-100 px-4 py-2 text-sm font-medium text-purple-800 shadow-sm transition-all duration-200 hover:bg-purple-200 hover:shadow-md dark:bg-purple-900/30 dark:text-purple-300 dark:hover:bg-purple-900/40">
+            📍 {getRegionWithNumber(region)}
+            <button
+              type="button"
+              onclick="document.getElementById('region').value='all'; document.querySelector('form').submit();"
+              class="ml-1 rounded-full p-1 text-purple-600 transition-colors hover:bg-purple-300/30 dark:text-purple-400 dark:hover:bg-purple-800/40"
+              aria-label="Remover filtro de región"
+            >
+              <svg class="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </span>
+        )
+      }
+    </div>
+  </FilterSection>
+</div>
+
+<!-- Mobile Filters with React/shadcn -->
+<ProtectedAreaFiltersMobile
+  client:load
+  initialSearch={search}
+  initialType={type}
+  initialRegion={region}
+  uniqueRegions={uniqueRegions}
+/>

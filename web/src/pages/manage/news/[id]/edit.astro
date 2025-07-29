@@ -1,0 +1,79 @@
+---
+import NewsForm from '../../../../components/manage/NewsForm.tsx'
+import PrivateHeader from '../../../../components/manage/PrivateHeader.astro'
+import Layout from '../../../../layouts/Layout.astro'
+import { ManageNewsRepository } from '../../../../lib/private/repositories/ManageNewsRepository'
+import { canAccessRoute, type Role } from '../../../../lib/utils/permissions'
+
+const { id } = Astro.params
+
+if (!id || isNaN(parseInt(id))) {
+  return Astro.redirect('/404')
+}
+
+const user = Astro.locals.user
+if (!user) {
+  return Astro.redirect('/sign-in')
+}
+
+if (!canAccessRoute(user.role as Role, Astro.url.pathname)) {
+  return Astro.redirect('/unauthorized')
+}
+
+// Fetch news data
+let news = await ManageNewsRepository.findById(parseInt(id))
+
+// If news not found and it's a new creation, wait and retry
+const url = new URL(Astro.request.url)
+const isNew = url.searchParams.get('new') === 'true'
+
+if (!news && isNew) {
+  // Wait 2 seconds and retry
+  await new Promise((resolve) => setTimeout(resolve, 2000))
+  news = await ManageNewsRepository.findById(parseInt(id))
+}
+
+if (!news) {
+  return Astro.redirect('/manage/news')
+}
+
+// Prepare data for the form component
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const initialData: any = {
+  title: news.title,
+  slug: news.slug,
+  category: news.category,
+  author: news.author || '',
+  summary: news.summary || '',
+  content: { blocks: news.content?.blocks || [], version: news.content?.version || '1.0' },
+  status: news.status || 'draft',
+  mainImage: news.mainImage || null,
+  // Draft and lock fields
+  hasDraft: news.hasDraft,
+  draftData: news.draftData,
+  draftCreatedAt: news.draftCreatedAt?.toISOString(),
+  lockedBy: news.lockedBy || undefined,
+  lockExpiresAt: news.lockExpiresAt?.toISOString(),
+  currentUserId: user.id,
+  lockOwner: news.lockOwner
+    ? {
+        id: news.lockOwner.id,
+        name: news.lockOwner.fullName || news.lockOwner.username || news.lockOwner.email,
+      }
+    : undefined,
+}
+---
+
+<Layout title={`Editar: ${news.title}`}>
+  <PrivateHeader slot="header" />
+  <div class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+    <div class="mb-8 border-b pb-6">
+      <h1 class="text-3xl font-bold">
+        {news?.content?.blocks?.length && news.content.blocks.length > 0 ? 'Editar' : 'Completar'} Noticia
+      </h1>
+      <p class="mt-2 text-muted-foreground">{news?.title}</p>
+    </div>
+
+    <NewsForm initialData={initialData} isEditing={true} newsId={parseInt(id)} currentUserId={user.id} client:load />
+  </div>
+</Layout>
