@@ -11,7 +11,6 @@ export default () => ({
   },
   clerk: {
     secretKey: process.env.CLERK_SECRET_KEY,
-    webhookSecret: process.env.CLERK_WEBHOOK_SECRET,
   },
   redis: {
     url: process.env.UPSTASH_REDIS_REST_URL,

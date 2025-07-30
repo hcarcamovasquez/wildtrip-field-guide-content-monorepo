@@ -1,9 +1,17 @@
 import type { ReactNode } from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { UserButton } from '@clerk/clerk-react'
+import { UserButton, useUser } from '@clerk/clerk-react'
 import { ThemeToggle } from './theme-toggle'
 import { ArrowLeft } from 'lucide-react'
 import { Button } from './ui/button'
+import { 
+  canManageSpecies, 
+  canManageAreas, 
+  canManageNews, 
+  canManageGallery, 
+  canManageUsers,
+  type Role 
+} from '@/lib/utils/permissions'
 
 interface LayoutProps {
   children: ReactNode
@@ -11,14 +19,19 @@ interface LayoutProps {
 
 export function Layout({ children }: LayoutProps) {
   const location = useLocation()
+  const { user } = useUser()
+  const userRole = (user?.publicMetadata?.role as Role) || 'user'
 
-  const navItems = [
-    { path: '/species', label: 'Especies' },
-    { path: '/protected-areas', label: 'Áreas Protegidas' },
-    { path: '/news', label: 'Noticias' },
-    { path: '/gallery', label: 'Galería' },
-    { path: '/users', label: 'Usuarios' },
+  const allNavItems = [
+    { path: '/species', label: 'Especies', permission: canManageSpecies },
+    { path: '/protected-areas', label: 'Áreas Protegidas', permission: canManageAreas },
+    { path: '/news', label: 'Noticias', permission: canManageNews },
+    { path: '/gallery', label: 'Galería', permission: canManageGallery },
+    { path: '/users', label: 'Usuarios', permission: canManageUsers },
   ]
+  
+  // Filter nav items based on user permissions
+  const navItems = allNavItems.filter(item => item.permission(userRole))
 
   const logo = import.meta.env.VITE_R2_PUBLIC_URL + '/colored_logo.svg'
 

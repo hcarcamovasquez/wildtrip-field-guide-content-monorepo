@@ -37,29 +37,29 @@ function hasPermission(role: Role, permission: Permission): boolean {
 // Check if user can access a specific route
 export function canAccessRoute(role: Role, path: string): boolean {
   // Dashboard is accessible to all roles with permission
-  if (path === '/manage') {
+  if (path === '/' || path === '') {
     return hasPermission(role, 'view_dashboard')
   }
 
   // Gallery is accessible to all editors
-  if (path.startsWith('/manage/gallery')) {
+  if (path.startsWith('/gallery')) {
     return hasPermission(role, 'manage_gallery')
   }
 
-  // Check specific manage routes
-  if (path.startsWith('/manage/users')) {
+  // Check specific routes
+  if (path.startsWith('/users')) {
     return hasPermission(role, 'manage_users')
   }
 
-  if (path.startsWith('/manage/news')) {
+  if (path.startsWith('/news')) {
     return hasPermission(role, 'manage_news')
   }
 
-  if (path.startsWith('/manage/species')) {
+  if (path.startsWith('/species')) {
     return hasPermission(role, 'manage_species')
   }
 
-  if (path.startsWith('/manage/protected-areas')) {
+  if (path.startsWith('/protected-areas')) {
     return hasPermission(role, 'manage_areas')
   }
 

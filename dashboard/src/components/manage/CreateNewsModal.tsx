@@ -10,9 +10,6 @@ import {
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Textarea } from '@/components/ui/textarea'
-import { NEWS_CATEGORIES } from '@wildtrip/shared/constants'
 
 interface CreateNewsModalProps {
   open: boolean
@@ -25,9 +22,6 @@ export function CreateNewsModal({ open, onClose, onSuccess }: CreateNewsModalPro
   const [formData, setFormData] = useState({
     title: '',
     slug: '',
-    category: 'education',
-    author: '',
-    summary: '',
   })
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -44,6 +38,9 @@ export function CreateNewsModal({ open, onClose, onSuccess }: CreateNewsModalPro
           ...formData,
           status: 'draft',
           content: { blocks: [], version: '1.0' },
+          category: 'education',
+          author: '',
+          summary: '',
         }),
       })
 
@@ -59,7 +56,7 @@ export function CreateNewsModal({ open, onClose, onSuccess }: CreateNewsModalPro
       }
 
       // Redirigir a la página de edición
-      window.location.href = `/manage/news/${data.id}/edit?new=true`
+      window.location.href = `/news/${data.id}/edit?new=true`
     } catch (error) {
       console.error('Error creating news:', error)
       alert('Error al crear la noticia')
@@ -93,70 +90,19 @@ export function CreateNewsModal({ open, onClose, onSuccess }: CreateNewsModalPro
           <DialogHeader>
             <DialogTitle>Nueva Noticia</DialogTitle>
             <DialogDescription>
-              Completa los datos básicos para crear una nueva noticia. Podrás agregar el contenido completo después.
+              Ingresa el título de la noticia. Podrás completar los detalles después.
             </DialogDescription>
           </DialogHeader>
 
           <div className="grid gap-4 py-4">
             <div className="grid gap-2">
-              <Label htmlFor="title">Título *</Label>
+              <Label htmlFor="title">Título</Label>
               <Input
                 id="title"
                 value={formData.title}
                 onChange={handleTitleChange}
                 placeholder="Ej: Nueva reserva marina protege biodiversidad"
                 required
-              />
-            </div>
-
-            <div className="grid gap-2">
-              <Label htmlFor="slug">URL amigable</Label>
-              <Input
-                id="slug"
-                value={formData.slug}
-                onChange={(e) => setFormData((prev) => ({ ...prev, slug: e.target.value }))}
-                placeholder="se-genera-automaticamente"
-                required
-              />
-            </div>
-
-            <div className="grid gap-2">
-              <Label htmlFor="category">Categoría *</Label>
-              <Select
-                value={formData.category}
-                onValueChange={(value) => setFormData((prev) => ({ ...prev, category: value }))}
-              >
-                <SelectTrigger id="category">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {NEWS_CATEGORIES.map((cat) => (
-                    <SelectItem key={cat.value} value={cat.value}>
-                      {cat.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="grid gap-2">
-              <Label htmlFor="author">Autor</Label>
-              <Input
-                id="author"
-                value={formData.author}
-                onChange={(e) => setFormData((prev) => ({ ...prev, author: e.target.value }))}
-                placeholder="Nombre del autor"
-              />
-            </div>
-
-            <div className="grid gap-2">
-              <Label htmlFor="summary">Resumen</Label>
-              <Textarea
-                id="summary"
-                value={formData.summary}
-                onChange={(e) => setFormData((prev) => ({ ...prev, summary: e.target.value }))}
-                placeholder="Breve descripción de la noticia"
-                rows={3}
               />
             </div>
           </div>

@@ -1,10 +1,12 @@
+import { Routes, Route } from 'react-router-dom'
 import { useUser } from '@clerk/clerk-react'
 import { useQuery } from '@tanstack/react-query'
 import { apiClient } from '@/lib/api/client'
 import ProtectedAreaManagement from '@/components/manage/ProtectedAreaManagement'
+import { ProtectedAreaEditPage } from './edit'
 import { Loader2 } from 'lucide-react'
 
-export function ProtectedAreasPage() {
+function ProtectedAreasListPage() {
   const { user } = useUser()
   const currentUserRole = user?.publicMetadata?.role || 'user'
   const currentUserId = Number(user?.publicMetadata?.userId) || 0
@@ -43,5 +45,14 @@ export function ProtectedAreasPage() {
         currentUserId={currentUserId} 
       />
     </div>
+  )
+}
+
+export function ProtectedAreasPage() {
+  return (
+    <Routes>
+      <Route index element={<ProtectedAreasListPage />} />
+      <Route path=":id/edit" element={<ProtectedAreaEditPage />} />
+    </Routes>
   )
 }

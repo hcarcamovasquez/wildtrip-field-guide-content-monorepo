@@ -11,7 +11,7 @@ export default function NewsManagement({ currentUserId, canDelete }: NewsManagem
   const [previewData, setPreviewData] = useState<{ url: string; publicUrl?: string; title: string } | null>(null)
 
   const handleEdit = (id: number) => {
-    window.location.href = `/manage/news/${id}/edit`
+    window.location.href = `/news/${id}/edit`
   }
 
   const handlePreview = (id: number, slug: string, status?: string, hasDraft?: boolean) => {

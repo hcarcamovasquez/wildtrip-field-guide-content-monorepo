@@ -1,7 +1,6 @@
-// import { useQuery } from '@tanstack/react-query'
-// import { apiClient } from '@/lib/api/client'
-// import { useState } from 'react'
+import { Routes, Route } from 'react-router-dom'
 import SpeciesTable from '@/components/manage/SpeciesTable'
+import { SpeciesEditPage } from './edit'
 import { useUser } from '@clerk/clerk-react'
 
 export function SpeciesPage() {
@@ -9,9 +8,10 @@ export function SpeciesPage() {
   const canDelete = user?.publicMetadata?.role === 'admin'
 
   return (
-    <div>
-      <SpeciesTable canDelete={canDelete} />
-    </div>
+    <Routes>
+      <Route index element={<SpeciesTable canDelete={canDelete} />} />
+      <Route path=":id/edit" element={<SpeciesEditPage />} />
+    </Routes>
   )
 }
 

@@ -9,11 +9,16 @@ import { ProtectedAreasPage } from './pages/protected-areas'
 import { NewsPage } from './pages/news'
 import { GalleryPage } from './pages/gallery'
 import { UsersPage } from './pages/users'
+import { UnauthorizedPage } from './pages/unauthorized'
+import { DebugPage } from './pages/debug'
 
 // Components
 import { Layout } from './components/Layout'
 import { LoadingScreen } from './components/LoadingScreen'
 import { ThemeProvider } from './components/theme-provider'
+import { PermissionGuard } from './components/PermissionGuard'
+import { AuthProvider } from './contexts/AuthContext'
+import { AuthErrorHandler } from './components/AuthErrorHandler'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -50,18 +55,30 @@ export default function App() {
     <ThemeProvider defaultTheme="system" storageKey="wildtrip-theme">
       <QueryClientProvider client={queryClient}>
         <Router>
-          <ProtectedRoute>
-            <Layout>
-              <Routes>
-                <Route path="/" element={<Navigate to="/species" replace />} />
-                <Route path="/species/*" element={<SpeciesPage />} />
-                <Route path="/protected-areas/*" element={<ProtectedAreasPage />} />
-                <Route path="/news/*" element={<NewsPage />} />
-                <Route path="/gallery/*" element={<GalleryPage />} />
-                <Route path="/users/*" element={<UsersPage />} />
-              </Routes>
-            </Layout>
-          </ProtectedRoute>
+          <AuthProvider>
+            <AuthErrorHandler>
+              <ProtectedRoute>
+                <PermissionGuard>
+                  <Routes>
+                  <Route path="/unauthorized" element={<UnauthorizedPage />} />
+                  <Route path="/debug" element={<DebugPage />} />
+                  <Route path="/*" element={
+                    <Layout>
+                      <Routes>
+                        <Route path="/" element={<Navigate to="/species" replace />} />
+                        <Route path="/species/*" element={<SpeciesPage />} />
+                        <Route path="/protected-areas/*" element={<ProtectedAreasPage />} />
+                        <Route path="/news/*" element={<NewsPage />} />
+                        <Route path="/gallery/*" element={<GalleryPage />} />
+                        <Route path="/users/*" element={<UsersPage />} />
+                      </Routes>
+                    </Layout>
+                  } />
+                </Routes>
+                </PermissionGuard>
+              </ProtectedRoute>
+            </AuthErrorHandler>
+          </AuthProvider>
         </Router>
       </QueryClientProvider>
     </ThemeProvider>

@@ -209,7 +209,7 @@ export default function ProtectedAreaForm({ initialData, isEditing, areaId, curr
     await releaseLock()
     setIsEditMode(false)
     setShowExitConfirm(false)
-    window.location.href = '/manage/protected-areas'
+    window.location.href = '/protected-areas'
   }
 
   const releaseLock = async () => {
@@ -361,7 +361,7 @@ export default function ProtectedAreaForm({ initialData, isEditing, areaId, curr
           throw new Error('Error al publicar')
         }
 
-        window.location.href = '/manage/protected-areas'
+        window.location.href = '/protected-areas'
       } else if (formData.status === 'published' && hasDraft) {
         // Publicar cambios del borrador
         const response = await fetch(`/api/manage/protected-areas/${areaId}/publish-draft`, {
@@ -375,7 +375,7 @@ export default function ProtectedAreaForm({ initialData, isEditing, areaId, curr
           throw new Error('Error al publicar cambios')
         }
 
-        window.location.href = '/manage/protected-areas'
+        window.location.href = '/protected-areas'
       }
 
       // Release lock after publishing
@@ -441,7 +441,7 @@ export default function ProtectedAreaForm({ initialData, isEditing, areaId, curr
       {lockInfo.isLocked && lockInfo.lockedByUser && (
         <LockBanner
           lockedBy={lockInfo.lockedByUser.name}
-          onClose={() => (window.location.href = '/manage/protected-areas')}
+          onClose={() => (window.location.href = '/protected-areas')}
         />
       )}
 

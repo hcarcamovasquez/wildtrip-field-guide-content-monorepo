@@ -1,5 +1,10 @@
 import axios, {type AxiosInstance, type AxiosRequestConfig } from 'axios'
-// import { useAuth } from '@clerk/clerk-react'
+
+let authErrorHandler: ((error: boolean) => void) | null = null
+
+export function setAuthErrorHandler(handler: (error: boolean) => void) {
+  authErrorHandler = handler
+}
 
 export class APIClient {
   private instance: AxiosInstance
@@ -22,15 +27,14 @@ export class APIClient {
     // Response interceptor to handle errors
     this.instance.interceptors.response.use(
       (response) => {
-        console.log('API Response:', response.config.url, response.data)
         return response
       },
       (error) => {
-        console.error('API Error:', error.response?.status, error.response?.data)
-        if (error.response?.status === 401) {
-          // Redirect to login
-          window.location.href = import.meta.env.VITE_WEB_URL + '/sign-in'
+        if (error.response?.status === 401 && authErrorHandler) {
+          // Use the auth error handler if available
+          authErrorHandler(true)
         }
+        
         return Promise.reject(error)
       }
     )
@@ -205,10 +209,9 @@ export class APIClient {
 }
 
 // Create singleton instance
-// In development, use empty string to use relative URLs with Vite proxy
-// In production, use the full API URL
+// Always use the full API URL from environment variable
 export const apiClient = new APIClient(
-  import.meta.env.DEV ? '' : (import.meta.env.VITE_API_URL || '')
+  import.meta.env.VITE_API_URL || 'http://localhost:3000'
 )
 
 // Hook to use API client with auth

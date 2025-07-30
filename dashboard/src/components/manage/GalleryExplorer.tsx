@@ -148,7 +148,7 @@ export default function GalleryExplorer({ initialData }: GalleryExplorerProps) {
           formData.append('folderId', initialData.currentFolder.id.toString())
         }
 
-        const response = await fetch('/api/manage/gallery/upload', {
+        const response = await fetch('/api/gallery/upload', {
           method: 'POST',
           body: formData,
         })
@@ -172,7 +172,7 @@ export default function GalleryExplorer({ initialData }: GalleryExplorerProps) {
     if (!newFolderName.trim()) return
 
     try {
-      const response = await fetch('/api/manage/gallery/folders', {
+      const response = await fetch('/api/gallery/folders', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -211,7 +211,7 @@ export default function GalleryExplorer({ initialData }: GalleryExplorerProps) {
 
       // Delete media files
       if (mediaIds.length > 0) {
-        await fetch('/api/manage/gallery/media/batch-delete', {
+        await fetch('/api/gallery/media/batch-delete', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ ids: mediaIds }),
@@ -221,7 +221,7 @@ export default function GalleryExplorer({ initialData }: GalleryExplorerProps) {
 
       // Delete folders
       for (const folderId of folderIds) {
-        await fetch(`/api/manage/gallery/folders/${folderId}`, {
+        await fetch(`/api/gallery/folders/${folderId}`, {
           method: 'DELETE',
         })
         setFolders((prev) => prev.filter((f) => f.id !== folderId))
@@ -245,7 +245,7 @@ export default function GalleryExplorer({ initialData }: GalleryExplorerProps) {
       })
 
       if (mediaIds.length > 0) {
-        await fetch('/api/manage/gallery/media/move', {
+        await fetch('/api/gallery/media/move', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -324,7 +324,7 @@ export default function GalleryExplorer({ initialData }: GalleryExplorerProps) {
             {/* Breadcrumb */}
             <div className="flex items-center gap-2 text-sm">
               <Button variant="ghost" size="sm" className="h-7 px-2" asChild>
-                <a href="/manage/gallery">
+                <a href="/gallery">
                   <Home className="h-4 w-4" />
                 </a>
               </Button>
@@ -332,7 +332,7 @@ export default function GalleryExplorer({ initialData }: GalleryExplorerProps) {
                 <div key={folder.id} className="flex items-center gap-2">
                   <ChevronRight className="h-4 w-4 text-muted-foreground" />
                   <Button variant="ghost" size="sm" className="h-7 px-2" asChild>
-                    <a href={`/manage/gallery?folder=${folder.id}`}>{folder.name}</a>
+                    <a href={`/gallery?folder=${folder.id}`}>{folder.name}</a>
                   </Button>
                 </div>
               ))}
@@ -426,7 +426,7 @@ export default function GalleryExplorer({ initialData }: GalleryExplorerProps) {
                           <div className="flex items-center gap-3">
                             <Icon className="h-5 w-5 text-muted-foreground" />
                             <button
-                              onClick={() => (window.location.href = `/manage/gallery?folder=${folder.id}`)}
+                              onClick={() => (window.location.href = `/gallery?folder=${folder.id}`)}
                               className="text-left hover:underline"
                             >
                               <div className="font-medium">{folder.name}</div>
@@ -452,7 +452,7 @@ export default function GalleryExplorer({ initialData }: GalleryExplorerProps) {
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
                               <DropdownMenuItem
-                                onClick={() => (window.location.href = `/manage/gallery?folder=${folder.id}`)}
+                                onClick={() => (window.location.href = `/gallery?folder=${folder.id}`)}
                               >
                                 <FolderOpen className="mr-2 h-4 w-4" />
                                 Abrir
@@ -565,7 +565,7 @@ export default function GalleryExplorer({ initialData }: GalleryExplorerProps) {
                   <Card
                     key={itemId}
                     className="cursor-pointer transition-shadow hover:shadow-md"
-                    onClick={() => (window.location.href = `/manage/gallery?folder=${folder.id}`)}
+                    onClick={() => (window.location.href = `/gallery?folder=${folder.id}`)}
                   >
                     <CardContent className="p-4">
                       <div className="mb-3 flex items-start justify-between">

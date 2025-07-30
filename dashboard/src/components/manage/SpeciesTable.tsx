@@ -313,7 +313,7 @@ export default function SpeciesTable({ canDelete = false }: SpeciesTableProps) {
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
                               <DropdownMenuItem asChild>
-                                <a href={`/manage/species/${item.id}/edit`}>
+                                <a href={`/species/${item.id}/edit`}>
                                   <Edit className="mr-2 h-4 w-4" />
                                   Editar
                                 </a>
@@ -407,7 +407,7 @@ export default function SpeciesTable({ canDelete = false }: SpeciesTableProps) {
           onClose={() => setShowCreateModal(false)}
           onSuccess={(speciesId) => {
             setShowCreateModal(false)
-            window.location.href = `/manage/species/${speciesId}/edit?new=true`
+            window.location.href = `/species/${speciesId}/edit?new=true`
           }}
         />
       )}

@@ -24,15 +24,19 @@ export class UsersController {
   @Roles('admin', 'content_editor')
   findAll(
     @Query('page') page?: string,
+    @Query('limit') limit?: string,
     @Query('pageSize') pageSize?: string,
     @Query('search') search?: string,
     @Query('role') role?: string,
     @Query('sortBy') sortBy?: string,
     @Query('sortOrder') sortOrder?: 'asc' | 'desc',
   ) {
+    // Support both 'limit' and 'pageSize' for backward compatibility
+    const size = limit || pageSize;
+    
     return this.usersService.findAll({
       page: page ? parseInt(page, 10) : undefined,
-      pageSize: pageSize ? parseInt(pageSize, 10) : undefined,
+      pageSize: size ? parseInt(size, 10) : undefined,
       search,
       role,
       sortBy,

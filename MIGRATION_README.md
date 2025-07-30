@@ -526,7 +526,6 @@ speciesRouter.delete('/:id', requireAuth, requireRole('admin'), async (req, res)
 # Backend
 DATABASE_URL=
 CLERK_SECRET_KEY=
-CLERK_WEBHOOK_SECRET=
 UPSTASH_REDIS_REST_URL=
 UPSTASH_REDIS_REST_TOKEN=
 R2_ACCOUNT_ID=

@@ -34,6 +34,7 @@ import CreateProtectedAreaModal from './CreateProtectedAreaModal'
 import type { ProtectedAreaWithBase } from '@/types'
 import type { Role } from '@/lib/utils/permissions'
 import { PROTECTED_AREA_TYPES, getRegionLabel } from '@wildtrip/shared/constants'
+import { apiClient } from '@/lib/api/client'
 
 interface ProtectedAreasTableProps {
   areas: ProtectedAreaWithBase[]
@@ -144,12 +145,10 @@ export default function ProtectedAreasTable({
                 <CreateProtectedAreaModal
                   onCreate={async (data) => {
                     try {
-                      const response = await fetch('/api/manage/protected-areas', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(data),
-                      })
-                      if (response.ok) {
+                      const response = await apiClient.protectedAreas.create(data)
+                      if (response && response.id) {
+                        window.location.href = `/protected-areas/${response.id}/edit?new=true`
+                      } else {
                         onRefresh()
                       }
                     } catch (error) {
@@ -283,7 +282,7 @@ export default function ProtectedAreasTable({
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
                               <DropdownMenuItem asChild>
-                                <a href={`/manage/protected-areas/${area.id}/edit`}>
+                                <a href={`/protected-areas/${area.id}/edit`}>
                                   <Edit className="mr-2 h-4 w-4" />
                                   Editar
                                 </a>

@@ -37,16 +37,22 @@ export class ClerkAuthGuard implements CanActivate {
 
       const userId = jwt.sub;
 
+      // Get metadata from JWT token
+      const metadata = (jwt as any).metadata || (jwt as any).publicMetadata || {};
+      const roleFromToken = metadata.role;
+      const userIdFromToken = metadata.userId;
+
       // Get user details from Clerk
       const clerkUser = await this.clerkClient.users.getUser(userId);
 
-      // Set user on request
+      // Set user on request - use role from JWT token metadata
       request.user = {
         id: userId,
         email: clerkUser.emailAddresses[0]?.emailAddress || '',
         firstName: clerkUser.firstName,
         lastName: clerkUser.lastName,
-        role: (clerkUser.publicMetadata?.role as string) || 'user',
+        role: roleFromToken || (clerkUser.publicMetadata?.role as string) || 'user',
+        dbUserId: userIdFromToken,
         clerkUser,
       };
 

@@ -23,7 +23,8 @@
     "type-check": "pnpm run --parallel type-check",
     "clean": "pnpm run --parallel clean",
     "clean:deps": "rm -rf node_modules web/node_modules backend/node_modules dashboard/node_modules shared/node_modules",
-    "install:all": "pnpm install --recursive"
+    "install:all": "pnpm install --recursive",
+    "kill-ports": "./bin/kill-ports.sh"
   },
   "devDependencies": {
     "concurrently": "^9.1.2"

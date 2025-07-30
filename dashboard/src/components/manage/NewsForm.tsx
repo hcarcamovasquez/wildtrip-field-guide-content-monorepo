@@ -176,7 +176,7 @@ export default function NewsForm({ initialData, isEditing = false, newsId, curre
     await releaseLock()
     setIsEditMode(false)
     setShowExitConfirm(false)
-    window.location.href = '/manage/news'
+    window.location.href = '/news'
   }
 
   const releaseLock = async () => {
@@ -270,7 +270,7 @@ export default function NewsForm({ initialData, isEditing = false, newsId, curre
           throw new Error('Error al publicar')
         }
 
-        window.location.href = '/manage/news'
+        window.location.href = '/news'
       } else if (formData.status === 'draft') {
         // Publicar borrador
         const response = await fetch(`/api/manage/news/${newsId}`, {
@@ -285,7 +285,7 @@ export default function NewsForm({ initialData, isEditing = false, newsId, curre
           throw new Error('Error al publicar')
         }
 
-        window.location.href = '/manage/news'
+        window.location.href = '/news'
       } else if (formData.status === 'published' && hasDraft) {
         // Publicar cambios del borrador (solo si realmente hay un borrador en la BD)
         const response = await fetch(`/api/manage/news/${newsId}/publish-draft`, {
@@ -299,7 +299,7 @@ export default function NewsForm({ initialData, isEditing = false, newsId, curre
           throw new Error('Error al publicar cambios')
         }
 
-        window.location.href = '/manage/news'
+        window.location.href = '/news'
       }
 
       // Release lock after publishing
@@ -365,7 +365,7 @@ export default function NewsForm({ initialData, isEditing = false, newsId, curre
 
       const result = await response.json()
       // Redirect to edit the newly created article
-      window.location.href = `/manage/news/${result.id}/edit`
+      window.location.href = `/news/${result.id}/edit`
     } catch (error) {
       console.error('Error saving draft:', error)
       alert('Error al guardar el borrador')
@@ -390,7 +390,7 @@ export default function NewsForm({ initialData, isEditing = false, newsId, curre
       {lockInfo.isLocked && lockInfo.lockedByUser && (
         <LockBanner
           lockedBy={lockInfo.lockedByUser.name || 'Otro usuario'}
-          onClose={() => (window.location.href = '/manage/news')}
+          onClose={() => (window.location.href = '/news')}
         />
       )}
 
