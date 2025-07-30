@@ -2,6 +2,8 @@ import type { ReactNode } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { UserButton } from '@clerk/clerk-react'
 import { ThemeToggle } from './theme-toggle'
+import { ArrowLeft } from 'lucide-react'
+import { Button } from './ui/button'
 
 interface LayoutProps {
   children: ReactNode
@@ -50,6 +52,19 @@ export function Layout({ children }: LayoutProps) {
               ))}
             </nav>
             <div className="flex items-center space-x-4">
+              <Button
+                variant="ghost"
+                size="sm"
+                asChild
+              >
+                <a 
+                  href={import.meta.env.VITE_WEB_URL || 'http://localhost:4321'} 
+                  className="flex items-center gap-2"
+                >
+                  <ArrowLeft className="h-4 w-4" />
+                  <span>Volver al sitio</span>
+                </a>
+              </Button>
               <ThemeToggle />
               <UserButton afterSignOutUrl={import.meta.env.VITE_WEB_URL} />
             </div>
