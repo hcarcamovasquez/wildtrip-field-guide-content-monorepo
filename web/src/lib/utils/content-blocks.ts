@@ -1,4 +1,5 @@
 import type { ContentBlock } from '@wildtrip/shared'
+import { getOptimizedImageUrl, generateSrcSet } from './cloudflare-images'
 
 // Convert HTML to content blocks - DOM-based version for client-side
 export function htmlToContentBlocks(html: string): ContentBlock[] {
@@ -236,8 +237,11 @@ export function contentBlocksToHtml(blocks: ContentBlock[]): string {
           return `<p>${block.content}</p>`
         case 'heading':
           return `<h${block.level}>${block.content}</h${block.level}>`
-        case 'image':
-          return `<img src="${block.src}" alt="${block.alt || ''}" />`
+        case 'image': {
+          const optimizedSrc = getOptimizedImageUrl(block.src, 'large')
+          const srcset = generateSrcSet(block.src)
+          return `<img src="${optimizedSrc}" srcset="${srcset}" sizes="(max-width: 1024px) 100vw, 1024px" alt="${block.alt || ''}" loading="lazy" />`
+        }
         case 'list': {
           const tag = block.listType === 'ordered' ? 'ol' : 'ul'
           return `<${tag}>${block.content}</${tag}>`

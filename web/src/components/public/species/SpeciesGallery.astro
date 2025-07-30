@@ -1,5 +1,6 @@
 ---
 import type { PublicDetailSpecie } from '../../../lib/public/repositories/SpeciesRepository'
+import ResponsiveImage from '../ResponsiveImage.astro'
 
 interface Props {
   species: PublicDetailSpecie
@@ -13,11 +14,14 @@ const { species } = Astro.props
     <section class="mb-8">
       <h2 class="mb-4 text-2xl font-bold text-gray-900 dark:text-white">Galería</h2>
       <div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {species.images.map((image) => (
-          <img
+        {species.images.map((image, index) => (
+          <ResponsiveImage
             src={image}
-            alt={`${species.commonName} - Imagen de galería`}
+            alt={`${species.commonName} - Imagen de galería ${index + 1}`}
             class="h-48 w-full rounded-lg object-cover shadow-md transition-shadow hover:shadow-lg"
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+            loading="lazy"
+            variant="medium"
           />
         ))}
       </div>
