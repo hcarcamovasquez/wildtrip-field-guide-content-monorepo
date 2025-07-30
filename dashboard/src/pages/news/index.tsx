@@ -1,8 +1,8 @@
-import { useAuth } from '@clerk/clerk-react'
+import { useUser } from '@clerk/clerk-react'
 import NewsTable from '@/components/manage/NewsTable'
 
 export function NewsPage() {
-  const { user } = useAuth()
+  const { user } = useUser()
   const canDelete = user?.publicMetadata?.role === 'admin'
   const currentUserId = Number(user?.publicMetadata?.userId) || 0
 

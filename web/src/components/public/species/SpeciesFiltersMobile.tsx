@@ -6,8 +6,8 @@ import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet'
 import { Badge } from '@/components/ui/badge'
-import { CONSERVATION_STATUSES, getConservationStatusLabel } from '@/lib/utils/conservation-status'
-import { MAIN_GROUPS, getMainGroupLabel } from '@/lib/utils/species-groups'
+import { CONSERVATION_STATUSES, getConservationStatusLabel } from '@wildtrip/shared/constants'
+import { MAIN_GROUPS, getMainGroupLabel } from '@wildtrip/shared/constants'
 
 interface SpeciesFiltersMobileProps {
   initialSearch?: string

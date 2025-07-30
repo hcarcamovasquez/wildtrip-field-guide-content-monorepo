@@ -63,6 +63,28 @@ export class SpeciesController {
     return this.speciesService.remove(+id);
   }
 
+  // Draft/Publish endpoints
+  @Post(':id/publish')
+  @UseGuards(ClerkAuthGuard, RolesGuard)
+  @Roles('admin', 'content_editor', 'species_editor')
+  publish(@Param('id') id: string) {
+    return this.speciesService.publish(+id);
+  }
+
+  @Post(':id/draft')
+  @UseGuards(ClerkAuthGuard, RolesGuard)
+  @Roles('admin', 'content_editor', 'species_editor')
+  createDraft(@Param('id') id: string, @Body() draftData: UpdateSpeciesDto) {
+    return this.speciesService.createDraft(+id, draftData);
+  }
+
+  @Post(':id/discard-draft')
+  @UseGuards(ClerkAuthGuard, RolesGuard)
+  @Roles('admin', 'content_editor', 'species_editor')
+  discardDraft(@Param('id') id: string) {
+    return this.speciesService.discardDraft(+id);
+  }
+
   // Lock endpoints
   @Post(':id/lock')
   @UseGuards(ClerkAuthGuard, RolesGuard)

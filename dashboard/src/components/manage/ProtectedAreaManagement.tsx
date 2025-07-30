@@ -35,7 +35,7 @@ export default function ProtectedAreaManagement({
       toast({
         title: 'Error',
         description: 'No se pudo eliminar el área protegida.',
-        variant: 'destructive',
+        type: 'destructive',
       })
     },
   })

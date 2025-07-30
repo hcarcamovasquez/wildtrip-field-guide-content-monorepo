@@ -24,8 +24,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 import LockBanner from './LockBanner'
 import GallerySection from './GallerySection'
 import type { RichContent, ContentBlock, ImageBlock } from '@wildtrip/shared/types'
-import { PROTECTED_AREA_TYPES } from '@wildtrip/shared/types'
-import { CHILE_REGIONS } from '@wildtrip/shared/types'
+import { PROTECTED_AREA_TYPES, CHILE_REGIONS } from '@wildtrip/shared'
 
 interface ProtectedAreaFormProps {
   initialData: {

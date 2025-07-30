@@ -45,7 +45,7 @@ export class ProtectedAreasService {
     
     // Update slug if name changed
     if (updateProtectedAreaDto.name && !updateProtectedAreaDto.slug) {
-      updateProtectedAreaDto.slug = slugify(updateProtectedAreaDto.name);
+      (updateProtectedAreaDto as any).slug = slugify(updateProtectedAreaDto.name);
     }
     
     return this.protectedAreasRepository.update(id, updateProtectedAreaDto);

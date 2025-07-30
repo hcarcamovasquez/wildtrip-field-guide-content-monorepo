@@ -44,22 +44,18 @@ import { Label } from '@/components/ui/label'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { convertToWebP } from '@/lib/utils/image-upload'
 import FileDetails from './FileDetails'
-import type { MediaGallery, MediaFolder } from '@/lib/db/schema'
+import type { MediaWithFolder, FolderWithCount, MediaFolder } from '@/types'
 
-interface FolderWithCount extends MediaFolder {
+interface GalleryFolderWithCount extends FolderWithCount {
   fileCount: number
   folderCount: number
-}
-
-interface MediaWithFolder extends MediaGallery {
-  folder?: MediaFolder | null
 }
 
 interface GalleryExplorerProps {
   initialData: {
     currentFolder: MediaFolder | null
     breadcrumb: MediaFolder[]
-    folders: FolderWithCount[]
+    folders: GalleryFolderWithCount[]
     media: MediaWithFolder[]
     stats: {
       totalSize: number
@@ -268,7 +264,7 @@ export default function GalleryExplorer({ initialData }: GalleryExplorerProps) {
     }
   }
 
-  const getItemIcon = (item: MediaWithFolder | FolderWithCount) => {
+  const getItemIcon = (item: MediaWithFolder | GalleryFolderWithCount) => {
     if ('fileCount' in item) {
       return item.fileCount > 0 || item.folderCount > 0 ? FolderOpen : Folder
     }
@@ -445,7 +441,7 @@ export default function GalleryExplorer({ initialData }: GalleryExplorerProps) {
                           <Badge variant="secondary">Carpeta</Badge>
                         </td>
                         <td className="px-6 py-3 pr-4 text-muted-foreground">
-                          {formatDate(folder.updatedAt.toISOString())}
+                          {formatDate(typeof folder.updatedAt === 'string' ? folder.updatedAt : folder.updatedAt.toISOString())}
                         </td>
                         <td className="px-6 py-3">
                           <DropdownMenu>
@@ -518,7 +514,7 @@ export default function GalleryExplorer({ initialData }: GalleryExplorerProps) {
                           <Badge variant="outline">{file.type === 'image' ? 'Imagen' : 'Video'}</Badge>
                         </td>
                         <td className="px-6 py-3 pr-4 text-muted-foreground">
-                          {formatDate(file.updatedAt.toISOString())}
+                          {formatDate(typeof file.updatedAt === 'string' ? file.updatedAt : file.updatedAt.toISOString())}
                         </td>
                         <td className="px-6 py-3">
                           <DropdownMenu>

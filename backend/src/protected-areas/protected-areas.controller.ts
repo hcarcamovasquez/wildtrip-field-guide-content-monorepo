@@ -15,10 +15,15 @@ import { UpdateProtectedAreaDto } from './dto/update-protected-area.dto';
 import { ClerkAuthGuard } from '../auth/guards/clerk-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
+import { CurrentUser, ICurrentUser } from '../auth/decorators/current-user.decorator';
+import { LocksService } from '../locks/locks.service';
 
 @Controller('api/protected-areas')
 export class ProtectedAreasController {
-  constructor(private readonly protectedAreasService: ProtectedAreasService) {}
+  constructor(
+    private readonly protectedAreasService: ProtectedAreasService,
+    private readonly locksService: LocksService,
+  ) {}
 
   // Public endpoints
   @Get()
@@ -78,5 +83,29 @@ export class ProtectedAreasController {
   @Roles('admin', 'content_editor', 'areas_editor')
   discardDraft(@Param('id') id: string) {
     return this.protectedAreasService.discardDraft(+id);
+  }
+
+  // Lock endpoints
+  @Post(':id/lock')
+  @UseGuards(ClerkAuthGuard, RolesGuard)
+  @Roles('admin', 'content_editor', 'areas_editor')
+  async acquireLock(@Param('id') id: string, @CurrentUser() user: ICurrentUser) {
+    const userId = Number(user.id);
+    await this.locksService.acquireLock('protectedAreas', +id, userId);
+    return { locked: true };
+  }
+
+  @Delete(':id/lock')
+  @UseGuards(ClerkAuthGuard, RolesGuard)
+  @Roles('admin', 'content_editor', 'areas_editor')
+  async releaseLock(@Param('id') id: string, @CurrentUser() user: ICurrentUser) {
+    const userId = Number(user.id);
+    await this.locksService.releaseLock('protectedAreas', +id, userId);
+    return { locked: false };
+  }
+
+  @Get(':id/lock')
+  async checkLock(@Param('id') id: string) {
+    return this.locksService.checkLock('protectedAreas', +id);
   }
 }

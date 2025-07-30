@@ -1,11 +1,11 @@
-import { useAuth } from '@clerk/clerk-react'
+import { useUser } from '@clerk/clerk-react'
 import { useQuery } from '@tanstack/react-query'
 import { apiClient } from '@/lib/api/client'
 import ProtectedAreaManagement from '@/components/manage/ProtectedAreaManagement'
 import { Loader2 } from 'lucide-react'
 
 export function ProtectedAreasPage() {
-  const { user } = useAuth()
+  const { user } = useUser()
   const currentUserRole = user?.publicMetadata?.role || 'user'
   const currentUserId = Number(user?.publicMetadata?.userId) || 0
 

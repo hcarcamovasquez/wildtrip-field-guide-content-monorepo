@@ -1,5 +1,5 @@
 import axios, {type AxiosInstance, type AxiosRequestConfig } from 'axios'
-import { useAuth } from '@clerk/clerk-react'
+// import { useAuth } from '@clerk/clerk-react'
 
 export class APIClient {
   private instance: AxiosInstance
@@ -213,7 +213,7 @@ export const apiClient = new APIClient(
 
 // Hook to use API client with auth
 export function useAPIClient() {
-  const { getToken } = useAuth()
+  // const { getToken } = useAuth()
   
   // You can add token to requests here if needed
   // But since we're using cookies, it's not necessary

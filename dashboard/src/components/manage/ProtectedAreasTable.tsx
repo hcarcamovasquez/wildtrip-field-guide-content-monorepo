@@ -244,7 +244,7 @@ export default function ProtectedAreasTable({
                             <div>
                               <div className="flex items-center gap-2">
                                 <div className="font-medium">{area.name}</div>
-                                {isLocked(area) && area.lockedBy !== currentUserId && (
+                                {isLocked(area) && area.lockedBy !== String(currentUserId) && (
                                   <Lock className="h-3 w-3 text-orange-500" />
                                 )}
                                 {area.hasDraft && (

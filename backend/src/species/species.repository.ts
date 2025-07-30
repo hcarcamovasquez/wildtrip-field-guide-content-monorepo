@@ -101,4 +101,76 @@ export class SpeciesRepository {
     const db = this.dbService.getDb();
     await db.delete(species).where(eq(species.id, id));
   }
+
+  async publish(id: number) {
+    const db = this.dbService.getDb();
+    const [current] = await db.select().from(species).where(eq(species.id, id));
+    
+    if (!current || !current.draftData) {
+      throw new Error('No draft content to publish');
+    }
+
+    const [result] = await db
+      .update(species)
+      .set({
+        ...current.draftData,
+        draftData: null,
+        hasDraft: false,
+        draftCreatedAt: null,
+        status: 'published' as const,
+        publishedAt: new Date(),
+        updatedAt: new Date(),
+      })
+      .where(eq(species.id, id))
+      .returning();
+    
+    return result;
+  }
+
+  async createDraft(id: number, draftData: any) {
+    const db = this.dbService.getDb();
+    const [current] = await db.select().from(species).where(eq(species.id, id));
+    
+    if (!current) {
+      throw new Error('Species not found');
+    }
+
+    // Merge current data with draft changes
+    const draft = {
+      ...current,
+      ...draftData,
+      id: current.id, // Preserve ID
+      createdAt: current.createdAt, // Preserve creation date
+      updatedAt: new Date(),
+    };
+
+    const [result] = await db
+      .update(species)
+      .set({
+        draftData: draft,
+        hasDraft: true,
+        draftCreatedAt: new Date(),
+        updatedAt: new Date(),
+      })
+      .where(eq(species.id, id))
+      .returning();
+    
+    return result;
+  }
+
+  async discardDraft(id: number) {
+    const db = this.dbService.getDb();
+    const [result] = await db
+      .update(species)
+      .set({
+        draftData: null,
+        hasDraft: false,
+        draftCreatedAt: null,
+        updatedAt: new Date(),
+      })
+      .where(eq(species.id, id))
+      .returning();
+    
+    return result;
+  }
 }

@@ -278,7 +278,7 @@ export default function UsersTable({ users, pagination, currentUserId, searchPar
                         </td>
                         <td className="px-6 py-3 pr-4 text-muted-foreground">{formatDate(user.lastSeenAt)}</td>
                         <td className="px-6 py-3">
-                          {user.id !== currentUserId && (
+                          {user.id !== String(currentUserId) && (
                             <DropdownMenu>
                               <DropdownMenuTrigger asChild>
                                 <Button variant="ghost" size="icon">

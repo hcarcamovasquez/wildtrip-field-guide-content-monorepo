@@ -6,8 +6,8 @@ import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet'
 import { Badge } from '@/components/ui/badge'
-import { CHILE_REGIONS, getRegionWithNumber } from '@/lib/utils/chile-regions'
-import { PROTECTED_AREA_TYPES, getProtectedAreaTypeLabel } from '@/lib/utils/protected-area-types'
+import { CHILE_REGIONS, getRegionWithNumber } from '@wildtrip/shared/constants'
+import { PROTECTED_AREA_TYPES, getProtectedAreaTypeLabel } from '@wildtrip/shared/constants'
 
 interface ProtectedAreaFiltersMobileProps {
   initialSearch?: string

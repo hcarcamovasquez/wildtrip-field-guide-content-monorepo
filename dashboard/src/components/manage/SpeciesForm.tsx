@@ -36,7 +36,7 @@ import LockBanner from './LockBanner'
 import GallerySection from './GallerySection'
 import SEOFieldsSection from './SEOFieldsSection'
 import type { SpeciesWithDetails } from '@/types'
-import { CONSERVATION_STATUSES, MAIN_GROUPS } from '@wildtrip/shared/types'
+import { CONSERVATION_STATUSES, MAIN_GROUPS } from '@wildtrip/shared'
 import type { ContentBlock, ImageBlock, RichContent } from '@wildtrip/shared/types'
 
 interface SpeciesFormProps {
@@ -151,7 +151,7 @@ export default function SpeciesForm({ species, currentUserId, isEditing }: Speci
   useEffect(() => {
     // Check if species already has lock info from server
     if (species.lock) {
-      if (species.lock.userId === currentUserId) {
+      if (species.lock.userId === String(currentUserId)) {
         // User already has the lock, enable edit mode
         setIsEditMode(true)
         setHasLock(true)

@@ -45,7 +45,7 @@ export class NewsService {
     
     // Update slug if title changed
     if (updateNewsDto.title && !updateNewsDto.slug) {
-      updateNewsDto.slug = slugify(updateNewsDto.title);
+      (updateNewsDto as any).slug = slugify(updateNewsDto.title);
     }
     
     return this.newsRepository.update(id, updateNewsDto);

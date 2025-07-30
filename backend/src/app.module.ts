@@ -13,6 +13,7 @@ import { ProtectedAreasModule } from './protected-areas/protected-areas.module';
 import { GalleryModule } from './gallery/gallery.module';
 import { UsersModule } from './users/users.module';
 import { AIModule } from './ai/ai.module';
+import { SeedModule } from './seed/seed.module';
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import { AIModule } from './ai/ai.module';
     GalleryModule,
     UsersModule,
     AIModule,
+    SeedModule,
   ],
   controllers: [AppController],
   providers: [AppService],

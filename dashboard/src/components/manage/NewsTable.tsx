@@ -104,7 +104,7 @@ const getCategoryVariant = (category: string): 'default' | 'secondary' | 'outlin
   }
 }
 
-export default function NewsTable({ currentUserId, canDelete = false }: Omit<NewsTableProps, 'onEdit' | 'onPreview'>) {
+export default function NewsTable({ currentUserId, canDelete = false, onEdit, onPreview }: NewsTableProps) {
   const navigate = useNavigate()
   const [news, setNews] = useState<NewsItem[]>([])
   const [pagination, setPagination] = useState({

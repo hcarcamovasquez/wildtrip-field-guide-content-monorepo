@@ -2,10 +2,14 @@ import { Injectable } from '@nestjs/common';
 import { DbService } from '../db/db.service';
 import { users } from '../db/schema';
 import { eq, like, or, desc, asc, sql, and } from 'drizzle-orm';
+import { UsernameGenerator } from '../utils/username-generator';
 
 @Injectable()
 export class UsersRepository {
-  constructor(private readonly db: DbService) {}
+  constructor(
+    private readonly db: DbService,
+    private readonly usernameGenerator: UsernameGenerator,
+  ) {}
 
   async findAll(params: {
     limit?: number;
@@ -146,8 +150,16 @@ export class UsersRepository {
     if (existingUser) {
       return this.update(clerkUser.id, userData);
     } else {
+      // Generate unique username for new users
+      const username = await this.usernameGenerator.generateUsername(
+        clerkUser.firstName || undefined,
+        clerkUser.lastName || undefined,
+        email,
+      );
+
       return this.create({
         ...userData,
+        username,
         createdAt: new Date(),
         updatedAt: new Date(),
       });

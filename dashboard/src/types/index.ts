@@ -46,6 +46,11 @@ export interface SpeciesWithBase {
   featuredImage?: string | null
   featuredImageAlt?: string | null
   gallery?: any[] | null
+  mainImage?: {
+    id: string
+    url: string
+    galleryId: number
+  } | null
   seoTitle?: string | null
   seoDescription?: string | null
   seoKeywords?: string | null
@@ -54,6 +59,9 @@ export interface SpeciesWithBase {
   publishedAt?: Date | string | null
   localChanges?: boolean | null
   featuredImageUrl?: string | null
+  hasDraft?: boolean | null
+  draftData?: any | null
+  richContent?: RichContent | null
 }
 
 // News interfaces
@@ -92,6 +100,11 @@ export interface ProtectedAreaWithBase extends BaseContent {
   featuredImage?: string | null
   featuredImageAlt?: string | null
   featuredImageUrl?: string | null
+  mainImage?: {
+    id: string
+    url: string
+    galleryId: number
+  } | null
   type: string
   location?: string | null
   region?: string | null
@@ -106,6 +119,9 @@ export interface ProtectedAreaWithBase extends BaseContent {
   isDraft?: boolean
   isPublished?: boolean
   hasLocalChanges?: boolean
+  hasDraft?: boolean
+  lockedBy?: string | null
+  lockExpiresAt?: Date | string | null
   draftName?: string | null
   draftDescription?: string | null
   draftContent?: RichContent | null
@@ -132,11 +148,14 @@ export interface User {
   lastName?: string | null
   username?: string | null
   imageUrl?: string | null
+  avatarUrl?: string | null
   role: string
   clerkId: string
   createdAt: Date | string
   updatedAt: Date | string
   fullName?: string
+  isActive?: boolean
+  lastSeenAt?: Date | string | null
 }
 
 export interface UserWithRole extends User {
@@ -144,7 +163,15 @@ export interface UserWithRole extends User {
 }
 
 export interface SpeciesWithDetails extends SpeciesWithBase {
-  // Add any additional detail fields if needed
+  lock?: {
+    entityType: string
+    entityId: number
+    userId: string
+    userName?: string | null
+    userEmail?: string | null
+    expiresAt: Date | string
+    createdAt: Date | string
+  } | null
 }
 
 // Media interfaces
@@ -176,6 +203,21 @@ export interface MediaFolder {
   createdBy?: number | null
   createdAt: Date | string
   updatedAt: Date | string
+}
+
+// Extended media types for gallery components
+export interface MediaWithFolder extends MediaFile {
+  type: 'image' | 'video' | 'document' | 'other'
+  title?: string | null
+  description?: string | null
+  altText?: string | null
+  uploadedByName?: string | null
+  folder?: MediaFolder | null
+}
+
+export interface FolderWithCount extends MediaFolder {
+  mediaCount?: number
+  subfolderCount?: number
 }
 
 // Lock interfaces

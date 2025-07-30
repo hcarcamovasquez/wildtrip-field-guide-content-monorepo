@@ -24,11 +24,7 @@ import { Separator } from '@/components/ui/separator'
 import { Badge } from '@/components/ui/badge'
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import type { MediaGallery, MediaFolder } from '@/lib/db/schema'
-
-interface MediaWithFolder extends MediaGallery {
-  folder?: MediaFolder | null
-}
+import type { MediaWithFolder } from '@/types'
 
 interface FileDetailsProps {
   file: MediaWithFolder
@@ -370,7 +366,7 @@ export default function FileDetails({ file, onClose, onUpdate }: FileDetailsProp
                         <div className="flex items-center gap-2">
                           <Calendar className="h-4 w-4 text-muted-foreground" />
                           <dt className="text-muted-foreground">Fecha:</dt>
-                          <dd>{formatDate(file.createdAt.toISOString())}</dd>
+                          <dd>{formatDate(typeof file.createdAt === 'string' ? file.createdAt : file.createdAt.toISOString())}</dd>
                         </div>
                       </dl>
                     </div>

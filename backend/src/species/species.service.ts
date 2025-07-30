@@ -53,4 +53,31 @@ export class SpeciesService {
     await this.findOne(id);
     await this.speciesRepository.delete(id);
   }
+
+  async publish(id: number) {
+    const species = await this.findOne(id);
+    if (!species.draftData) {
+      throw new NotFoundException('No draft content to publish');
+    }
+    return this.speciesRepository.publish(id);
+  }
+
+  async createDraft(id: number, draftData: UpdateSpeciesDto) {
+    await this.findOne(id);
+    
+    // Update slug if common name changed
+    if (draftData.commonName && !draftData.slug) {
+      draftData.slug = slugify(draftData.commonName);
+    }
+    
+    return this.speciesRepository.createDraft(id, draftData);
+  }
+
+  async discardDraft(id: number) {
+    const species = await this.findOne(id);
+    if (!species.draftData) {
+      throw new NotFoundException('No draft content to discard');
+    }
+    return this.speciesRepository.discardDraft(id);
+  }
 }

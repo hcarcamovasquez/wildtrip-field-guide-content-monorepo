@@ -86,6 +86,8 @@ backend/
 │   │   │   ├── species.ts
 │   │   │   ├── news.ts
 │   │   │   ├── protectedAreas.ts
+│   │   │   ├── mediaGallery.ts
+│   │   │   ├── mediaFolders.ts
 │   │   │   └── index.ts
 │   │   ├── db.module.ts
 │   │   └── db.service.ts
@@ -125,6 +127,19 @@ backend/
 │   │   ├── ai.controller.ts
 │   │   ├── ai.service.ts
 │   │   └── ai.module.ts
+│   ├── users/               # Users module
+│   │   ├── dto/
+│   │   ├── users.controller.ts
+│   │   ├── users.service.ts
+│   │   ├── users.repository.ts
+│   │   └── users.module.ts
+│   ├── seed/                # Database seeding
+│   │   ├── seed.controller.ts
+│   │   ├── seed.service.ts
+│   │   ├── seed-data.ts
+│   │   └── seed.module.ts
+│   ├── utils/               # Utilities
+│   │   └── username-generator.ts
 │   ├── app.module.ts
 │   ├── app.controller.ts
 │   ├── app.service.ts
@@ -197,6 +212,17 @@ GET    /api/{entity}/:id/lock
 POST   /api/ai/generate-seo/news        # news_editor
 POST   /api/ai/generate-seo/species     # species_editor
 POST   /api/ai/generate-seo/protected-areas # areas_editor
+
+# Users (Roles: admin for modifications)
+GET    /api/users               # List all users
+GET    /api/users/me            # Current user info
+GET    /api/users/stats         # User statistics
+GET    /api/users/:id           # Get user by ID
+PATCH  /api/users/:id           # Update user (admin only)
+
+# Development (Admin only, dev environment)
+POST   /api/dev/seed            # Seed database
+DELETE /api/dev/clear           # Clear database
 ```
 
 ## Authentication
@@ -230,10 +256,11 @@ Using Drizzle ORM with PostgreSQL:
 - **mediaFolders**: Hierarchical folder organization
 
 All content tables support:
-- Draft/publish workflow
-- Lock system with 15-minute expiration
-- SEO metadata
-- Rich content blocks
+- Draft/publish workflow ✅
+- Lock system with 15-minute expiration ✅
+- SEO metadata ✅
+- Rich content blocks ✅
+- Automatic slug generation ✅
 
 ## Using Shared Package
 
@@ -332,22 +359,31 @@ CLOUDFLARE_IA_API_TOKEN=...
    - Support for Spanish language optimization
    - Integration with Llama 3.1 model
 
-## Pending Implementation
+4. **User Management** ✅:
+   - User listing with search and filters
+   - Role management (admin only)
+   - Username generation for new users
+   - User statistics endpoint
+   - Integration with Clerk for authentication
+
+5. **Database Seeding** ✅:
+   - Development seed data for all entities
+   - Clear database functionality
+   - Protected endpoints (admin only, dev environment)
+
+## Optional Features (Not Critical)
 
 1. **Redis Caching**:
-   - Cache frequently accessed data
-   - Invalidation strategies
-   - Session storage
+   - Would improve performance for frequently accessed data
+   - Not required for basic functionality
 
-4. **User Management**:
-   - Sync with Clerk webhooks
-   - Role management endpoints
-   - User listing and search
+2. **Clerk Webhooks**:
+   - Would enable real-time user sync
+   - Current implementation syncs on first login
 
-5. **Search & Filters**:
-   - Full-text search
-   - Advanced filtering
-   - Sorting options
+3. **Advanced Search**:
+   - Full-text search across entities
+   - More complex filtering options
 
 ## Testing
 

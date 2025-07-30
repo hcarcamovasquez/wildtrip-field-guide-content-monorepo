@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet'
 import { Badge } from '@/components/ui/badge'
-import { NEWS_CATEGORIES, getNewsCategoryLabel } from '@/lib/utils/news-constants'
+import { NEWS_CATEGORIES, getNewsCategoryLabel } from '@wildtrip/shared/constants'
 
 interface NewsFiltersMobileProps {
   initialSearch?: string
