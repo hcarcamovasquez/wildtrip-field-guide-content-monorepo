@@ -16,7 +16,7 @@ export class NewsRepository {
     status?: string;
   }) {
     const db = this.dbService.getDb();
-    const { page = 1, limit = 20, search, category, tags, status = 'published' } = params;
+    const { page = 1, limit = 20, search, category, tags, status } = params;
     const offset = (page - 1) * limit;
 
     // Build where conditions

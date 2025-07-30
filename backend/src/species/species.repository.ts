@@ -15,7 +15,7 @@ export class SpeciesRepository {
     status?: string;
   }) {
     const db = this.dbService.getDb();
-    const { page = 1, limit = 20, search, mainGroup, status = 'published' } = params;
+    const { page = 1, limit = 20, search, mainGroup, status } = params;
     const offset = (page - 1) * limit;
 
     // Build where conditions

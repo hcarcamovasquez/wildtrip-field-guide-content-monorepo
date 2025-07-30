@@ -16,7 +16,7 @@ export class ProtectedAreasRepository {
     status?: string;
   }) {
     const db = this.dbService.getDb();
-    const { page = 1, limit = 20, search, type, region, status = 'published' } = params;
+    const { page = 1, limit = 20, search, type, region, status } = params;
     const offset = (page - 1) * limit;
 
     // Build where conditions
