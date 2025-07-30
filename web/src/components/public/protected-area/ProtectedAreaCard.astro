@@ -34,7 +34,7 @@ const getCategoryColor = (category: string) => {
             area.mainImageUrl ? (
               <ResponsiveImage
                 src={area.mainImageUrl}
-                alt={area.title}
+                alt={area.name}
                 class="h-full w-full object-cover"
                 sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                 loading="lazy"
@@ -50,7 +50,7 @@ const getCategoryColor = (category: string) => {
 
         <!-- Text overlay -->
         <div class="absolute right-0 bottom-0 left-0 bg-gradient-to-t from-black/80 via-black/60 to-transparent p-4">
-          <h3 class="mb-1 text-base font-bold text-white md:text-lg">{area.title}</h3>
+          <h3 class="mb-1 text-base font-bold text-white md:text-lg">{area.name}</h3>
           <p class="text-sm text-gray-200">
             <span class="flex items-center gap-1">
               <MapPin className="h-3 w-3" />
@@ -79,7 +79,7 @@ const getCategoryColor = (category: string) => {
       class="card-back absolute inset-0 flex flex-col justify-between overflow-hidden rounded-2xl bg-gradient-to-br from-primary to-primary/80 p-6 text-white shadow-lg transition-shadow duration-300 backface-hidden"
     >
       <div>
-        <h3 class="mb-3 text-xl font-bold">{area.title}</h3>
+        <h3 class="mb-3 text-xl font-bold">{area.name}</h3>
         <p class="mb-2 text-sm opacity-90">{area.type ? getCategoryLabel(area.type) : 'Área Protegida'}</p>
 
         {

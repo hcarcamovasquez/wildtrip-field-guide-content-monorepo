@@ -53,13 +53,19 @@ class NewsRepository {
       ...filters
     })
 
+    // Map the API response to match our types
+    const mappedData = (response.data || []).map((item: any) => ({
+      ...item,
+      mainImageUrl: item.mainImage?.url || item.mainImageUrl || null
+    }))
+
     return {
-      data: response.data || [],
+      data: mappedData,
       pagination: {
-        page: response.page || page,
-        pageSize: response.limit || limit,
-        total: response.total || 0,
-        totalPages: response.totalPages || 0
+        page: response.pagination?.page || page,
+        pageSize: response.pagination?.limit || limit,
+        total: response.pagination?.total || 0,
+        totalPages: response.pagination?.totalPages || 0
       }
     }
   }
@@ -70,7 +76,11 @@ class NewsRepository {
       if (!response || response.status !== 'published') {
         return null
       }
-      return response
+      // Map mainImage.url to mainImageUrl
+      return {
+        ...response,
+        mainImageUrl: response.mainImage?.url || response.mainImageUrl || null
+      }
     } catch (error) {
       console.error('Error fetching news by slug:', error)
       return null
@@ -85,7 +95,11 @@ class NewsRepository {
       sortBy: 'publishedAt',
       sortOrder: 'desc'
     })
-    return response.data || []
+    // Map the API response to match our types
+    return (response.data || []).map((item: any) => ({
+      ...item,
+      mainImageUrl: item.mainImage?.url || item.mainImageUrl || null
+    }))
   }
 
   async getTotalPublished(): Promise<number> {
@@ -94,7 +108,7 @@ class NewsRepository {
       limit: 1,
       status: 'published'
     })
-    return response.total || 0
+    return response.pagination?.total || 0
   }
 }
 

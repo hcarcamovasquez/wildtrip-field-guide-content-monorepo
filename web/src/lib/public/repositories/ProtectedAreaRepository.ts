@@ -7,7 +7,7 @@ export type PublicProtectedArea = {
   type: string
   region: string | null
   surface: string | null
-  featuredImageUrl: string | null
+  mainImageUrl: string | null
   description: string | null
 }
 
@@ -23,8 +23,8 @@ export type PublicDetailProtectedArea = {
   content: RichContent | null
   visitorInfo: RichContent | null
   howToGet: RichContent | null
-  featuredImageUrl: string | null
-  featuredImageAlt: string | null
+  mainImageUrl: string | null
+  images: string[] | null
   publishedAt: Date | null
   seoTitle: string | null
   seoDescription: string | null
@@ -62,13 +62,20 @@ class ProtectedAreaRepository {
       ...filters
     })
 
+    // Map the API response to match our types
+    const mappedData = (response.data || []).map((item: any) => ({
+      ...item,
+      mainImageUrl: item.mainImage?.url || item.mainImageUrl || null,
+      surface: item.area?.toString() || null
+    }))
+
     return {
-      data: response.data || [],
+      data: mappedData,
       pagination: {
-        page: response.page || page,
-        pageSize: response.limit || limit,
-        total: response.total || 0,
-        totalPages: response.totalPages || 0
+        page: response.pagination?.page || page,
+        pageSize: response.pagination?.limit || limit,
+        total: response.pagination?.total || 0,
+        totalPages: response.pagination?.totalPages || 0
       }
     }
   }
@@ -79,7 +86,16 @@ class ProtectedAreaRepository {
       if (!response || response.status !== 'published') {
         return null
       }
-      return response
+      // Map mainImage.url to mainImageUrl and extract images array
+      return {
+        ...response,
+        mainImageUrl: response.mainImage?.url || response.mainImageUrl || null,
+        images: response.galleryImages?.map((img: any) => img.url) || [],
+        surface: response.area?.toString() || null,
+        content: response.richContent || null,
+        visitorInfo: response.visitorInformation || null,
+        howToGet: null // This field doesn't exist in the API response
+      }
     } catch (error) {
       console.error('Error fetching protected area by slug:', error)
       return null
@@ -94,7 +110,12 @@ class ProtectedAreaRepository {
       sortBy: 'publishedAt',
       sortOrder: 'desc'
     })
-    return response.data || []
+    // Map the API response to match our types
+    return (response.data || []).map((item: any) => ({
+      ...item,
+      mainImageUrl: item.mainImage?.url || item.mainImageUrl || null,
+      surface: item.area?.toString() || null
+    }))
   }
 
   async getTotalPublished(): Promise<number> {
@@ -103,7 +124,7 @@ class ProtectedAreaRepository {
       limit: 1,
       status: 'published'
     })
-    return response.total || 0
+    return response.pagination?.total || 0
   }
 }
 
