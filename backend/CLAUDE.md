@@ -8,7 +8,7 @@ This is the API backend for the Wildtrip application built with NestJS, handling
 
 **Role in Monorepo:** This project serves as the central API for both the public web application and the admin dashboard.
 
-## Current Status
+## Current Status (Enero 2025)
 
 ✅ **Backend Operational**: NestJS backend with core functionality implemented.
 
@@ -22,14 +22,23 @@ This is the API backend for the Wildtrip application built with NestJS, handling
 - Role-based access control
 - Gallery module with R2 storage integration
 - Image processing with Sharp (WebP conversion)
-- Lock system for concurrent editing (15-minute locks)
+- Lock system for concurrent editing (30-minute locks)
 - Folder-based media organization
 - AI module with Cloudflare AI integration for SEO generation
 - User management module
+- Username generation for new users
+
+### Recent Updates:
+- All types now imported from `@wildtrip/shared`
+- API responses include full CDN URLs for images (no URL construction needed)
+- Image objects return `{id, url, galleryId}` format
+- Pagination standardized as `{data, pagination: {page, limit, total, totalPages}}`
+- All uploaded images automatically converted to WebP
+- Lock timeout increased to 30 minutes
 
 ### Pending Features:
-- Redis caching implementation
-- Webhooks for Clerk sync
+- Redis caching implementation (optional)
+- Webhooks for Clerk sync (optional)
 
 ## Development Commands
 
@@ -397,6 +406,47 @@ pnpm run test:e2e
 pnpm run test:cov
 ```
 
+## Critical Image Handling Rules
+
+**IMPORTANT**: The backend handles all image processing and storage:
+
+1. **Image Upload Flow**:
+   - Receive multipart/form-data
+   - Validate image type (jpg, png, webp, etc.)
+   - Convert to WebP using Sharp
+   - Strip metadata for privacy
+   - Upload to R2 bucket
+   - Return full CDN URL
+
+2. **Response Format**:
+   ```json
+   {
+     "mainImage": {
+       "id": "uuid",
+       "url": "https://dev.cdn.wildtrip.cl/image.webp",
+       "galleryId": 123
+     },
+     "galleryImages": [
+       {
+         "id": "uuid",
+         "url": "https://dev.cdn.wildtrip.cl/image2.webp",
+         "galleryId": 124
+       }
+     ]
+   }
+   ```
+
+3. **URL Structure**:
+   - Always return complete URLs
+   - Never return partial paths
+   - Frontend should NEVER construct URLs
+   - CDN handles resizing via query params
+
+4. **Cloudflare Image Resizing**:
+   - The CDN supports on-the-fly resizing
+   - Frontend can append parameters: `?width=800&quality=80`
+   - Backend always stores and returns the original URL
+
 ## Notes
 
 - All endpoints return consistent pagination format
@@ -405,3 +455,5 @@ pnpm run test:cov
 - Role-based permissions are enforced at controller level
 - Database connection uses connection pooling
 - Cookie session management is configured for Clerk integration
+- **All images are automatically converted to WebP format**
+- **Image URLs are always complete (never partial paths)**

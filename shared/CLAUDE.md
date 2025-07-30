@@ -8,6 +8,16 @@ This is the shared package containing types, constants, and utilities used acros
 
 **Role in Monorepo:** Central source of truth for TypeScript types, application constants (regions, conservation statuses, etc.), and common utility functions.
 
+## Current Status (Enero 2025)
+
+✅ **Package Stable**: Shared package is fully functional and used by all projects.
+
+### Recent Updates:
+- All projects now properly import from `@wildtrip/shared`
+- Package exports configured for multiple entry points
+- Build system using tsup for dual CommonJS/ESM output
+- All constants include helper functions (getters)
+
 ## Development Commands
 
 ```bash
@@ -225,6 +235,35 @@ Currently at v1.0.0. When making breaking changes:
 - [ ] Consider i18n support for labels
 - [ ] Add unit tests for utilities
 
+## Critical Usage Notes
+
+**IMPORTANT**: This package is the single source of truth for:
+
+1. **Content Types**:
+   - `RichContent` and `ContentBlock` types
+   - Used by all projects for content handling
+   - Never duplicate these types in individual projects
+
+2. **Constants**:
+   - Conservation statuses with emojis and colors
+   - Chile regions with official codes
+   - Species groups (main groups)
+   - Protected area types
+   - News categories
+   - All include getter functions
+
+3. **Import Best Practices**:
+   ```typescript
+   // ✅ GOOD - Import from main entry
+   import { CONSERVATION_STATUSES, RichContent } from '@wildtrip/shared'
+   
+   // ✅ GOOD - Import from subpath for tree-shaking
+   import { CHILE_REGIONS } from '@wildtrip/shared/constants'
+   
+   // ❌ BAD - Never use relative paths
+   import { something } from '../../../shared/src/types'
+   ```
+
 ## Notes
 
 - Keep this package focused on truly shared code
@@ -232,3 +271,5 @@ Currently at v1.0.0. When making breaking changes:
 - Maintain backward compatibility when possible
 - Document all public APIs
 - Use pure functions for utilities
+- **Always rebuild after changes**: `pnpm build`
+- **Use watch mode during development**: `pnpm dev`

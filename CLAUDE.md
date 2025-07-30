@@ -441,7 +441,29 @@ JWT_SECRET=...
 
 5. **Development Order**: shared → backend → web/dashboard
 
-# important-instruction-reminders
+# Important Updates (Enero 2025)
+
+## Últimos Cambios Realizados
+
+### 1. Corrección de Importaciones de @wildtrip/shared
+- Todas las importaciones desde rutas relativas (`../../../lib/utils/...`) han sido actualizadas para usar `@wildtrip/shared`
+- Se agregó `@wildtrip/shared` como dependencia en todos los proyectos que lo necesitan
+
+### 2. Optimización de Imágenes
+- **IMPORTANTE**: Todas las imágenes DEBEN usar el componente `ResponsiveImage` o las funciones de optimización
+- Nunca se debe usar la URL original de las imágenes directamente
+- Componentes actualizados:
+  - `SpeciesGallery.astro` - Ahora usa ResponsiveImage
+  - `ProtectedAreaGallery.astro` - Ahora usa ResponsiveImage
+  - `content-blocks.ts` - Ahora usa getOptimizedImageUrl
+
+### 3. Mapeo de Respuestas de API
+- Los repositorios ahora mapean correctamente `mainImage.url` a `mainImageUrl`
+- Se corrigió el acceso a `response.pagination` en lugar de propiedades directas
+- ProtectedArea ahora usa `mainImageUrl` en lugar de `featuredImageUrl`
+
+## Important Instruction Reminders
+
 Do what has been asked; nothing more, nothing less.
 NEVER create files unless they're absolutely necessary for achieving your goal.
 ALWAYS prefer editing an existing file to creating a new one.

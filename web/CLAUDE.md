@@ -8,7 +8,7 @@ This is the public-facing Wildtrip Guia de Campo web application - a biodiversit
 
 **Role in Monorepo:** This project handles all public-facing content display, authentication UI (Clerk), and redirects authenticated users to the admin panel. All management functionality has been moved to the separate dashboard project.
 
-## Current Status
+## Current Status (Enero 2025)
 
 ✅ **Migration Complete**: All management code has been removed. The web project now only contains:
 - Public content pages (species, news, protected areas)
@@ -16,6 +16,13 @@ This is the public-facing Wildtrip Guia de Campo web application - a biodiversit
 - API client to fetch data from backend
 - No direct database access
 - No management/admin functionality
+
+### Recent Updates
+- All imports from relative paths (`../../../lib/utils/...`) updated to use `@wildtrip/shared`
+- `@wildtrip/shared` added as dependency
+- All image components now use ResponsiveImage or optimization functions
+- Fixed repository mappings for API responses (mainImage.url → mainImageUrl)
+- ProtectedArea now uses `mainImageUrl` instead of `featuredImageUrl`
 
 ## Development Commands
 
@@ -214,6 +221,32 @@ The project is configured for deployment to Railway:
 4. **Sitemap**: Auto-generated sitemap.xml
 5. **Robots.txt**: Proper crawling directives
 
+## Critical Image Optimization Rules
+
+**IMPORTANT**: NEVER use image URLs directly. All images MUST use either:
+
+1. **ResponsiveImage component** for Astro components:
+```astro
+<ResponsiveImage
+  src={imageUrl}
+  alt="Description"
+  variant="hero"
+  sizes="(max-width: 640px) 100vw, 50vw"
+  loading="lazy"
+/>
+```
+
+2. **Optimization functions** for dynamic content:
+```typescript
+import { getOptimizedImageUrl, generateSrcSet } from './cloudflare-images'
+
+const optimizedSrc = getOptimizedImageUrl(originalUrl, 'large')
+const srcset = generateSrcSet(originalUrl)
+```
+
+### Image Galleries
+Both `SpeciesGallery.astro` and `ProtectedAreaGallery.astro` have been updated to use ResponsiveImage. Never use `<img>` tags directly for user-uploaded content.
+
 ## Notes
 
 - No direct database access - all data via API
@@ -221,3 +254,4 @@ The project is configured for deployment to Railway:
 - Authentication only for redirecting to admin
 - Focus on public content and performance
 - Minimal client-side JavaScript
+- **All images must be optimized with Cloudflare Image Resizing**

@@ -8,7 +8,7 @@ This is the React-based admin dashboard for managing Wildtrip content. Built wit
 
 **Role in Monorepo:** This project will handle all administrative functions including species management, protected areas, news articles, media gallery, and user management. It communicates with the backend API and uses shared types from `@wildtrip/shared`.
 
-## Current Status
+## Current Status (Enero 2025)
 
 ✅ **Migration Complete**: Dashboard is fully functional with all management features migrated from the web project.
 
@@ -28,6 +28,12 @@ This is the React-based admin dashboard for managing Wildtrip content. Built wit
 - ✅ Data tables with sorting and filtering
 - ✅ Form components with validation
 - ✅ JSZip for batch downloads
+
+### Recent Updates:
+- All imports now use `@wildtrip/shared` for types and constants
+- `@wildtrip/shared` added as dependency in package.json
+- Fixed compatibility with latest API response format
+- Image display components properly handle CDN URLs
 
 ### Known Issues:
 - Some endpoints in backend need to be exposed (locks, drafts)
@@ -223,3 +229,25 @@ VITE_WEB_URL=http://localhost:4321
 3. **Image Handling**: Uses Cloudflare R2 with image resizing via CDN
 4. **State Management**: TanStack Query for server state, React hooks for local state
 5. **Routing**: All routes are protected by authentication check
+
+## Critical Image Display Rules
+
+**IMPORTANT**: Images from the API come with full CDN URLs. In the dashboard:
+
+1. **Display images directly** from the URLs provided by the API
+2. **Do NOT construct URLs** - the backend provides complete URLs
+3. **For thumbnails**, append Cloudflare Image Resizing parameters:
+   ```typescript
+   const thumbnailUrl = `${imageUrl}?width=200&height=200&fit=cover`
+   ```
+
+### Image Upload Flow
+1. Upload images through `/api/gallery/upload`
+2. Backend converts to WebP and stores in R2
+3. Response includes full CDN URL
+4. Use this URL directly in UI components
+
+### Gallery Components
+- `ImageGalleryManager`: Handles batch uploads and gallery management
+- `MediaPickerModal`: Allows selecting images from existing gallery
+- Both components handle full URLs from the API
