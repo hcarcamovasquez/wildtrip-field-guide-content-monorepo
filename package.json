@@ -4,7 +4,7 @@
   "private": true,
   "description": "Wildtrip Field Guide Content Management System Monorepo",
   "scripts": {
-    "dev": "concurrently --prefix=\"[{name}]\" --names=\"shared,web,backend,dashboard\" -c \"magenta,cyan,green,yellow\" \"pnpm run dev:shared\" \"pnpm run dev:web\" \"pnpm run dev:backend\" \"pnpm run dev:dashboard\"",
+    "dev": "concurrently --prefix=\"[{name}]\" --names=\"shared,backend,web,dashboard\" -c \"magenta,green,cyan,yellow\" \"pnpm run dev:shared\" \"pnpm run dev:backend\" \"pnpm run dev:web\" \"pnpm run dev:dashboard\"",
     "dev:web": "pnpm run --filter web dev",
     "dev:backend": "pnpm run --filter backend start:dev",
     "dev:dashboard": "pnpm run --filter dashboard dev",
