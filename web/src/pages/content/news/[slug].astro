@@ -7,7 +7,7 @@ import NewsHeader from '../../../components/public/news/NewsHeader.astro'
 import NewsShare from '../../../components/public/news/NewsShare.astro'
 import NewsTags from '../../../components/public/news/NewsTags.astro'
 import Layout from '../../../layouts/Layout.astro'
-import { publicNewsRepository } from '../../../lib/public/repositories'
+import { newsRepository } from '../../../lib/public/repositories'
 
 const { slug } = Astro.params
 
@@ -16,7 +16,7 @@ if (!slug) {
 }
 
 // Fetch news data using repository
-const newsData = await publicNewsRepository.findOneBySlug(slug)
+const newsData = await newsRepository.findBySlug(slug)
 
 if (!newsData) {
   return Astro.redirect('/404')

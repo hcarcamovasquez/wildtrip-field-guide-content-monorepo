@@ -5,7 +5,7 @@ import NewsFilters from '../../../components/public/news/NewsFilters.astro'
 import NewsGrid from '../../../components/public/news/NewsGrid.astro'
 import PageHeader from '../../../components/public/PageHeader.astro'
 import Layout from '../../../layouts/Layout.astro'
-import { publicNewsRepository } from '../../../lib/public/repositories'
+import { newsRepository } from '../../../lib/public/repositories'
 
 // Get URL parameters
 const url = new URL(Astro.request.url)
@@ -17,7 +17,7 @@ const category =
   (searchParams.get('category') as 'education' | 'current_events' | 'conservation' | 'research' | 'all') || ''
 
 // Use repository to fetch data
-const { data: allNews, pagination } = await publicNewsRepository.findPublishedWithPagination({
+const { data: allNews, pagination } = await newsRepository.findPublished({
   page,
   search,
   category,

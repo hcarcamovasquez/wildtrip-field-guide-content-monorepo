@@ -8,7 +8,7 @@ import ProtectedAreaHero from '../../../components/public/protected-area/Protect
 import ProtectedAreaInfo from '../../../components/public/protected-area/ProtectedAreaInfo.astro'
 import ProtectedAreaLocation from '../../../components/public/protected-area/ProtectedAreaLocation.astro'
 import Layout from '../../../layouts/Layout.astro'
-import { publicProtectedAreasRepository } from '../../../lib/public/repositories'
+import { protectedAreaRepository } from '../../../lib/public/repositories'
 import { renderContentBlock } from '../../../lib/utils/render-content'
 
 const { slug } = Astro.params
@@ -18,7 +18,7 @@ if (!slug) {
 }
 
 // Fetch protected area data with base content
-const areaData = await publicProtectedAreasRepository.findOneBySlug(slug)
+const areaData = await protectedAreaRepository.findBySlug(slug)
 
 if (!areaData) {
   return Astro.redirect('/404')

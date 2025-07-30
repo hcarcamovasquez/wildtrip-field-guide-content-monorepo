@@ -6,7 +6,7 @@ import Pagination from '../../../components/public/Pagination.astro'
 import SpeciesFilters from '../../../components/public/species/SpeciesFilters.astro'
 import SpeciesGrid from '../../../components/public/species/SpeciesGrid.astro'
 import Layout from '../../../layouts/Layout.astro'
-import { publicSpeciesRepository } from '../../../lib/public/repositories'
+import { speciesRepository } from '../../../lib/public/repositories'
 
 // Get URL parameters
 const url = new URL(Astro.request.url)
@@ -18,7 +18,7 @@ const conservationStatus = searchParams.get('status') || ''
 const mainGroup = searchParams.get('group') || ''
 
 // Use repository to fetch data
-const { data: allSpecies, pagination } = await publicSpeciesRepository.findAll({
+const { data: allSpecies, pagination } = await speciesRepository.findPublished({
   page,
   search,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

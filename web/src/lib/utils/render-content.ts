@@ -1,6 +1,6 @@
 import { getOptimizedImageUrl, generateSrcSet } from './cloudflare-images'
 
-import type { ContentBlock } from '../db/schema'
+import type { ContentBlock } from '@wildtrip/shared'
 
 export function renderContentBlock(block: ContentBlock): string {
   switch (block.type) {

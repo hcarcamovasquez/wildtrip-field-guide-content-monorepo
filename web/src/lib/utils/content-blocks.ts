@@ -1,4 +1,4 @@
-import type { ContentBlock } from '../db/schema/types'
+import type { ContentBlock } from '@wildtrip/shared'
 
 // Convert HTML to content blocks - DOM-based version for client-side
 export function htmlToContentBlocks(html: string): ContentBlock[] {

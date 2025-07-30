@@ -5,10 +5,8 @@ import ChevronLeft from '../components/public/icons/ChevronLeft.astro'
 import Clipboard from '../components/public/icons/Clipboard.astro'
 import Search from '../components/public/icons/Search.astro'
 import Layout from '../layouts/Layout.astro'
-import { canAccessRoute, type Role } from '../lib/utils/permissions'
-
 const currentUser = Astro.locals.user
-const userRole = currentUser?.role as Role | undefined
+const adminUrl = import.meta.env.PUBLIC_ADMIN_URL || 'http://localhost:5173'
 ---
 
 <Layout title="Página no encontrada - Guía de Campo Chile">
@@ -71,12 +69,12 @@ const userRole = currentUser?.role as Role | undefined
           </div>
         </div>
 
-        <!-- Management Link (if user has permissions) -->
+        <!-- Management Link (if user is signed in) -->
         {
-          userRole && canAccessRoute(userRole, '/manage') && (
+          currentUser && (
             <div class="border-t border-gray-200 pt-4 dark:border-gray-700">
               <a
-                href="/manage"
+                href={adminUrl}
                 class="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-600 transition-colors hover:text-primary dark:text-gray-400 dark:hover:text-primary"
               >
                 <Clipboard class="mr-2 h-4 w-4" />

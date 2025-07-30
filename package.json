@@ -4,14 +4,16 @@
   "private": true,
   "description": "Wildtrip Field Guide Content Management System Monorepo",
   "scripts": {
-    "dev": "concurrently --prefix=\"[{name}]\" --names=\"web,backend,dashboard\" -c \"cyan,green,yellow\" \"pnpm run dev:web\" \"pnpm run dev:backend\" \"pnpm run dev:dashboard\"",
+    "dev": "concurrently --prefix=\"[{name}]\" --names=\"shared,web,backend,dashboard\" -c \"magenta,cyan,green,yellow\" \"pnpm run dev:shared\" \"pnpm run dev:web\" \"pnpm run dev:backend\" \"pnpm run dev:dashboard\"",
     "dev:web": "pnpm run --filter web dev",
     "dev:backend": "pnpm run --filter backend start:dev",
     "dev:dashboard": "pnpm run --filter dashboard dev",
+    "dev:shared": "pnpm run --filter shared dev",
     "build": "pnpm run --recursive build",
     "build:web": "pnpm run --filter web build",
     "build:backend": "pnpm run --filter backend build",
     "build:dashboard": "pnpm run --filter dashboard build",
+    "build:shared": "pnpm run --filter shared build",
     "start": "pnpm run --parallel start",
     "start:web": "pnpm run --filter web start",
     "start:backend": "pnpm run --filter backend start:prod",
@@ -20,7 +22,7 @@
     "format": "pnpm run --parallel format",
     "type-check": "pnpm run --parallel type-check",
     "clean": "pnpm run --parallel clean",
-    "clean:deps": "rm -rf node_modules web/node_modules backend/node_modules dashboard/node_modules",
+    "clean:deps": "rm -rf node_modules web/node_modules backend/node_modules dashboard/node_modules shared/node_modules",
     "install:all": "pnpm install --recursive"
   },
   "devDependencies": {

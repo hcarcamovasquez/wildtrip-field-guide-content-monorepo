@@ -5,7 +5,7 @@ import PageHeader from '../../../components/public/PageHeader.astro'
 import ProtectedAreaFilters from '../../../components/public/protected-area/ProtectedAreaFilters.astro'
 import ProtectedAreaGrid from '../../../components/public/protected-area/ProtectedAreaGrid.astro'
 import Layout from '../../../layouts/Layout.astro'
-import { publicProtectedAreasRepository } from '../../../lib/public/repositories'
+import { protectedAreaRepository } from '../../../lib/public/repositories'
 
 // Get URL parameters
 const url = new URL(Astro.request.url)
@@ -22,7 +22,7 @@ const type = searchParams.get('type') as
 const region = searchParams.get('region') || ''
 
 // Use repository to fetch data
-const { data: allAreas, pagination } = await publicProtectedAreasRepository.findPublishedWithPagination({
+const { data: allAreas, pagination } = await protectedAreaRepository.findPublished({
   page,
   search,
   type,

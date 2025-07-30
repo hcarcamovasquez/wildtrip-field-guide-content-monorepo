@@ -1,7 +1,5 @@
 import { RedisCache } from '../cache/redis'
-import { db } from '../db/config.ts'
-import { species, news, protectedAreas } from '../db/schema'
-import { eq } from 'drizzle-orm'
+import { apiClient } from '../api/client'
 
 // Cache configuration
 const SITEMAP_URLS_CACHE_KEY = 'sitemap:dynamic-urls'
@@ -30,53 +28,77 @@ export async function getDynamicSitemapUrls(): Promise<DynamicUrl[]> {
   const urls: DynamicUrl[] = []
 
   try {
-    // Fetch all published species
-    const speciesList = await db
-      .select({
-        id: species.id,
-        updatedAt: species.updatedAt,
+    // Fetch all published species (get all pages)
+    let page = 1
+    let hasMore = true
+    
+    while (hasMore) {
+      const speciesResponse = await apiClient.species.findAll({
+        page,
+        limit: 100,
+        status: 'published'
       })
-      .from(species)
-      .where(eq(species.status, 'published'))
-
-    speciesList.forEach((item) => {
-      urls.push({
-        url: `/content/species/${item.id}`,
-        lastModified: item.updatedAt || undefined,
-      })
-    })
+      
+      if (speciesResponse.data) {
+        speciesResponse.data.forEach((item: any) => {
+          urls.push({
+            url: `/content/species/${item.slug}`,
+            lastModified: item.updatedAt ? new Date(item.updatedAt) : undefined,
+          })
+        })
+      }
+      
+      hasMore = page < (speciesResponse.totalPages || 0)
+      page++
+    }
 
     // Fetch all published news
-    const newsList = await db
-      .select({
-        id: news.id,
-        updatedAt: news.updatedAt,
+    page = 1
+    hasMore = true
+    
+    while (hasMore) {
+      const newsResponse = await apiClient.news.findAll({
+        page,
+        limit: 100,
+        status: 'published'
       })
-      .from(news)
-      .where(eq(news.status, 'published'))
-
-    newsList.forEach((item) => {
-      urls.push({
-        url: `/content/news/${item.id}`,
-        lastModified: item.updatedAt || undefined,
-      })
-    })
+      
+      if (newsResponse.data) {
+        newsResponse.data.forEach((item: any) => {
+          urls.push({
+            url: `/content/news/${item.slug}`,
+            lastModified: item.publishedAt ? new Date(item.publishedAt) : undefined,
+          })
+        })
+      }
+      
+      hasMore = page < (newsResponse.totalPages || 0)
+      page++
+    }
 
     // Fetch all published protected areas
-    const areasList = await db
-      .select({
-        id: protectedAreas.id,
-        updatedAt: protectedAreas.updatedAt,
+    page = 1
+    hasMore = true
+    
+    while (hasMore) {
+      const areasResponse = await apiClient.protectedAreas.findAll({
+        page,
+        limit: 100,
+        status: 'published'
       })
-      .from(protectedAreas)
-      .where(eq(protectedAreas.status, 'published'))
-
-    areasList.forEach((area) => {
-      urls.push({
-        url: `/content/protected-areas/${area.id}`,
-        lastModified: area.updatedAt || undefined,
-      })
-    })
+      
+      if (areasResponse.data) {
+        areasResponse.data.forEach((item: any) => {
+          urls.push({
+            url: `/content/protected-areas/${item.slug}`,
+            lastModified: item.updatedAt ? new Date(item.updatedAt) : undefined,
+          })
+        })
+      }
+      
+      hasMore = page < (areasResponse.totalPages || 0)
+      page++
+    }
 
     // Cache the results
     await RedisCache.set(SITEMAP_URLS_CACHE_KEY, urls, SITEMAP_CACHE_TTL)

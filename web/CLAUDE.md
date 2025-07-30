@@ -63,25 +63,15 @@ No test commands are currently configured. Check with the team for testing appro
 Create a `.env` file with these required variables:
 
 ```env
-# Database
-DATABASE_URL=postgresql://user:password@host:5432/database_name
-
 # Authentication (Clerk)
 PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_...
 CLERK_SECRET_KEY=sk_test_...
 
-# Redis Cache (Upstash)
-UPSTASH_REDIS_REST_URL=https://...
-UPSTASH_REDIS_REST_TOKEN=...
+# External Services URLs
+PUBLIC_API_URL=http://localhost:3000
+PUBLIC_ADMIN_URL=http://localhost:5173
 
-# AWS S3/R2 Storage
-R2_ACCOUNT_ID=your_account_id
-R2_ACCESS_KEY_ID=your_access_key_id
-R2_SECRET_ACCESS_KEY=your_secret_access_key
-R2_BUCKET_NAME=your_bucket_name
-PUBLIC_R2_PUBLIC_URL=https://your-public-r2-url.r2.dev
-
-# Server Configuration
+# Server Configuration (for production)
 PORT=4321
 HOST=0.0.0.0
 ```
@@ -92,37 +82,32 @@ HOST=0.0.0.0
 
 - **Framework**: Astro v5 with SSR
 - **Deployment**: Railway (Node.js adapter)
-- **Database**: PostgreSQL with Drizzle ORM
 - **Auth**: Clerk (Spanish localization)
 - **Styling**: Tailwind CSS v4
 - **UI Components**: shadcn/ui (Radix UI + Tailwind)
 - **Icons**: Lucide React
-- **Caching**: Upstash Redis
 - **Language**: TypeScript
 - **Shared Package**: `@wildtrip/shared` for types and constants
+- **API Client**: Consumes backend API for all data
 
 ### Key Directories
 
 - `src/pages/` - File-based routing
 - `src/components/public/` - Public UI components (Astro)
-- `src/components/manage/` - Management UI components (React + shadcn/ui)
 - `src/components/ui/` - shadcn/ui component library
-- `src/lib/db/schema/` - Database schema definitions
-- `src/lib/public/repositories/` - Public data access layer
-- `src/lib/private/repositories/` - Private/management data access
+- `src/lib/api/` - API client for backend communication
+- `src/lib/public/repositories/` - Public data access via API
 - `src/lib/utils/` - Utility functions
-- `src/middleware.ts` - Auth and user middleware chain
+- `src/middleware.ts` - Auth middleware
 
-### Database Schema
+### Data Access
 
-Main entities with base content system for drafts:
+All data is accessed through the backend API:
 
-- **baseContent** - Shared draft/publish workflow
-- **species** - Core species data with taxonomic info
-- **mediaGallery** - Image management system
-- **protectedAreas** - Parks and reserves
-- **news** - News articles
-- **users** - User management with Clerk integration
+- **Species** - Via `/api/species` endpoints
+- **Protected Areas** - Via `/api/protected-areas` endpoints
+- **News** - Via `/api/news` endpoints
+- **User Data** - From Clerk authentication
 
 ### Authentication Flow
 

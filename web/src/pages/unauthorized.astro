@@ -4,10 +4,8 @@ import { SignedIn, SignedOut } from '@clerk/astro/components'
 import AlertTriangle from '../components/public/icons/AlertTriangle.astro'
 import Home from '../components/public/icons/Home.astro'
 import Layout from '../layouts/Layout.astro'
-import { canAccessRoute, type Role } from '../lib/utils/permissions'
-
 const user = Astro.locals.user
-const userRole = user?.role as Role | undefined
+const adminUrl = import.meta.env.PUBLIC_ADMIN_URL || 'http://localhost:5173'
 ---
 
 <Layout title="Acceso denegado - Panel de Administración">
@@ -68,10 +66,10 @@ const userRole = user?.role as Role | undefined
 
           <SignedIn>
             {
-              userRole && canAccessRoute(userRole, '/manage') && (
+              user && (
                 <div>
                   <a
-                    href="/manage"
+                    href={adminUrl}
                     class="inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-base font-medium text-gray-700 transition-colors hover:bg-gray-50 focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:outline-none dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
                   >
                     <svg class="mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">

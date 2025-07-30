@@ -8,7 +8,7 @@ This is the Wildtrip Field Guide Content Monorepo with a microservices architect
 
 1. **web** - Public-facing Astro site (SSG/SSR hybrid for performance)
 2. **dashboard** - React SPA for content management (Vite + React + shadcn/ui)
-3. **backend** - Node.js API backend (currently NestJS, to be migrated)
+3. **backend** - Node.js API backend (NestJS with Drizzle ORM)
 4. **shared** - Shared types, utilities, and constants ✅
 
 ## Architecture Goals
@@ -29,6 +29,7 @@ wildtrip-field-guide-content-monorepo/
 ├── pnpm-workspace.yaml      # Monorepo configuration
 ├── package.json             # Root package.json
 └── MIGRATION_README.md      # Migration guide
+```
 
 ## Monorepo Commands
 
@@ -89,9 +90,9 @@ pnpm run preview
 cd backend
 
 # Development (port 3000)
-pnpm run dev
+pnpm run start:dev
 
-# Database operations (after migration to Drizzle)
+# Database operations
 pnpm run db:generate   # Generate migrations
 pnpm run db:migrate    # Run migrations
 pnpm run db:push       # Push schema (dev)
@@ -99,7 +100,7 @@ pnpm run db:studio     # Drizzle Studio
 
 # Build and start
 pnpm run build
-pnpm run start
+pnpm run start:prod
 ```
 
 #### shared (Shared Package)
@@ -180,22 +181,18 @@ dashboard/
 ```
 backend/
 ├── src/
-│   ├── routes/             # API routes
-│   │   ├── species/
-│   │   ├── protected-areas/
-│   │   ├── news/
-│   │   ├── gallery/
-│   │   └── users/
-│   ├── services/           # Business logic
-│   ├── repositories/       # Data access layer
-│   ├── db/
-│   │   ├── schema/         # Drizzle schemas
-│   │   └── migrations/
-│   ├── middleware/         # Auth, CORS, etc.
-│   └── server.ts           # Express/Fastify server
+│   ├── species/            # Species module
+│   ├── news/               # News module
+│   ├── protected-areas/    # Protected areas module
+│   ├── auth/               # Authentication guards
+│   ├── db/                 # Database configuration
+│   │   └── schema/         # Drizzle schemas
+│   ├── config/             # App configuration
+│   └── main.ts             # NestJS bootstrap
 ```
 
 **Key Points:**
+- NestJS framework
 - RESTful API
 - JWT authentication with Clerk
 - All database operations
@@ -228,6 +225,30 @@ shared/
 - Tree-shakeable exports
 - Used by all other packages
 
+## 📊 Estado Actual (Enero 2025)
+
+### ✅ Completado
+
+1. **Shared Package** - Types, constants, and utilities
+2. **Backend API** - NestJS with:
+   - Cookie authentication with Clerk
+   - Database schemas with Drizzle ORM
+   - Species, News, and Protected Areas modules
+   - Public and protected endpoints
+   - Draft/publish workflow
+   - Role-based access control
+
+### 🚧 En Progreso
+
+1. **Web** - Contains entire original project (needs separation)
+2. **Dashboard** - Initial Vite setup only (needs component migration)
+
+### ❌ Pendiente
+
+1. **Backend**: Gallery module, locks, Redis cache, user management
+2. **Dashboard**: Migrate React components from web, setup routing
+3. **Web**: Remove admin code, connect to backend API
+
 ## Authentication Flow
 
 1. **Public Site (web)**:
@@ -241,9 +262,9 @@ shared/
    - Maintains session with JWT tokens
 
 3. **Backend API (backend)**:
-   - Validates Clerk tokens
-   - Issues JWT for admin panel
-   - Protects all `/api/*` routes
+   - Validates Clerk tokens from cookies
+   - Protects all `/api/*` routes with guards
+   - Role-based access control
 
 ## Development Guidelines
 
@@ -259,11 +280,11 @@ shared/
 ```typescript
 // In React apps
 import { Button } from '@/components/ui/button'
-import { Species } from '@shared/types'
+import { Species } from '@wildtrip/shared/types'
 
 // In backend
 import { speciesRepository } from '../repositories/species'
-import { SpeciesType } from '@shared/types'
+import { SpeciesType } from '@wildtrip/shared/types'
 
 // In Astro
 import Layout from '../layouts/Layout.astro'
@@ -356,3 +377,12 @@ See [MIGRATION_README.md](./MIGRATION_README.md) for detailed migration steps.
 4. **Deployment**: Deploy only what changed
 5. **Security**: API isolated from public site
 6. **Maintenance**: Clear separation of concerns
+
+# important-instruction-reminders
+Do what has been asked; nothing more, nothing less.
+NEVER create files unless they're absolutely necessary for achieving your goal.
+ALWAYS prefer editing an existing file to creating a new one.
+NEVER proactively create documentation files (*.md) or README files. Only create documentation files if explicitly requested by the User.
+
+      
+      IMPORTANT: this context may or may not be relevant to your tasks. You should not respond to this context unless it is highly relevant to your task.

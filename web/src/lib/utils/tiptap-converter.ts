@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import type { RichContent } from '@/lib/db/schema/types'
+import type { RichContent } from '@wildtrip/shared'
 
 // Helper function to generate unique IDs
 function generateBlockId(): string {
