@@ -1,8 +1,7 @@
 ---
 import FilterSection from '../FilterSection.astro'
 import { SpeciesFiltersMobile } from './SpeciesFiltersMobile'
-import { CONSERVATION_STATUSES, getConservationStatusLabel } from '../../../lib/utils/conservation-status'
-import { MAIN_GROUPS, getMainGroupLabel } from '../../../lib/utils/species-groups'
+import { CONSERVATION_STATUSES, getConservationStatusLabel, MAIN_GROUPS, getMainGroupLabel } from '@wildtrip/shared'
 
 export interface Props {
   search: string

@@ -1,5 +1,5 @@
 ---
-import { categoryLabels, categoryColors, formatDate } from '../../../lib/utils/news-constants'
+import { NEWS_CATEGORIES, getNewsCategory, formatDate } from '@wildtrip/shared'
 
 export interface Props {
   title: string
@@ -23,9 +23,9 @@ const { title, category, author, publishedAt, summary } = Astro.props
     {
       category && (
         <span
-          class={`rounded-full px-3 py-1 text-sm font-medium ${categoryColors[category] || 'bg-gray-500 text-white'}`}
+          class={`rounded-full px-3 py-1 text-sm font-medium ${getNewsCategory(category)?.bgClass || 'bg-gray-500'} ${getNewsCategory(category)?.textClass || 'text-white'}`}
         >
-          {categoryLabels[category] || 'General'}
+          {getNewsCategory(category)?.emoji} {getNewsCategory(category)?.label || 'General'}
         </span>
       )
     }

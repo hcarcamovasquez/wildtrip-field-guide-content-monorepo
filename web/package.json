@@ -20,6 +20,7 @@
   },
   "dependencies": {
     "@astrojs/check": "^0.9.4",
+    "@wildtrip/shared": "workspace:*",
     "@astrojs/node": "^9.3.0",
     "@astrojs/react": "^4.3.0",
     "@astrojs/sitemap": "^3.4.1",

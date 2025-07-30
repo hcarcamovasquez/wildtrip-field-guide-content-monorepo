@@ -2,9 +2,8 @@
 import MapPin from '../icons/MapPin.astro'
 import ChevronRight from '../icons/ChevronRight.astro'
 import ResponsiveImage from '../ResponsiveImage.astro'
-import { PROTECTED_AREA_TYPES } from '../../../lib/utils/protected-area-types'
+import { PROTECTED_AREA_TYPES, getRegionLabel } from '@wildtrip/shared'
 import type { PublicProtectedArea } from '../../../lib/public/repositories'
-import { getRegionLabel } from '../../../lib/utils/chile-regions'
 
 export interface Props {
   area: PublicProtectedArea

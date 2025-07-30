@@ -2,7 +2,7 @@
 import Calendar from '../icons/Calendar.astro'
 import ChevronRight from '../icons/ChevronRight.astro'
 import ResponsiveImage from '../ResponsiveImage.astro'
-import { categoryLabels, categoryColors } from '../../../lib/utils/news-constants'
+import { getNewsCategory } from '@wildtrip/shared'
 
 export interface Props {
   newsItem: {
@@ -78,9 +78,9 @@ const { newsItem } = Astro.props
           newsItem.category && (
             <div class="absolute top-3 right-3">
               <span
-                class={`inline-flex items-center rounded-lg px-2.5 py-1 text-xs font-bold shadow-lg ${categoryColors[newsItem.category] || 'bg-gray-500 text-white'}`}
+                class={`inline-flex items-center rounded-lg px-2.5 py-1 text-xs font-bold shadow-lg ${getNewsCategory(newsItem.category)?.bgClass || 'bg-gray-500'} ${getNewsCategory(newsItem.category)?.textClass || 'text-white'}`}
               >
-                {categoryLabels[newsItem.category] || 'General'}
+                {getNewsCategory(newsItem.category)?.emoji} {getNewsCategory(newsItem.category)?.label || 'General'}
               </span>
             </div>
           )
@@ -96,7 +96,7 @@ const { newsItem } = Astro.props
       <div>
         <h3 class="mb-3 line-clamp-2 text-xl font-bold">{newsItem.title}</h3>
         <p class="mb-2 text-sm opacity-90">
-          {newsItem.category ? categoryLabels[newsItem.category] || 'General' : 'General'}
+          {newsItem.category ? `${getNewsCategory(newsItem.category)?.emoji} ${getNewsCategory(newsItem.category)?.label}` || 'General' : 'General'}
         </p>
 
         {newsItem.author && <p class="mb-3 text-sm opacity-90">Por {newsItem.author}</p>}
