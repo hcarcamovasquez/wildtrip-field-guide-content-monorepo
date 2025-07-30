@@ -10,7 +10,6 @@ import { NewsPage } from './pages/news'
 import { GalleryPage } from './pages/gallery'
 import { UsersPage } from './pages/users'
 import { UnauthorizedPage } from './pages/unauthorized'
-import { DebugPage } from './pages/debug'
 
 // Components
 import { Layout } from './components/Layout'
@@ -61,7 +60,6 @@ export default function App() {
                 <PermissionGuard>
                   <Routes>
                   <Route path="/unauthorized" element={<UnauthorizedPage />} />
-                  <Route path="/debug" element={<DebugPage />} />
                   <Route path="/*" element={
                     <Layout>
                       <Routes>
