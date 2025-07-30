@@ -13,6 +13,7 @@ import { UsersPage } from './pages/users'
 // Components
 import { Layout } from './components/Layout'
 import { LoadingScreen } from './components/LoadingScreen'
+import { ThemeProvider } from './components/theme-provider'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -46,21 +47,23 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 
 export default function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <Router>
-        <ProtectedRoute>
-          <Layout>
-            <Routes>
-              <Route path="/" element={<Navigate to="/species" replace />} />
-              <Route path="/species/*" element={<SpeciesPage />} />
-              <Route path="/protected-areas/*" element={<ProtectedAreasPage />} />
-              <Route path="/news/*" element={<NewsPage />} />
-              <Route path="/gallery/*" element={<GalleryPage />} />
-              <Route path="/users/*" element={<UsersPage />} />
-            </Routes>
-          </Layout>
-        </ProtectedRoute>
-      </Router>
-    </QueryClientProvider>
+    <ThemeProvider defaultTheme="system" storageKey="wildtrip-theme">
+      <QueryClientProvider client={queryClient}>
+        <Router>
+          <ProtectedRoute>
+            <Layout>
+              <Routes>
+                <Route path="/" element={<Navigate to="/species" replace />} />
+                <Route path="/species/*" element={<SpeciesPage />} />
+                <Route path="/protected-areas/*" element={<ProtectedAreasPage />} />
+                <Route path="/news/*" element={<NewsPage />} />
+                <Route path="/gallery/*" element={<GalleryPage />} />
+                <Route path="/users/*" element={<UsersPage />} />
+              </Routes>
+            </Layout>
+          </ProtectedRoute>
+        </Router>
+      </QueryClientProvider>
+    </ThemeProvider>
   )
 }
