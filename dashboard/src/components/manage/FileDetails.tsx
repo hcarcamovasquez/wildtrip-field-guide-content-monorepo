@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { getOptimizedImageUrl } from '@/lib/utils/cloudflare-images'
+import { apiClient } from '@/lib/api/client'
 import {
   X,
   Download,
@@ -116,14 +117,9 @@ export default function FileDetails({ file, onClose, onUpdate }: FileDetailsProp
     if (!confirm('¿Estás seguro de que quieres eliminar este archivo?')) return
 
     try {
-      const response = await fetch(`/api/manage/gallery/media/${file.id}`, {
-        method: 'DELETE',
-      })
-
-      if (response.ok) {
-        onClose()
-        window.location.reload()
-      }
+      await apiClient.gallery.deleteMedia(file.id)
+      onClose()
+      window.location.reload()
     } catch (error) {
       console.error('Error deleting file:', error)
     }

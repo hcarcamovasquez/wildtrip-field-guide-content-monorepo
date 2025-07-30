@@ -36,6 +36,7 @@ import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
 import { NEWS_CATEGORIES } from '@wildtrip/shared/constants'
+import { apiClient } from '@/lib/api/client'
 
 interface NewsFormData {
   title: string
@@ -154,9 +155,7 @@ export default function NewsForm({ initialData, isEditing = false, newsId, curre
     if (!newsId) return
 
     try {
-      const response = await fetch(`/api/manage/news/${newsId}/lock`, {
-        method: 'POST',
-      })
+      await apiClient.news.lock(newsId)
 
       if (response.ok) {
         setIsEditMode(true)
@@ -183,9 +182,7 @@ export default function NewsForm({ initialData, isEditing = false, newsId, curre
     if (!newsId) return
 
     try {
-      await fetch(`/api/manage/news/${newsId}/lock`, {
-        method: 'DELETE',
-      })
+      await apiClient.news.unlock(newsId)
     } catch (error) {
       console.error('Error releasing lock:', error)
     }

@@ -38,6 +38,7 @@ import SEOFieldsSection from './SEOFieldsSection'
 import type { SpeciesWithDetails } from '@/types'
 import { CONSERVATION_STATUSES, MAIN_GROUPS } from '@wildtrip/shared'
 import type { ContentBlock, ImageBlock, RichContent } from '@wildtrip/shared/types'
+import { apiClient } from '@/lib/api/client'
 
 interface SpeciesFormProps {
   species: SpeciesWithDetails
@@ -176,15 +177,14 @@ export default function SpeciesForm({ species, currentUserId, isEditing }: Speci
     return () => {
       if (hasLock && species.id) {
         // Use navigator.sendBeacon for reliable cleanup
-        navigator.sendBeacon(`/api/manage/species/${species.id}/lock`, JSON.stringify({ method: 'DELETE' }))
+        navigator.sendBeacon(`${import.meta.env.VITE_API_URL}/api/species/${species.id}/lock`, JSON.stringify({ method: 'DELETE' }))
       }
     }
   }, [hasLock, species.id])
 
   const checkLockStatus = async () => {
     try {
-      const response = await fetch(`/api/manage/species/${species.id}/lock`)
-      const data = await response.json()
+      const data = await apiClient.species.checkLock(species.id)
 
       if (data.isLocked) {
         if (data.lockedBy === currentUserId) {
@@ -204,9 +204,7 @@ export default function SpeciesForm({ species, currentUserId, isEditing }: Speci
 
   const releaseLock = async () => {
     try {
-      await fetch(`/api/manage/species/${species.id}/lock`, {
-        method: 'DELETE',
-      })
+      await apiClient.species.unlock(species.id)
       setHasLock(false)
     } catch (error) {
       console.error('Error releasing lock:', error)
@@ -217,22 +215,19 @@ export default function SpeciesForm({ species, currentUserId, isEditing }: Speci
     if (!species.id) return
 
     try {
-      const response = await fetch(`/api/manage/species/${species.id}/lock`, {
-        method: 'POST',
-      })
-
-      if (response.ok) {
-        setIsEditMode(true)
-        setShowEditConfirm(false)
-        setLockError(null)
-        setHasLock(true)
-      } else if (response.status === 409) {
-        const data = await response.json()
-        setLockError(`Este contenido está siendo editado por ${data.lockOwner?.name || 'otro usuario'}`)
-      }
-    } catch (error) {
+      await apiClient.species.lock(species.id)
+      setIsEditMode(true)
+      setShowEditConfirm(false)
+      setLockError(null)
+      setHasLock(true)
+    } catch (error: any) {
       console.error('Error acquiring lock:', error)
-      setLockError('Error al intentar editar el contenido')
+      if (error.response?.status === 409) {
+        const data = error.response.data
+        setLockError(`Este contenido está siendo editado por ${data.lockOwner?.name || 'otro usuario'}`)
+      } else {
+        setLockError('Error al intentar editar el contenido')
+      }
     }
   }
 
@@ -307,17 +302,7 @@ export default function SpeciesForm({ species, currentUserId, isEditing }: Speci
     setUpdating(field)
 
     try {
-      const response = await fetch(`/api/manage/species/${species.id}/field`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ field, value }),
-      })
-
-      if (!response.ok) {
-        throw new Error('Error al guardar')
-      }
-
-      const data = await response.json()
+      const data = await apiClient.species.update(species.id, { [field]: value })
       
       setFieldSuccess(field)
       setTimeout(() => setFieldSuccess(null), 3000)
@@ -370,16 +355,13 @@ export default function SpeciesForm({ species, currentUserId, isEditing }: Speci
 
       if (species.status === 'published' && hasDraft) {
         // Publish draft changes
-        response = await fetch(`/api/manage/species/${species.id}/publish-draft`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-        })
+        // For now, use update to publish (backend needs publish endpoint)
+        response = await apiClient.species.update(species.id, { status: 'published' })
       } else {
         // First time publish
-        response = await fetch(`/api/manage/species/${species.id}`, {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ status: 'published', publishedAt: new Date().toISOString() }),
+        response = await apiClient.species.update(species.id, { 
+          status: 'published', 
+          publishedAt: new Date().toISOString() 
         })
       }
 
@@ -401,16 +383,8 @@ export default function SpeciesForm({ species, currentUserId, isEditing }: Speci
     setIsSaving(true)
 
     try {
-      const response = await fetch(`/api/manage/species/${species.id}/discard-draft`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      })
-
-      if (!response.ok) {
-        throw new Error('Error al descartar cambios')
-      }
+      // For now, reload to discard changes (backend needs discard endpoint)
+      window.location.reload()
 
       // Recargar la página para mostrar la versión publicada
       window.location.reload()

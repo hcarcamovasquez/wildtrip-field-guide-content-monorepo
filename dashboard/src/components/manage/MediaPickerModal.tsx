@@ -15,6 +15,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { validateImageFile, convertToWebP } from '@/lib/utils/image-upload'
 import { getOptimizedImageUrl } from '@/lib/utils/cloudflare-images'
+import { apiClient } from '@/lib/api/client'
 
 interface MediaItem {
   id: number
@@ -107,16 +108,9 @@ export default function MediaPickerModal({ open, onOpenChange, onSelect, multiSe
 
         // Source info no longer needed - relationships stored in JSON columns
 
-        const response = await fetch('/api/manage/gallery/upload', {
-          method: 'POST',
-          body: formData,
-        })
-
-        if (response.ok) {
-          const media = await response.json()
-          if (media) {
-            uploadedItems.push(media)
-          }
+        const media = await apiClient.gallery.upload(fileToUpload, { folderId: null })
+        if (media) {
+          uploadedItems.push(media)
         }
       }
 

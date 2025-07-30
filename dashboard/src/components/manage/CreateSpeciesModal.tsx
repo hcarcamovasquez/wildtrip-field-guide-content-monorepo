@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { apiClient } from '@/lib/api/client'
 import {
   Dialog,
   DialogContent,
@@ -34,22 +35,13 @@ export function CreateSpeciesModal({ open, onClose, onSuccess }: CreateSpeciesMo
 
     setCreating(true)
     try {
-      const response = await fetch('/api/manage/species', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          scientificName: formData.scientificName.trim(),
-          commonName: formData.commonName.trim(),
-        }),
+      const data = await apiClient.species.create({
+        scientificName: formData.scientificName.trim(),
+        commonName: formData.commonName.trim(),
       })
-
-      if (response.ok) {
-        const data = await response.json()
-        onSuccess(data.id)
-        setFormData({ scientificName: '', commonName: '' })
-      }
+      
+      onSuccess(data.id)
+      setFormData({ scientificName: '', commonName: '' })
     } catch (error) {
       console.error('Error creating species:', error)
     } finally {

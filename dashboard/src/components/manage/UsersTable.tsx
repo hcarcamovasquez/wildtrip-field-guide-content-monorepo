@@ -16,6 +16,7 @@ import {
 } from 'lucide-react'
 import { useState } from 'react'
 import { Badge } from '@/components/ui/badge'
+import { apiClient } from '@/lib/api/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
@@ -140,18 +141,7 @@ export default function UsersTable({ users, pagination, currentUserId, searchPar
 
     setIsUpdating(true)
     try {
-      const response = await fetch(`/api/manage/users/${roleChangeModal.user.id}/role`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ role: selectedRole }),
-      })
-
-      if (!response.ok) {
-        throw new Error('Error al actualizar el rol')
-      }
-
+      await apiClient.users.update(roleChangeModal.user.id, { role: selectedRole })
       // Recargar la página para mostrar los cambios (enfoque MPA)
       window.location.reload()
     } catch (error) {

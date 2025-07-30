@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
+import { apiClient } from '@/lib/api/client'
 import {
   Dialog,
   DialogContent,
@@ -29,26 +30,14 @@ export function CreateNewsModal({ open, onClose, onSuccess }: CreateNewsModalPro
     setLoading(true)
 
     try {
-      const response = await fetch('/api/manage/news', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          ...formData,
-          status: 'draft',
-          content: { blocks: [], version: '1.0' },
-          category: 'education',
-          author: '',
-          summary: '',
-        }),
+      const data = await apiClient.news.create({
+        ...formData,
+        status: 'draft',
+        content: { blocks: [], version: '1.0' },
+        category: 'education',
+        author: '',
+        summary: '',
       })
-
-      if (!response.ok) {
-        throw new Error('Error al crear la noticia')
-      }
-
-      const data = await response.json()
 
       // Call onSuccess if provided
       if (onSuccess) {
