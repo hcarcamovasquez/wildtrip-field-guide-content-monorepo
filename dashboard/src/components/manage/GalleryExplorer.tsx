@@ -1,0 +1,703 @@
+import { useState, useRef } from 'react'
+import {
+  Folder,
+  FolderOpen,
+  Upload,
+  Search,
+  Grid3x3,
+  List,
+  MoreVertical,
+  Download,
+  Trash2,
+  Edit3,
+  Move,
+  Eye,
+  Copy,
+  Image,
+  Video,
+  Home,
+  ChevronRight,
+  FolderPlus,
+  HardDrive,
+} from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
+import { Card, CardContent } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { Checkbox } from '@/components/ui/checkbox'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
+import { Label } from '@/components/ui/label'
+import { ScrollArea } from '@/components/ui/scroll-area'
+import { convertToWebP } from '@/lib/utils/image-upload'
+import FileDetails from './FileDetails'
+import type { MediaGallery, MediaFolder } from '@/lib/db/schema'
+
+interface FolderWithCount extends MediaFolder {
+  fileCount: number
+  folderCount: number
+}
+
+interface MediaWithFolder extends MediaGallery {
+  folder?: MediaFolder | null
+}
+
+interface GalleryExplorerProps {
+  initialData: {
+    currentFolder: MediaFolder | null
+    breadcrumb: MediaFolder[]
+    folders: FolderWithCount[]
+    media: MediaWithFolder[]
+    stats: {
+      totalSize: number
+      totalFiles: number
+      totalFolders: number
+      byType: { type: string; count: number; size: number }[]
+    }
+    currentUser: {
+      id: string
+      name: string
+      role: string
+    }
+  }
+}
+
+export default function GalleryExplorer({ initialData }: GalleryExplorerProps) {
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('list')
+  const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set())
+  const [selectedFile, setSelectedFile] = useState<MediaWithFolder | null>(null)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [folders, setFolders] = useState(initialData.folders)
+  const [media, setMedia] = useState(initialData.media)
+  const [uploading, setUploading] = useState(false)
+  const [showNewFolderDialog, setShowNewFolderDialog] = useState(false)
+  const [newFolderName, setNewFolderName] = useState('')
+  const [showMoveDialog, setShowMoveDialog] = useState(false)
+  const [targetFolderId, setTargetFolderId] = useState<number | null>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
+  const formatFileSize = (bytes: number) => {
+    if (bytes === 0) return '0 Bytes'
+    const k = 1024
+    const sizes = ['Bytes', 'KB', 'MB', 'GB']
+    const i = Math.floor(Math.log(bytes) / Math.log(k))
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
+  }
+
+  const formatDate = (date: string) => {
+    return new Date(date).toLocaleDateString('es-CL', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    })
+  }
+
+  const handleSelectAll = () => {
+    if (selectedItems.size === folders.length + media.length) {
+      setSelectedItems(new Set())
+    } else {
+      const allIds = new Set<string>()
+      folders.forEach((f) => allIds.add(`folder-${f.id}`))
+      media.forEach((m) => allIds.add(`media-${m.id}`))
+      setSelectedItems(allIds)
+    }
+  }
+
+  const handleSelectItem = (id: string) => {
+    const newSelected = new Set(selectedItems)
+    if (newSelected.has(id)) {
+      newSelected.delete(id)
+    } else {
+      newSelected.add(id)
+    }
+    setSelectedItems(newSelected)
+  }
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files
+    if (!files || files.length === 0) return
+
+    setUploading(true)
+    try {
+      for (const file of files) {
+        if (!file.type.startsWith('image/') && !file.type.startsWith('video/')) {
+          continue
+        }
+
+        let uploadFile = file
+        // Convert images to WebP
+        if (file.type.startsWith('image/')) {
+          uploadFile = await convertToWebP(file)
+        }
+
+        const formData = new FormData()
+        formData.append('file', uploadFile)
+        formData.append('originalName', file.name)
+        if (initialData.currentFolder) {
+          formData.append('folderId', initialData.currentFolder.id.toString())
+        }
+
+        const response = await fetch('/api/manage/gallery/upload', {
+          method: 'POST',
+          body: formData,
+        })
+
+        if (response.ok) {
+          const newMedia = await response.json()
+          setMedia((prev) => [newMedia, ...prev])
+        }
+      }
+    } catch (error) {
+      console.error('Error uploading files:', error)
+    } finally {
+      setUploading(false)
+      if (fileInputRef.current) {
+        fileInputRef.current.value = ''
+      }
+    }
+  }
+
+  const handleCreateFolder = async () => {
+    if (!newFolderName.trim()) return
+
+    try {
+      const response = await fetch('/api/manage/gallery/folders', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: newFolderName,
+          parentId: initialData.currentFolder?.id || null,
+        }),
+      })
+
+      if (response.ok) {
+        const newFolder = await response.json()
+        setFolders((prev) => [...prev, { ...newFolder, fileCount: 0, folderCount: 0 }])
+        setNewFolderName('')
+        setShowNewFolderDialog(false)
+      }
+    } catch (error) {
+      console.error('Error creating folder:', error)
+    }
+  }
+
+  const handleDeleteSelected = async () => {
+    if (selectedItems.size === 0) return
+
+    if (!confirm(`¿Eliminar ${selectedItems.size} elementos seleccionados?`)) return
+
+    try {
+      const mediaIds: number[] = []
+      const folderIds: number[] = []
+
+      selectedItems.forEach((id) => {
+        if (id.startsWith('media-')) {
+          mediaIds.push(parseInt(id.replace('media-', '')))
+        } else if (id.startsWith('folder-')) {
+          folderIds.push(parseInt(id.replace('folder-', '')))
+        }
+      })
+
+      // Delete media files
+      if (mediaIds.length > 0) {
+        await fetch('/api/manage/gallery/media/batch-delete', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ids: mediaIds }),
+        })
+        setMedia((prev) => prev.filter((m) => !mediaIds.includes(m.id)))
+      }
+
+      // Delete folders
+      for (const folderId of folderIds) {
+        await fetch(`/api/manage/gallery/folders/${folderId}`, {
+          method: 'DELETE',
+        })
+        setFolders((prev) => prev.filter((f) => f.id !== folderId))
+      }
+
+      setSelectedItems(new Set())
+    } catch (error) {
+      console.error('Error deleting items:', error)
+    }
+  }
+
+  const handleMoveSelected = async () => {
+    if (selectedItems.size === 0) return
+
+    try {
+      const mediaIds: number[] = []
+      selectedItems.forEach((id) => {
+        if (id.startsWith('media-')) {
+          mediaIds.push(parseInt(id.replace('media-', '')))
+        }
+      })
+
+      if (mediaIds.length > 0) {
+        await fetch('/api/manage/gallery/media/move', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            ids: mediaIds,
+            targetFolderId,
+          }),
+        })
+
+        // Remove moved items from current view
+        setMedia((prev) => prev.filter((m) => !mediaIds.includes(m.id)))
+        setSelectedItems(new Set())
+        setShowMoveDialog(false)
+      }
+    } catch (error) {
+      console.error('Error moving items:', error)
+    }
+  }
+
+  const getItemIcon = (item: MediaWithFolder | FolderWithCount) => {
+    if ('fileCount' in item) {
+      return item.fileCount > 0 || item.folderCount > 0 ? FolderOpen : Folder
+    }
+    return item.type === 'video' ? Video : Image
+  }
+
+  const filteredMedia = media.filter(
+    (m) =>
+      searchQuery === '' ||
+      m.filename.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      m.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      m.description?.toLowerCase().includes(searchQuery.toLowerCase()),
+  )
+
+  const filteredFolders = folders.filter(
+    (f) => searchQuery === '' || f.name.toLowerCase().includes(searchQuery.toLowerCase()),
+  )
+
+  return (
+    <div className="flex h-full">
+      {/* Main content area */}
+      <div className="flex flex-1 flex-col">
+        {/* Fixed Header Container */}
+        <div className="flex-shrink-0 border-b bg-background">
+          {/* Header */}
+          <div className="px-6 py-4">
+            <div className="mb-4 flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <h1 className="text-2xl font-bold">Galería de Medios</h1>
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <HardDrive className="h-4 w-4" />
+                  <span>{initialData.stats.totalFiles} archivos</span>
+                  <span>•</span>
+                  <span>{formatFileSize(initialData.stats.totalSize)}</span>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <Button variant="outline" size="sm" onClick={() => setShowNewFolderDialog(true)}>
+                  <FolderPlus className="mr-2 h-4 w-4" />
+                  Nueva Carpeta
+                </Button>
+                <Button size="sm" onClick={() => fileInputRef.current?.click()} disabled={uploading}>
+                  <Upload className="mr-2 h-4 w-4" />
+                  {uploading ? 'Subiendo...' : 'Subir Archivos'}
+                </Button>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  multiple
+                  accept="image/*,video/*"
+                  onChange={handleFileUpload}
+                  className="hidden"
+                />
+              </div>
+            </div>
+
+            {/* Breadcrumb */}
+            <div className="flex items-center gap-2 text-sm">
+              <Button variant="ghost" size="sm" className="h-7 px-2" asChild>
+                <a href="/manage/gallery">
+                  <Home className="h-4 w-4" />
+                </a>
+              </Button>
+              {initialData.breadcrumb.map((folder) => (
+                <div key={folder.id} className="flex items-center gap-2">
+                  <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                  <Button variant="ghost" size="sm" className="h-7 px-2" asChild>
+                    <a href={`/manage/gallery?folder=${folder.id}`}>{folder.name}</a>
+                  </Button>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Toolbar */}
+          <div className="border-t px-6 py-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className="relative w-64">
+                  <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                  <Input
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="Buscar archivos..."
+                    className="pl-9"
+                  />
+                </div>
+                {selectedItems.size > 0 && (
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm text-muted-foreground">{selectedItems.size} seleccionados</span>
+                    <Button variant="outline" size="sm" onClick={() => setShowMoveDialog(true)}>
+                      <Move className="mr-2 h-4 w-4" />
+                      Mover
+                    </Button>
+                    <Button variant="outline" size="sm" onClick={handleDeleteSelected} className="text-destructive">
+                      <Trash2 className="mr-2 h-4 w-4" />
+                      Eliminar
+                    </Button>
+                  </div>
+                )}
+              </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant={viewMode === 'list' ? 'secondary' : 'ghost'}
+                  size="icon"
+                  onClick={() => setViewMode('list')}
+                >
+                  <List className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant={viewMode === 'grid' ? 'secondary' : 'ghost'}
+                  size="icon"
+                  onClick={() => setViewMode('grid')}
+                >
+                  <Grid3x3 className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* File list/grid */}
+        <div className="relative flex-1 overflow-auto">
+          {viewMode === 'list' ? (
+            <div className="h-full">
+              <table className="w-full">
+                <thead className="sticky top-0 z-10 bg-background shadow-sm">
+                  <tr className="border-b text-left">
+                    <th className="w-10 bg-background px-6 py-3 pr-4">
+                      <Checkbox
+                        checked={
+                          selectedItems.size === filteredFolders.length + filteredMedia.length && selectedItems.size > 0
+                        }
+                        onCheckedChange={handleSelectAll}
+                      />
+                    </th>
+                    <th className="bg-background px-6 py-3 pr-4 font-medium">Nombre</th>
+                    <th className="bg-background px-6 py-3 pr-4 font-medium">Tamaño</th>
+                    <th className="bg-background px-6 py-3 pr-4 font-medium">Tipo</th>
+                    <th className="bg-background px-6 py-3 pr-4 font-medium">Modificado</th>
+                    <th className="w-10 bg-background px-6 py-3"></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {/* Folders */}
+                  {filteredFolders.map((folder) => {
+                    const Icon = getItemIcon(folder)
+                    const itemId = `folder-${folder.id}`
+                    return (
+                      <tr key={itemId} className="border-b hover:bg-muted/50">
+                        <td className="px-6 py-3 pr-4">
+                          <Checkbox
+                            checked={selectedItems.has(itemId)}
+                            onCheckedChange={() => handleSelectItem(itemId)}
+                            onClick={(e) => e.stopPropagation()}
+                          />
+                        </td>
+                        <td className="px-6 py-3 pr-4">
+                          <div className="flex items-center gap-3">
+                            <Icon className="h-5 w-5 text-muted-foreground" />
+                            <button
+                              onClick={() => (window.location.href = `/manage/gallery?folder=${folder.id}`)}
+                              className="text-left hover:underline"
+                            >
+                              <div className="font-medium">{folder.name}</div>
+                              <div className="text-sm text-muted-foreground">
+                                {folder.fileCount} archivos, {folder.folderCount} carpetas
+                              </div>
+                            </button>
+                          </div>
+                        </td>
+                        <td className="px-6 py-3 pr-4 text-muted-foreground">—</td>
+                        <td className="px-6 py-3 pr-4">
+                          <Badge variant="secondary">Carpeta</Badge>
+                        </td>
+                        <td className="px-6 py-3 pr-4 text-muted-foreground">
+                          {formatDate(folder.updatedAt.toISOString())}
+                        </td>
+                        <td className="px-6 py-3">
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" size="icon">
+                                <MoreVertical className="h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuItem
+                                onClick={() => (window.location.href = `/manage/gallery?folder=${folder.id}`)}
+                              >
+                                <FolderOpen className="mr-2 h-4 w-4" />
+                                Abrir
+                              </DropdownMenuItem>
+                              <DropdownMenuItem>
+                                <Edit3 className="mr-2 h-4 w-4" />
+                                Renombrar
+                              </DropdownMenuItem>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem className="text-destructive">
+                                <Trash2 className="mr-2 h-4 w-4" />
+                                Eliminar
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </td>
+                      </tr>
+                    )
+                  })}
+
+                  {/* Media files */}
+                  {filteredMedia.map((file) => {
+                    const Icon = getItemIcon(file)
+                    const itemId = `media-${file.id}`
+                    return (
+                      <tr
+                        key={itemId}
+                        className="cursor-pointer border-b hover:bg-muted/50"
+                        onClick={() => setSelectedFile(file)}
+                      >
+                        <td className="px-6 py-3 pr-4">
+                          <Checkbox
+                            checked={selectedItems.has(itemId)}
+                            onCheckedChange={() => handleSelectItem(itemId)}
+                            onClick={(e) => e.stopPropagation()}
+                          />
+                        </td>
+                        <td className="px-6 py-3 pr-4">
+                          <div className="flex items-center gap-3">
+                            {file.type === 'image' && file.url ? (
+                              <img
+                                src={file.url}
+                                alt={file.title || file.filename}
+                                className="h-10 w-10 rounded object-cover"
+                              />
+                            ) : (
+                              <Icon className="h-5 w-5 text-muted-foreground" />
+                            )}
+                            <div>
+                              <div className="font-medium">{file.title || file.filename}</div>
+                              {file.description && (
+                                <div className="line-clamp-1 text-sm text-muted-foreground">{file.description}</div>
+                              )}
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-6 py-3 pr-4 text-muted-foreground">{formatFileSize(file.size)}</td>
+                        <td className="px-6 py-3 pr-4">
+                          <Badge variant="outline">{file.type === 'image' ? 'Imagen' : 'Video'}</Badge>
+                        </td>
+                        <td className="px-6 py-3 pr-4 text-muted-foreground">
+                          {formatDate(file.updatedAt.toISOString())}
+                        </td>
+                        <td className="px-6 py-3">
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" size="icon">
+                                <MoreVertical className="h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuItem onClick={() => setSelectedFile(file)}>
+                                <Eye className="mr-2 h-4 w-4" />
+                                Ver detalles
+                              </DropdownMenuItem>
+                              <DropdownMenuItem>
+                                <Edit3 className="mr-2 h-4 w-4" />
+                                Editar
+                              </DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => navigator.clipboard.writeText(file.url)}>
+                                <Copy className="mr-2 h-4 w-4" />
+                                Copiar URL
+                              </DropdownMenuItem>
+                              <DropdownMenuItem asChild>
+                                <a href={file.url} download={file.filename}>
+                                  <Download className="mr-2 h-4 w-4" />
+                                  Descargar
+                                </a>
+                              </DropdownMenuItem>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem className="text-destructive">
+                                <Trash2 className="mr-2 h-4 w-4" />
+                                Eliminar
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </td>
+                      </tr>
+                    )
+                  })}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 gap-4 p-6 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
+              {/* Folders */}
+              {filteredFolders.map((folder) => {
+                const itemId = `folder-${folder.id}`
+                return (
+                  <Card
+                    key={itemId}
+                    className="cursor-pointer transition-shadow hover:shadow-md"
+                    onClick={() => (window.location.href = `/manage/gallery?folder=${folder.id}`)}
+                  >
+                    <CardContent className="p-4">
+                      <div className="mb-3 flex items-start justify-between">
+                        <Folder className="h-8 w-8 text-muted-foreground" />
+                        <Checkbox
+                          checked={selectedItems.has(itemId)}
+                          onCheckedChange={() => handleSelectItem(itemId)}
+                          onClick={(e) => e.stopPropagation()}
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <div className="line-clamp-2 text-sm font-medium">{folder.name}</div>
+                        <div className="text-xs text-muted-foreground">{folder.fileCount} archivos</div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )
+              })}
+
+              {/* Media files */}
+              {filteredMedia.map((file) => {
+                const itemId = `media-${file.id}`
+                return (
+                  <Card
+                    key={itemId}
+                    className="cursor-pointer transition-shadow hover:shadow-md"
+                    onClick={() => setSelectedFile(file)}
+                  >
+                    <CardContent className="p-4">
+                      <div className="mb-3 flex items-start justify-between">
+                        {file.type === 'image' && file.url ? (
+                          <img
+                            src={file.url}
+                            alt={file.title || file.filename}
+                            className="h-24 w-full rounded object-cover"
+                          />
+                        ) : (
+                          <Video className="h-8 w-8 text-muted-foreground" />
+                        )}
+                        <Checkbox
+                          checked={selectedItems.has(itemId)}
+                          onCheckedChange={() => handleSelectItem(itemId)}
+                          onClick={(e) => e.stopPropagation()}
+                          className="absolute top-2 right-2 rounded bg-white"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <div className="line-clamp-2 text-sm font-medium">{file.title || file.filename}</div>
+                        <div className="text-xs text-muted-foreground">{formatFileSize(file.size)}</div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )
+              })}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* File details sidebar */}
+      {selectedFile && (
+        <FileDetails
+          file={selectedFile}
+          onClose={() => setSelectedFile(null)}
+          onUpdate={(updatedFile) => {
+            setMedia((prev) => prev.map((m) => (m.id === updatedFile.id ? updatedFile : m)))
+            setSelectedFile(updatedFile)
+          }}
+        />
+      )}
+
+      {/* New folder dialog */}
+      <Dialog open={showNewFolderDialog} onOpenChange={setShowNewFolderDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Nueva Carpeta</DialogTitle>
+            <DialogDescription>Crea una nueva carpeta para organizar tus archivos</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="folder-name">Nombre de la carpeta</Label>
+              <Input
+                id="folder-name"
+                value={newFolderName}
+                onChange={(e) => setNewFolderName(e.target.value)}
+                placeholder="Mi carpeta"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowNewFolderDialog(false)}>
+              Cancelar
+            </Button>
+            <Button onClick={handleCreateFolder}>Crear Carpeta</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Move dialog */}
+      <Dialog open={showMoveDialog} onOpenChange={setShowMoveDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Mover Archivos</DialogTitle>
+            <DialogDescription>
+              Selecciona la carpeta de destino para mover los archivos seleccionados
+            </DialogDescription>
+          </DialogHeader>
+          <ScrollArea className="h-64">
+            <div className="space-y-2">
+              <Button
+                variant={targetFolderId === null ? 'secondary' : 'ghost'}
+                className="w-full justify-start"
+                onClick={() => setTargetFolderId(null)}
+              >
+                <Home className="mr-2 h-4 w-4" />
+                Raíz
+              </Button>
+              {/* Nota: La carga recursiva de carpetas se implementará cuando sea necesario para mejorar la navegación */}
+            </div>
+          </ScrollArea>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowMoveDialog(false)}>
+              Cancelar
+            </Button>
+            <Button onClick={handleMoveSelected}>Mover Aquí</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
+  )
+}
