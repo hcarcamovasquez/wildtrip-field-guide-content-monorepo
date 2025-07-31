@@ -87,6 +87,36 @@ export class GalleryController {
     );
   }
 
+  @Post('upload-chunk')
+  @UseInterceptors(FileInterceptor('chunk'))
+  uploadChunk(
+    @UploadedFile() chunk: Express.Multer.File,
+    @Body() chunkData: any,
+    @CurrentUser() user: ICurrentUser,
+  ) {
+    if (!chunk) {
+      throw new BadRequestException('No chunk provided');
+    }
+    
+    return this.galleryService.uploadChunk(
+      chunk,
+      chunkData,
+      user.id,
+    );
+  }
+
+  @Post('upload-complete')
+  completeUpload(
+    @Body() completeData: any,
+    @CurrentUser() user: ICurrentUser,
+  ) {
+    return this.galleryService.completeChunkedUpload(
+      completeData,
+      user.id,
+      `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.email,
+    );
+  }
+
   @Patch('media/:id')
   updateMedia(@Param('id') id: string, @Body() updateData: any) {
     return this.galleryService.updateMedia(+id, updateData);

@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
-import { Check, Upload, Search, Grid, List, Image as ImageIcon } from 'lucide-react'
+import { Check, Upload, Search, Grid, List, Image as ImageIcon, CheckCircle2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import {
   Dialog,
@@ -16,6 +16,7 @@ import { ScrollArea } from '@/components/ui/scroll-area'
 import { validateImageFile, convertToWebP } from '@/lib/utils/image-upload'
 import { getOptimizedImageUrl } from '@/lib/utils/cloudflare-images'
 import { apiClient } from '@/lib/api/client'
+import { uploadFileInChunks, shouldUseChunkedUpload, formatUploadProgress } from '@/lib/utils/chunked-upload'
 
 interface MediaItem {
   id: number
@@ -47,6 +48,9 @@ export default function MediaPickerModal({ open, onOpenChange, onSelect, multiSe
   const [currentPage, setCurrentPage] = useState(1)
   const [hasMore, setHasMore] = useState(true)
   const [loadingMore, setLoadingMore] = useState(false)
+  const [uploadProgress, setUploadProgress] = useState<{[key: string]: number}>({})
+  const [uploadingFiles, setUploadingFiles] = useState<{[key: string]: string}>({})
+  const [completedFiles, setCompletedFiles] = useState<{[key: string]: string}>({})
   const scrollAreaRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -115,23 +119,77 @@ export default function MediaPickerModal({ open, onOpenChange, onSelect, multiSe
     const uploadedItems: MediaItem[] = []
 
     try {
-      for (const file of Array.from(files)) {
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i]
+        const fileId = `${file.name}_${i}_${Date.now()}`
+        
         const validation = validateImageFile(file)
         if (!validation.valid) {
           alert(validation.error)
           continue
         }
 
+        // Set initial progress
+        setUploadingFiles(prev => ({ ...prev, [fileId]: file.name }))
+        setUploadProgress(prev => ({ ...prev, [fileId]: 0 }))
+
         const fileToUpload = await convertToWebP(file)
-        const formData = new FormData()
-        formData.append('file', fileToUpload)
-        formData.append('folderId', '') // Root folder
+        
+        // Determine upload method based on file size 
+        const useChunkedUpload = shouldUseChunkedUpload(fileToUpload, 2 * 1024 * 1024) // 2MB threshold
 
-        // Source info no longer needed - relationships stored in JSON columns
+        let media
+        if (useChunkedUpload) {
+          console.log(`Using chunked upload for ${file.name} (${file.size} bytes)`)
+          const result = await uploadFileInChunks({
+            file: fileToUpload,
+            folderId: null,
+            chunkSize: 512 * 1024, // 512KB chunks
+            onProgress: (progress) => {
+              setUploadProgress(prev => ({ ...prev, [fileId]: progress }))
+            },
+            onChunkComplete: (chunkIndex, totalChunks) => {
+              const progress = ((chunkIndex + 1) / totalChunks) * 90
+              setUploadProgress(prev => ({ ...prev, [fileId]: progress }))
+            }
+          })
+          
+          if (result.success) {
+            media = result.media
+          } else {
+            throw new Error(result.error || 'Chunked upload failed')
+          }
+        } else {
+          // Use regular upload for smaller files
+          console.log(`Using regular upload for ${file.name} (${file.size} bytes)`)
+          media = await apiClient.gallery.upload(fileToUpload, { folderId: null })
+          setUploadProgress(prev => ({ ...prev, [fileId]: 100 }))
+        }
 
-        const media = await apiClient.gallery.upload(fileToUpload, { folderId: null })
         if (media) {
           uploadedItems.push(media)
+          
+          // Show success state
+          setCompletedFiles(prev => ({ ...prev, [fileId]: file.name }))
+          
+          // Clean up progress tracking after showing success
+          setTimeout(() => {
+            setUploadingFiles(prev => {
+              const newState = { ...prev }
+              delete newState[fileId]
+              return newState
+            })
+            setUploadProgress(prev => {
+              const newState = { ...prev }
+              delete newState[fileId]
+              return newState
+            })
+            setCompletedFiles(prev => {
+              const newState = { ...prev }
+              delete newState[fileId]
+              return newState
+            })
+          }, 2000) // Increased delay to show success state
         }
       }
 
@@ -265,8 +323,14 @@ export default function MediaPickerModal({ open, onOpenChange, onSelect, multiSe
               <div className="px-6">
                 {uploading ? (
                   <div className="flex h-64 flex-col items-center justify-center">
-                    <div className="mb-4 h-12 w-12 animate-spin rounded-full border-4 border-muted border-t-primary" />
-                    <p className="text-sm text-muted-foreground">Subiendo imagen...</p>
+                    <div className="relative mb-4">
+                      <div className="h-12 w-12 animate-spin rounded-full border-4 border-muted border-t-primary" />
+                      <div className="absolute inset-0 h-12 w-12 animate-ping rounded-full border-4 border-primary opacity-20" />
+                    </div>
+                    <div className="text-center space-y-1">
+                      <p className="text-base font-medium text-foreground">Subiendo imagen...</p>
+                      <p className="text-sm text-muted-foreground">Procesando y optimizando</p>
+                    </div>
                   </div>
                 ) : loading ? (
                   <div className="flex h-64 items-center justify-center">
@@ -377,36 +441,94 @@ export default function MediaPickerModal({ open, onOpenChange, onSelect, multiSe
 
           </TabsContent>
 
-          <TabsContent value="upload" className="m-0 flex flex-1 items-center justify-center">
-            <div className="text-center">
-              <div className="mx-auto w-full max-w-sm">
-                <label className="relative block">
-                  <div className={cn(
-                    "rounded-lg border-2 border-dashed p-12 transition-colors",
-                    uploading 
-                      ? "border-muted-foreground/10 cursor-not-allowed opacity-50" 
-                      : "border-muted-foreground/25 cursor-pointer hover:border-muted-foreground/50"
-                  )}>
-                    <Upload className="mx-auto h-12 w-12 text-muted-foreground" />
-                    <p className="mt-2 text-sm font-medium">Arrastra imágenes aquí</p>
-                    <p className="mt-1 text-xs text-muted-foreground">o haz clic para seleccionar</p>
-                    <p className="mt-2 text-xs text-muted-foreground">PNG, JPG, WebP, AVIF hasta 15MB</p>
-                    <p className="mt-1 text-xs text-muted-foreground">Las imágenes se convertirán a formato WebP</p>
+          <TabsContent value="upload" className="m-0 flex flex-1 flex-col overflow-hidden">
+            <div className="flex flex-1 items-center justify-center p-6">
+              <div className="text-center w-full max-w-md">
+                {/* Upload Area or Progress Display */}
+                {Object.keys(uploadingFiles).length > 0 ? (
+                  // Progress Display
+                  <div className="space-y-6">
+                    <div className="flex flex-col items-center">
+                      <div className="relative mb-4">
+                        <div className="h-16 w-16 animate-spin rounded-full border-4 border-muted border-t-primary" />
+                        <div className="absolute inset-0 h-16 w-16 animate-ping rounded-full border-4 border-primary opacity-20" />
+                      </div>
+                      <h3 className="text-lg font-semibold text-foreground mb-2">Subiendo archivos</h3>
+                      <p className="text-sm text-muted-foreground">
+                        {Object.keys(completedFiles).length} de {Object.keys(uploadingFiles).length} completados
+                      </p>
+                    </div>
+                    
+                    {/* Progress Bars */}
+                    <div className="space-y-4 max-h-64 overflow-y-auto">
+                      {Object.entries(uploadingFiles).map(([fileId, filename]) => {
+                        const progress = uploadProgress[fileId] || 0
+                        const isCompleted = completedFiles[fileId]
+                        
+                        return (
+                          <div key={fileId} className="bg-card rounded-lg p-4 border">
+                            <div className="flex items-center justify-between mb-2">
+                              <span className="truncate font-medium text-sm">{filename}</span>
+                              <div className="flex items-center gap-2">
+                                {isCompleted ? (
+                                  <div className="flex items-center gap-1 text-green-600">
+                                    <CheckCircle2 className="h-4 w-4" />
+                                    <span className="font-medium text-sm">¡Completado!</span>
+                                  </div>
+                                ) : (
+                                  <span className="text-muted-foreground text-sm font-medium">{Math.round(progress)}%</span>
+                                )}
+                              </div>
+                            </div>
+                            <div className="h-3 bg-muted rounded-full overflow-hidden">
+                              <div 
+                                className={cn(
+                                  "h-full transition-all duration-500 ease-out",
+                                  isCompleted 
+                                    ? "bg-gradient-to-r from-green-500 to-green-600 animate-pulse" 
+                                    : "bg-gradient-to-r from-blue-500 to-blue-600"
+                                )}
+                                style={{ width: `${progress}%` }}
+                              />
+                            </div>
+                          </div>
+                        )
+                      })}
+                    </div>
                   </div>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    multiple={multiSelect}
-                    onChange={handleFileUpload}
-                    disabled={uploading}
-                    className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
-                  />
-                </label>
-                {uploading && (
-                  <div className="mt-4 flex flex-col items-center">
-                    <div className="mb-2 h-8 w-8 animate-spin rounded-full border-2 border-muted border-t-primary" />
-                    <p className="text-sm text-muted-foreground">Subiendo imagen...</p>
+                ) : uploading ? (
+                  // Initial Processing
+                  <div className="space-y-4">
+                    <div className="relative">
+                      <div className="h-20 w-20 mx-auto animate-spin rounded-full border-4 border-muted border-t-primary" />
+                      <div className="absolute inset-0 h-20 w-20 mx-auto animate-ping rounded-full border-4 border-primary opacity-20" />
+                    </div>
+                    <div className="space-y-2">
+                      <h3 className="text-lg font-semibold text-foreground">Procesando imágenes...</h3>
+                      <p className="text-sm text-muted-foreground">Convirtiendo a formato optimizado</p>
+                    </div>
                   </div>
+                ) : (
+                  // Upload Area
+                  <label className="relative block cursor-pointer">
+                    <div className="rounded-lg border-2 border-dashed border-muted-foreground/25 p-12 transition-colors hover:border-muted-foreground/50">
+                      <Upload className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+                      <h3 className="text-lg font-semibold text-foreground mb-2">Arrastra imágenes aquí</h3>
+                      <p className="text-sm text-muted-foreground mb-4">o haz clic para seleccionar archivos</p>
+                      <div className="text-xs text-muted-foreground space-y-1">
+                        <p>PNG, JPG, WebP, AVIF hasta 15MB</p>
+                        <p>Las imágenes se convertirán a formato WebP</p>
+                      </div>
+                    </div>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      multiple={multiSelect}
+                      onChange={handleFileUpload}
+                      disabled={uploading}
+                      className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
+                    />
+                  </label>
                 )}
               </div>
             </div>

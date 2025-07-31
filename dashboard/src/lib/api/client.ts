@@ -132,15 +132,38 @@ export class APIClient {
       const formData = new FormData()
       formData.append('file', file)
       Object.keys(data).forEach(key => {
-        formData.append(key, data[key])
+        if (data[key] !== null && data[key] !== undefined) {
+          formData.append(key, data[key])
+        }
       })
       return this.request<any>({ 
         method: 'POST', 
         url: '/api/gallery/upload', 
         data: formData,
-        headers: { 'Content-Type': 'multipart/form-data' }
+        headers: {
+          'Content-Type': undefined // Let axios handle multipart/form-data boundary
+        }
       })
     },
+    uploadChunk: (chunk: Blob, chunkData: any) => {
+      const formData = new FormData()
+      formData.append('chunk', chunk)
+      Object.keys(chunkData).forEach(key => {
+        if (chunkData[key] !== null && chunkData[key] !== undefined) {
+          formData.append(key, chunkData[key])
+        }
+      })
+      return this.request<any>({ 
+        method: 'POST', 
+        url: '/api/gallery/upload-chunk', 
+        data: formData,
+        headers: {
+          'Content-Type': undefined
+        }
+      })
+    },
+    completeUpload: (completeData: any) => 
+      this.request<any>({ method: 'POST', url: '/api/gallery/upload-complete', data: completeData }),
     updateMedia: (id: number, data: any) => 
       this.request<any>({ method: 'PATCH', url: `/api/gallery/media/${id}`, data }),
     deleteMedia: (id: number) => 

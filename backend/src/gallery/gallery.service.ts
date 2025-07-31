@@ -6,6 +6,15 @@ import { CreateFolderDto } from './dto/create-folder.dto';
 import { UpdateFolderDto } from './dto/update-folder.dto';
 import { UploadFileDto } from './dto/upload-file.dto';
 import { slugify } from '@wildtrip/shared';
+import * as fs from 'fs';
+import * as path from 'path';
+import { promisify } from 'util';
+import { Readable } from 'stream';
+
+const writeFile = promisify(fs.writeFile);
+const readFile = promisify(fs.readFile);
+const unlink = promisify(fs.unlink);
+const mkdir = promisify(fs.mkdir);
 
 @Injectable()
 export class GalleryService {
@@ -134,6 +143,109 @@ export class GalleryService {
 
   async moveMediaToFolder(mediaIds: number[], folderId: number | null) {
     await this.galleryRepository.moveMediaToFolder(mediaIds, folderId);
+  }
+
+  // Chunked upload methods
+  async uploadChunk(
+    chunk: Express.Multer.File,
+    chunkData: any,
+    userId: string,
+  ) {
+    const { uploadId, chunkIndex, totalChunks, filename } = chunkData;
+    
+    if (!uploadId || chunkIndex === undefined || !totalChunks || !filename) {
+      throw new BadRequestException('Missing chunk data: uploadId, chunkIndex, totalChunks, filename required');
+    }
+
+    // Create uploads directory if it doesn't exist
+    const uploadsDir = path.join(process.cwd(), 'temp-uploads');
+    await mkdir(uploadsDir, { recursive: true });
+
+    // Save chunk to temporary file
+    const chunkPath = path.join(uploadsDir, `${uploadId}_${chunkIndex}`);
+    await writeFile(chunkPath, chunk.buffer);
+
+    return {
+      uploadId,
+      chunkIndex: parseInt(chunkIndex),
+      totalChunks: parseInt(totalChunks),
+      received: true,
+    };
+  }
+
+  async completeChunkedUpload(
+    completeData: any,
+    userId: string,
+    userName: string,
+  ) {
+    const { uploadId, totalChunks, filename, folderId, title, description, altText, tags } = completeData;
+    
+    if (!uploadId || !totalChunks || !filename) {
+      throw new BadRequestException('Missing completion data: uploadId, totalChunks, filename required');
+    }
+
+    const uploadsDir = path.join(process.cwd(), 'temp-uploads');
+    const chunks: Buffer[] = [];
+
+    try {
+      // Read all chunks and combine them
+      for (let i = 0; i < totalChunks; i++) {
+        const chunkPath = path.join(uploadsDir, `${uploadId}_${i}`);
+        const chunkBuffer = await readFile(chunkPath);
+        chunks.push(chunkBuffer);
+      }
+
+      // Combine all chunks into one buffer
+      const fileBuffer = Buffer.concat(chunks);
+
+      // Create a mock Multer file object
+      const combinedFile: Express.Multer.File = {
+        fieldname: 'file',
+        originalname: filename,
+        encoding: '7bit',
+        mimetype: 'image/jpeg', // Will be detected properly during processing
+        size: fileBuffer.length,
+        buffer: fileBuffer,
+        destination: '',
+        filename: filename,
+        path: '',
+        stream: new Readable({ read() {} }),
+      };
+
+      // Process the combined file using existing upload logic
+      const uploadDto: UploadFileDto = {
+        folderId: folderId ? parseInt(folderId) : undefined,
+        title,
+        description,
+        altText,
+        tags: tags ? JSON.parse(tags) : [],
+      };
+
+      const result = await this.uploadFile(combinedFile, uploadDto, userId, userName);
+
+      // Clean up temporary chunks
+      for (let i = 0; i < totalChunks; i++) {
+        const chunkPath = path.join(uploadsDir, `${uploadId}_${i}`);
+        try {
+          await unlink(chunkPath);
+        } catch (error) {
+          console.warn(`Failed to delete chunk ${chunkPath}:`, error);
+        }
+      }
+
+      return result;
+    } catch (error) {
+      // Clean up temporary chunks on error
+      for (let i = 0; i < totalChunks; i++) {
+        const chunkPath = path.join(uploadsDir, `${uploadId}_${i}`);
+        try {
+          await unlink(chunkPath);
+        } catch (cleanupError) {
+          console.warn(`Failed to delete chunk ${chunkPath}:`, cleanupError);
+        }
+      }
+      throw error;
+    }
   }
 
   // Folder methods
