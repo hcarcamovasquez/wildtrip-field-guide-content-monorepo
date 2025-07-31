@@ -488,11 +488,11 @@ export default function GalleryExplorer({ initialData }: GalleryExplorerProps) {
                 {selectedItems.size > 0 && (
                   <div className="flex items-center gap-2">
                     <span className="text-sm text-muted-foreground">{selectedItems.size} seleccionados</span>
-                    <Button variant="outline" size="sm" onClick={() => setShowMoveDialog(true)}>
+                    <Button variant="outline" size="sm" onClick={() => setShowMoveDialog(true)} disabled>
                       <Move className="mr-2 h-4 w-4" />
                       Mover
                     </Button>
-                    <Button variant="outline" size="sm" onClick={handleDeleteSelected} className="text-destructive">
+                    <Button variant="outline" size="sm" onClick={handleDeleteSelected} className="text-destructive" disabled>
                       <Trash2 className="mr-2 h-4 w-4" />
                       Eliminar
                     </Button>
@@ -549,26 +549,26 @@ export default function GalleryExplorer({ initialData }: GalleryExplorerProps) {
                     
                     if (item.type === 'folder') {
                       return (
-                        <tr key={itemId} className="border-b hover:bg-muted/50">
-                          <td className="px-6 py-3 pr-4">
+                        <tr 
+                          key={itemId} 
+                          className="border-b hover:bg-muted/50 cursor-pointer"
+                          onClick={() => handleFolderClick(item)}
+                        >
+                          <td className="px-6 py-3 pr-4" onClick={(e) => e.stopPropagation()}>
                             <Checkbox
                               checked={selectedItems.has(itemId)}
                               onCheckedChange={() => handleSelectItem(itemId)}
-                              onClick={(e) => e.stopPropagation()}
                             />
                           </td>
                           <td className="px-6 py-3 pr-4">
                             <div className="flex items-center gap-3">
                               <Icon className="h-5 w-5 text-muted-foreground" />
-                              <button
-                                onClick={() => handleFolderClick(item)}
-                                className="text-left hover:underline"
-                              >
+                              <div>
                                 <div className="font-medium">{item.name}</div>
                                 <div className="text-sm text-muted-foreground">
                                   Contiene: {item.fileCount || 0} {(item.fileCount || 0) === 1 ? 'archivo' : 'archivos'}, {item.folderCount || 0} {(item.folderCount || 0) === 1 ? 'carpeta' : 'carpetas'}
                                 </div>
-                              </button>
+                              </div>
                             </div>
                           </td>
                           <td className="px-6 py-3 pr-4 text-muted-foreground">—</td>
@@ -578,7 +578,7 @@ export default function GalleryExplorer({ initialData }: GalleryExplorerProps) {
                           <td className="px-6 py-3 pr-4 text-muted-foreground">
                             {formatDate(typeof item.updatedAt === 'string' ? item.updatedAt : item.updatedAt.toISOString())}
                           </td>
-                          <td className="px-6 py-3">
+                          <td className="px-6 py-3" onClick={(e) => e.stopPropagation()}>
                             <DropdownMenu>
                               <DropdownMenuTrigger asChild>
                                 <Button variant="ghost" size="icon">
@@ -592,12 +592,12 @@ export default function GalleryExplorer({ initialData }: GalleryExplorerProps) {
                                   <FolderOpen className="mr-2 h-4 w-4" />
                                   Abrir
                                 </DropdownMenuItem>
-                                <DropdownMenuItem>
+                                <DropdownMenuItem disabled>
                                   <Edit3 className="mr-2 h-4 w-4" />
                                   Renombrar
                                 </DropdownMenuItem>
                                 <DropdownMenuSeparator />
-                                <DropdownMenuItem className="text-destructive">
+                                <DropdownMenuItem className="text-destructive" disabled>
                                   <Trash2 className="mr-2 h-4 w-4" />
                                   Eliminar
                                 </DropdownMenuItem>
@@ -647,7 +647,7 @@ export default function GalleryExplorer({ initialData }: GalleryExplorerProps) {
                           <td className="px-6 py-3 pr-4 text-muted-foreground">
                             {formatDate(typeof item.updatedAt === 'string' ? item.updatedAt : item.updatedAt.toISOString())}
                           </td>
-                          <td className="px-6 py-3">
+                          <td className="px-6 py-3" onClick={(e) => e.stopPropagation()}>
                             <DropdownMenu>
                               <DropdownMenuTrigger asChild>
                                 <Button variant="ghost" size="icon">
@@ -659,7 +659,7 @@ export default function GalleryExplorer({ initialData }: GalleryExplorerProps) {
                                   <Eye className="mr-2 h-4 w-4" />
                                   Ver detalles
                                 </DropdownMenuItem>
-                                <DropdownMenuItem>
+                                <DropdownMenuItem disabled>
                                   <Edit3 className="mr-2 h-4 w-4" />
                                   Editar
                                 </DropdownMenuItem>
@@ -674,7 +674,7 @@ export default function GalleryExplorer({ initialData }: GalleryExplorerProps) {
                                   </a>
                                 </DropdownMenuItem>
                                 <DropdownMenuSeparator />
-                                <DropdownMenuItem className="text-destructive">
+                                <DropdownMenuItem className="text-destructive" disabled>
                                   <Trash2 className="mr-2 h-4 w-4" />
                                   Eliminar
                                 </DropdownMenuItem>

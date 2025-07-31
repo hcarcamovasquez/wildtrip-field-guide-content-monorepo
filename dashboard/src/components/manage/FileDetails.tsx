@@ -436,6 +436,7 @@ export default function FileDetails({ file, onClose, onUpdate }: FileDetailsProp
                 variant="outline"
                 className="hover:text-destructive-foreground w-full text-destructive hover:bg-destructive"
                 onClick={handleDelete}
+                disabled
               >
                 <Trash2 className="mr-2 h-4 w-4" />
                 Eliminar archivo
