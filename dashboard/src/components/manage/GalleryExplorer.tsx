@@ -778,17 +778,15 @@ export default function GalleryExplorer({ initialData }: GalleryExplorerProps) {
         </div>
       </div>
 
-      {/* File details sidebar */}
-      {selectedFile && (
-        <FileDetails
-          file={selectedFile}
-          onClose={() => setSelectedFile(null)}
-          onUpdate={(updatedFile) => {
-            setItems((prev) => prev.map((item) => (item.id === updatedFile.id && item.type !== 'folder' ? {...updatedFile, type: item.type} as GalleryItem : item)))
-            setSelectedFile(updatedFile as GalleryItem)
-          }}
-        />
-      )}
+      {/* File details sidebar - Always visible on desktop */}
+      <FileDetails
+        file={selectedFile}
+        onClose={() => setSelectedFile(null)}
+        onUpdate={(updatedFile) => {
+          setItems((prev) => prev.map((item) => (item.id === updatedFile.id && item.type !== 'folder' ? {...updatedFile, type: item.type} as GalleryItem : item)))
+          setSelectedFile(updatedFile as GalleryItem)
+        }}
+      />
 
       {/* New folder dialog */}
       <Dialog open={showNewFolderDialog} onOpenChange={setShowNewFolderDialog}>

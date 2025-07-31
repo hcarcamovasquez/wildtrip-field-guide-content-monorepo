@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { getOptimizedImageUrl } from '@/lib/utils/cloudflare-images'
 import { apiClient } from '@/lib/api/client'
 import {
@@ -24,6 +24,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Separator } from '@/components/ui/separator'
 import { Badge } from '@/components/ui/badge'
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet'
+import { useMediaQuery } from '@/hooks/useMediaQuery'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import type { MediaWithFolder } from '@/types'
 
@@ -51,7 +52,7 @@ interface GalleryItem {
 }
 
 interface FileDetailsProps {
-  file: MediaWithFolder | GalleryItem
+  file: MediaWithFolder | GalleryItem | null
   onClose: () => void
   onUpdate: (file: MediaWithFolder | GalleryItem) => void
 }
@@ -63,16 +64,27 @@ export default function FileDetails({ file, onClose, onUpdate }: FileDetailsProp
   const [isEditing, setIsEditing] = useState(false)
   const [saving, setSaving] = useState(false)
   const [copySuccess, setCopySuccess] = useState(false)
+  const isDesktop = useMediaQuery('(min-width: 1024px)')
 
   // Get optimized image for preview
-  const previewImageUrl = file.type === 'image' ? getOptimizedImageUrl(file.url, 'small') : file.url
+  const previewImageUrl = file && file.type === 'image' && file.url ? getOptimizedImageUrl(file.url, 'small') : file?.url
   const [formData, setFormData] = useState({
-    title: file.title || '',
-    description: file.description || '',
-    altText: file.altText || '',
-    tags: file.tags || [],
+    title: file?.title || '',
+    description: file?.description || '',
+    altText: file?.altText || '',
+    tags: file?.tags || [],
   })
   const [newTag, setNewTag] = useState('')
+  
+  // Update form data when file changes
+  useEffect(() => {
+    setFormData({
+      title: file?.title || '',
+      description: file?.description || '',
+      altText: file?.altText || '',
+      tags: file?.tags || [],
+    })
+  }, [file])
 
   const formatFileSize = (bytes: number) => {
     if (bytes === 0) return '0 Bytes'
@@ -93,19 +105,13 @@ export default function FileDetails({ file, onClose, onUpdate }: FileDetailsProp
   }
 
   const handleSave = async () => {
+    if (!file || file.type === 'folder') return
+    
     setSaving(true)
     try {
-      const response = await fetch(`/api/manage/gallery/media/${file.id}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
-      })
-
-      if (response.ok) {
-        const updated = await response.json()
-        onUpdate(updated)
-        setIsEditing(false)
-      }
+      const updated = await apiClient.gallery.updateMedia(file.id, formData)
+      onUpdate(updated)
+      setIsEditing(false)
     } catch (error) {
       console.error('Error saving file details:', error)
     } finally {
@@ -114,6 +120,8 @@ export default function FileDetails({ file, onClose, onUpdate }: FileDetailsProp
   }
 
   const handleCopyUrl = async () => {
+    if (!file || !file.url) return
+    
     await navigator.clipboard.writeText(file.url)
     setCopySuccess(true)
     setTimeout(() => setCopySuccess(false), 2000)
@@ -137,6 +145,8 @@ export default function FileDetails({ file, onClose, onUpdate }: FileDetailsProp
   }
 
   const handleDelete = async () => {
+    if (!file || file.type === 'folder') return
+    
     if (!confirm('¿Estás seguro de que quieres eliminar este archivo?')) return
 
     try {
@@ -148,13 +158,36 @@ export default function FileDetails({ file, onClose, onUpdate }: FileDetailsProp
     }
   }
 
-  return (
-    <Sheet open={true} onOpenChange={onClose}>
-      <SheetContent className="flex h-screen w-full flex-col gap-0 p-0 sm:max-w-md [&>button]:top-6 [&>button]:right-6">
-        <SheetHeader className="flex-shrink-0 border-b px-6 pt-6 pb-4">
-          <SheetTitle>Detalles del archivo</SheetTitle>
-          <SheetDescription className="sr-only">Información detallada del archivo seleccionado</SheetDescription>
-        </SheetHeader>
+  // Desktop: Sidebar within layout, Mobile: Sheet drawer
+  if (isDesktop) {
+    return (
+      <div className="w-96 border-l bg-background flex-shrink-0">
+        <div className="flex h-full flex-col">
+          {/* Header */}
+          <div className="flex-shrink-0 border-b px-6 py-4">
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-semibold">Detalles del archivo</h2>
+              {file && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={onClose}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              )}
+            </div>
+          </div>
+          
+          {!file ? (
+            // Empty state
+            <div className="flex-1 flex items-center justify-center p-6">
+              <div className="text-center">
+                <Image className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                <p className="text-muted-foreground">Selecciona un archivo para ver sus detalles</p>
+              </div>
+            </div>
+          ) : (
 
         <div className="flex-1 overflow-y-auto">
           <div className="space-y-6 p-6">
@@ -407,6 +440,276 @@ export default function FileDetails({ file, onClose, onUpdate }: FileDetailsProp
                 <Trash2 className="mr-2 h-4 w-4" />
                 Eliminar archivo
               </Button>
+            </div>
+          </div>
+        </div>
+          )}
+        </div>
+      </div>
+    )
+  }
+
+  // Mobile: Sheet drawer (only show when file is selected)
+  if (!file) return null
+  
+  return (
+    <Sheet open={true} onOpenChange={onClose}>
+      <SheetContent className="flex h-screen w-full flex-col gap-0 p-0 sm:max-w-md [&>button]:top-6 [&>button]:right-6">
+        <SheetHeader className="flex-shrink-0 border-b px-6 pt-6 pb-4">
+          <SheetTitle>Detalles del archivo</SheetTitle>
+          <SheetDescription className="sr-only">Información detallada del archivo seleccionado</SheetDescription>
+        </SheetHeader>
+
+        <div className="flex-1 overflow-y-auto">
+          <div className="p-6">
+            {/* Preview */}
+            <div className="mb-6">
+              {file.type === 'image' ? (
+                <img
+                  src={previewImageUrl}
+                  alt={file.title || file.filename}
+                  className="w-full rounded-lg"
+                />
+              ) : (
+                <div className="flex aspect-video items-center justify-center rounded-lg bg-muted">
+                  <Video className="h-16 w-16 text-muted-foreground" />
+                </div>
+              )}
+            </div>
+
+            {/* File info */}
+            <div className="mb-6 grid grid-cols-2 gap-4 text-sm">
+              <div>
+                <p className="text-muted-foreground">Tamaño</p>
+                <p className="font-medium">{formatFileSize(file.size || 0)}</p>
+              </div>
+              <div>
+                <p className="text-muted-foreground">Tipo</p>
+                <p className="font-medium">{file.mimeType}</p>
+              </div>
+              {file.width && file.height && (
+                <>
+                  <div>
+                    <p className="text-muted-foreground">Dimensiones</p>
+                    <p className="font-medium">
+                      {file.width} × {file.height}px
+                    </p>
+                  </div>
+                </>
+              )}
+              <div>
+                <p className="text-muted-foreground">Subido por</p>
+                <p className="font-medium">{file.uploadedByName || 'Desconocido'}</p>
+              </div>
+            </div>
+
+            <Separator />
+
+            {/* Tabs */}
+            <Tabs defaultValue="info">
+              <TabsList className="grid w-full">
+                <TabsTrigger value="info">Información</TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="info" className="space-y-4">
+                {/* Editable fields */}
+                {isEditing ? (
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="title">Título</Label>
+                      <Input
+                        id="title"
+                        value={formData.title}
+                        onChange={(e) => setFormData((prev) => ({ ...prev, title: e.target.value }))}
+                        placeholder="Título del archivo"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="altText">Texto alternativo</Label>
+                      <Input
+                        id="altText"
+                        value={formData.altText}
+                        onChange={(e) => setFormData((prev) => ({ ...prev, altText: e.target.value }))}
+                        placeholder="Descripción para accesibilidad"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="description">Descripción</Label>
+                      <Textarea
+                        id="description"
+                        value={formData.description}
+                        onChange={(e) => setFormData((prev) => ({ ...prev, description: e.target.value }))}
+                        placeholder="Descripción del archivo"
+                        rows={3}
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label>Etiquetas</Label>
+                      <div className="flex gap-2">
+                        <Input
+                          placeholder="Agregar etiqueta"
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                              e.preventDefault()
+                              const input = e.target as HTMLInputElement
+                              if (input.value.trim()) {
+                                setFormData((prev) => ({
+                                  ...prev,
+                                  tags: [...prev.tags, input.value.trim()],
+                                }))
+                                input.value = ''
+                              }
+                            }
+                          }}
+                        />
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        {formData.tags.map((tag, index) => (
+                          <Badge key={index} variant="secondary">
+                            {tag}
+                            <button
+                              onClick={() => {
+                                setFormData((prev) => ({
+                                  ...prev,
+                                  tags: prev.tags.filter((_, i) => i !== index),
+                                }))
+                              }}
+                              className="ml-1"
+                            >
+                              <X className="h-3 w-3" />
+                            </button>
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    <div>
+                      <p className="text-sm text-muted-foreground">Título</p>
+                      <p className="font-medium">{file.title || 'Sin título'}</p>
+                    </div>
+
+                    <div>
+                      <p className="text-sm text-muted-foreground">Texto alternativo</p>
+                      <p className="font-medium">{file.altText || 'Sin texto alternativo'}</p>
+                    </div>
+
+                    <div>
+                      <p className="text-sm text-muted-foreground">Descripción</p>
+                      <p className="font-medium">{file.description || 'Sin descripción'}</p>
+                    </div>
+
+                    <div>
+                      <p className="text-sm text-muted-foreground">Etiquetas</p>
+                      <div className="flex flex-wrap gap-2">
+                        {file.tags && file.tags.length > 0 ? (
+                          file.tags.map((tag, index) => (
+                            <Badge key={index} variant="secondary">
+                              {tag}
+                            </Badge>
+                          ))
+                        ) : (
+                          <span className="text-sm text-muted-foreground">Sin etiquetas</span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </TabsContent>
+            </Tabs>
+
+            {/* File metadata */}
+            <div className="mt-6 space-y-2 text-sm text-muted-foreground">
+              <div className="flex justify-between">
+                <span>Nombre del archivo</span>
+                <span className="font-medium text-foreground">{file.filename}</span>
+              </div>
+              {file.folder && (
+                <div className="flex justify-between">
+                  <span>Carpeta</span>
+                  <span className="font-medium text-foreground">{file.folder.name}</span>
+                </div>
+              )}
+              <div className="flex justify-between">
+                <span>Creado</span>
+                <span className="font-medium text-foreground">
+                  {formatDate(file.createdAt)}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span>Modificado</span>
+                <span className="font-medium text-foreground">
+                  {formatDate(file.updatedAt)}
+                </span>
+              </div>
+            </div>
+
+            {/* Actions */}
+            <div className="mt-6 space-y-2">
+              {isEditing ? (
+                <div className="flex gap-2">
+                  <Button
+                    onClick={handleSave}
+                    disabled={saving}
+                    className="flex-1"
+                  >
+                    {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    Guardar cambios
+                  </Button>
+                  <Button
+                    onClick={() => {
+                      setIsEditing(false)
+                      setFormData({
+                        title: file.title || '',
+                        description: file.description || '',
+                        altText: file.altText || '',
+                        tags: file.tags || [],
+                      })
+                    }}
+                    variant="outline"
+                  >
+                    Cancelar
+                  </Button>
+                </div>
+              ) : (
+                <>
+                  <Button onClick={() => setIsEditing(true)} className="w-full">
+                    <Edit3 className="mr-2 h-4 w-4" />
+                    Editar información
+                  </Button>
+                  <Button
+                    onClick={handleCopyUrl}
+                    variant="outline"
+                    className="w-full"
+                  >
+                    {copySuccess ? (
+                      <>
+                        <Check className="mr-2 h-4 w-4" />
+                        URL copiada
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="mr-2 h-4 w-4" />
+                        Copiar URL
+                      </>
+                    )}
+                  </Button>
+                  <Button
+                    asChild
+                    variant="outline"
+                    className="w-full"
+                  >
+                    <a href={file.url} download={file.filename}>
+                      <Download className="mr-2 h-4 w-4" />
+                      Descargar
+                    </a>
+                  </Button>
+                </>
+              )}
             </div>
           </div>
         </div>
