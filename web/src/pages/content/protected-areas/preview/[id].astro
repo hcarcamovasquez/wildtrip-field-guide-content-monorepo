@@ -1,0 +1,102 @@
+---
+import Eye from '../../../../components/icons/Eye.astro'
+import Layout from '../../../../layouts/Layout.astro'
+import ProtectedAreaHeader from '../../../../components/protected-area/ProtectedAreaHeader.astro'
+import ProtectedAreaHero from '../../../../components/protected-area/ProtectedAreaHero.astro'
+import ProtectedAreaInfo from '../../../../components/protected-area/ProtectedAreaInfo.astro'
+import ProtectedAreaLocation from '../../../../components/protected-area/ProtectedAreaLocation.astro'
+import ProtectedAreaEcosystems from '../../../../components/protected-area/ProtectedAreaEcosystems.astro'
+import ProtectedAreaGallery from '../../../../components/protected-area/ProtectedAreaGallery.astro'
+import { protectedAreasRepository } from '../../../../lib/repositories'
+import { renderContentBlock } from '../../../../lib/utils/render-content'
+
+// Check authentication
+const user = Astro.locals.user
+const referer = Astro.request.headers.get('referer')
+const isFromDashboard = referer?.includes(import.meta.env.PUBLIC_ADMIN_URL || 'http://localhost:5173')
+
+// Allow access if user is authenticated OR if request comes from dashboard
+if (!user && !isFromDashboard) {
+  return Astro.redirect('/sign-in')
+}
+
+// Get protected area ID from params
+const { id } = Astro.params
+const protectedAreaId = parseInt(id as string)
+
+// Fetch protected area data from API
+const protectedAreaData = await protectedAreasRepository.findById(protectedAreaId)
+if (!protectedAreaData) {
+  return new Response('Área protegida no encontrada', { status: 404 })
+}
+
+// For preview, we need to show draft data if available
+const previewData = protectedAreaData.hasDraft && protectedAreaData.draftData 
+  ? { ...protectedAreaData, ...protectedAreaData.draftData }
+  : protectedAreaData
+---
+
+<Layout
+  title={`${previewData.name} - Vista previa`}
+  description={previewData.description}
+>
+
+  
+  <!-- Preview notice banner -->
+  <div class="sticky top-0 z-50 bg-orange-500 text-white">
+    <div class="mx-auto max-w-4xl px-4 py-2 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-center">
+        <div class="flex items-center gap-2">
+          <Eye class="h-5 w-5" />
+          <span class="text-sm font-medium">
+            {
+              protectedAreaData.hasDraft && protectedAreaData.status === 'published'
+                ? 'Vista previa del borrador - Los cambios no son públicos hasta que se publiquen'
+                : 'Vista previa'
+            }
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <article class="mx-auto max-w-4xl bg-white px-4 py-8 sm:px-6 lg:px-8 dark:bg-gray-900">
+    <ProtectedAreaHeader title={previewData.name} type={previewData.type} region={previewData.region} />
+
+    <ProtectedAreaHero images={previewData.images || undefined} mainImageUrl={previewData.mainImageUrl} title={previewData.name} />
+
+    {
+      previewData.description && (
+        <div class="mb-8">
+          <p class="text-lg leading-relaxed text-gray-700 dark:text-gray-300">{previewData.description}</p>
+        </div>
+      )
+    }
+
+    <ProtectedAreaInfo
+      region={previewData.region}
+      area={previewData.area}
+      creationYear={previewData.creationYear}
+      type={previewData.type}
+      visitorInformation={null}
+    />
+
+    <ProtectedAreaEcosystems ecosystems={previewData.ecosystems || undefined} />
+
+    {
+      previewData.richContent && previewData.richContent.blocks && previewData.richContent.blocks.length > 0 && (
+        <section class="mb-8">
+          <div class="prose prose-lg max-w-none dark:prose-invert">
+            {previewData.richContent.blocks.map((block) => (
+              <div set:html={renderContentBlock(block)} />
+            ))}
+          </div>
+        </section>
+      )
+    }
+
+    <ProtectedAreaGallery images={previewData.images || undefined} title={previewData.name} />
+
+    <ProtectedAreaLocation location={previewData.location} />
+  </article>
+</Layout>

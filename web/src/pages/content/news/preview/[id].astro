@@ -1,0 +1,80 @@
+---
+import Eye from '../../../../components/icons/Eye.astro'
+import Layout from '../../../../layouts/Layout.astro'
+import NewsHeader from '../../../../components/news/NewsHeader.astro'
+import NewsFeaturedImage from '../../../../components/news/NewsFeaturedImage.astro'
+import NewsContent from '../../../../components/news/NewsContent.astro'
+import NewsTags from '../../../../components/news/NewsTags.astro'
+import NewsShare from '../../../../components/news/NewsShare.astro'
+import { newsRepository } from '../../../../lib/repositories'
+
+// Check authentication
+const user = Astro.locals.user
+const referer = Astro.request.headers.get('referer')
+const isFromDashboard = referer?.includes(import.meta.env.PUBLIC_ADMIN_URL || 'http://localhost:5173')
+
+// Allow access if user is authenticated OR if request comes from dashboard
+if (!user && !isFromDashboard) {
+  return Astro.redirect('/sign-in')
+}
+
+// Get news ID from params
+const { id } = Astro.params
+const newsId = parseInt(id as string)
+
+// Fetch news data from API
+const newsData = await newsRepository.findById(newsId)
+if (!newsData) {
+  return new Response('Noticia no encontrada', { status: 404 })
+}
+
+// For preview, we need to show draft data if available
+const previewData = newsData.hasDraft && newsData.draftData 
+  ? { ...newsData, ...newsData.draftData }
+  : newsData
+
+// Build preview URL for sharing
+const shareUrl = `${Astro.url.origin}/content/news/preview/${id}`
+---
+
+<Layout
+  title={`${previewData.title} - Vista previa`}
+  description={previewData.summary}
+>
+  
+  <!-- Preview notice banner -->
+  <div class="sticky top-0 z-50 bg-orange-500 text-white">
+    <div class="mx-auto max-w-4xl px-4 py-2 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-center">
+        <div class="flex items-center gap-2">
+          <Eye class="h-5 w-5" />
+          <span class="text-sm font-medium">
+            {
+              newsData.hasDraft && newsData.status === 'published'
+                ? 'Vista previa del borrador - Los cambios no son públicos hasta que se publiquen'
+                : 'Vista previa'
+            }
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <article class="mx-auto max-w-4xl bg-white px-4 py-8 sm:px-6 lg:px-8 dark:bg-gray-900">
+    <NewsHeader
+      title={previewData.title}
+      category={previewData.category}
+      author={previewData.author}
+      publishedAt={previewData.publishedAt}
+      summary={previewData.summary}
+    />
+
+    <NewsFeaturedImage mainImageUrl={previewData.mainImageUrl} title={previewData.title} />
+
+    <NewsContent content={previewData.content} />
+
+    <NewsTags tags={previewData.tags} />
+
+    <NewsShare title={previewData.title} url={shareUrl} />
+  </article>
+</Layout>
