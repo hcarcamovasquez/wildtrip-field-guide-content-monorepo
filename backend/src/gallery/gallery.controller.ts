@@ -43,6 +43,17 @@ export class GalleryController {
     return this.galleryService.findAllMedia(params);
   }
 
+  @Get('images')
+  browseImages(@Query() query: any) {
+    // Convert numeric parameters for images-only view
+    const params = {
+      ...query,
+      page: query.page ? parseInt(query.page, 10) : undefined,
+      limit: query.limit ? parseInt(query.limit, 10) : undefined,
+    };
+    return this.galleryService.findImagesOnly(params);
+  }
+
   @Get('by-ids')
   getMediaByIds(@Query('ids') ids: string) {
     if (!ids) {

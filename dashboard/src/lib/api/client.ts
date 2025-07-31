@@ -122,6 +122,8 @@ export class APIClient {
   gallery = {
     browse: (params?: any) => 
       this.request<any>({ method: 'GET', url: '/api/gallery/browse', params }),
+    images: (params?: any) => 
+      this.request<any>({ method: 'GET', url: '/api/gallery/images', params }),
     getByIds: (ids: number[]) => 
       this.request<any>({ method: 'GET', url: '/api/gallery/by-ids', params: { ids: ids.join(',') } }),
     getMedia: (id: number) => 

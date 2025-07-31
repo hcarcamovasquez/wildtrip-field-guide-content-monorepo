@@ -20,6 +20,10 @@ export class GalleryService {
     return this.galleryRepository.findAllMedia(query);
   }
 
+  async findImagesOnly(query: any) {
+    return this.galleryRepository.findImagesOnly(query);
+  }
+
   async findMediaById(id: number) {
     const media = await this.galleryRepository.findMediaById(id);
     if (!media) {

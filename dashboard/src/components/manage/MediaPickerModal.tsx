@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { Check, Upload, Search, Grid, List, Image as ImageIcon } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import {
@@ -45,44 +45,65 @@ export default function MediaPickerModal({ open, onOpenChange, onSelect, multiSe
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
   const [activeTab, setActiveTab] = useState('browse')
   const [currentPage, setCurrentPage] = useState(1)
-  const [totalPages, setTotalPages] = useState(1)
+  const [hasMore, setHasMore] = useState(true)
+  const [loadingMore, setLoadingMore] = useState(false)
+  const scrollAreaRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     if (open) {
-      fetchMediaItems()
+      // Reset state when opening modal
+      setMediaItems([])
+      setCurrentPage(1)
+      setHasMore(true)
+      fetchMediaItems(1, false)
     }
   }, [open])
 
-  // Refetch when search changes
+  // Reset and refetch when search changes
   useEffect(() => {
     if (open) {
       const timeoutId = setTimeout(() => {
-        fetchMediaItems(1) // Reset to first page when searching
+        setMediaItems([])
+        setCurrentPage(1)
+        setHasMore(true)
+        fetchMediaItems(1, false)
       }, 300) // Debounce search
       return () => clearTimeout(timeoutId)
     }
   }, [searchQuery, open])
 
-  const fetchMediaItems = async (page = 1) => {
-    setLoading(true)
+  const fetchMediaItems = async (page = 1, append = false) => {
+    if (append) {
+      setLoadingMore(true)
+    } else {
+      setLoading(true)
+    }
+    
     try {
-      // All users use the same endpoint now
-      const searchParam = searchQuery ? `&search=${encodeURIComponent(searchQuery)}` : ''
-      const endpoint = `/api/manage/gallery/browse?page=${page}&limit=50${searchParam}`
+      const params = {
+        page,
+        limit: 50,
+        ...(searchQuery && { search: searchQuery })
+      }
 
-      const response = await fetch(endpoint)
-      if (response.ok) {
-        const data = await response.json()
-        setMediaItems(data.items || [])
-        if (data.pagination) {
-          setCurrentPage(data.pagination.page)
-          setTotalPages(data.pagination.totalPages)
-        }
+      const data = await apiClient.gallery.images(params)
+      const newItems = data.items || []
+      
+      if (append) {
+        setMediaItems(prev => [...prev, ...newItems])
+      } else {
+        setMediaItems(newItems)
+      }
+      
+      if (data.pagination) {
+        setCurrentPage(data.pagination.page)
+        setHasMore(data.pagination.page < data.pagination.totalPages)
       }
     } catch (error) {
       console.error('Error fetching media:', error)
     } finally {
       setLoading(false)
+      setLoadingMore(false)
     }
   }
 
@@ -118,12 +139,15 @@ export default function MediaPickerModal({ open, onOpenChange, onSelect, multiSe
         // Filter out any undefined items
         const validItems = uploadedItems.filter(item => item && item.id && item.url)
         if (validItems.length > 0) {
+          // Add new items to the beginning of the list
           setMediaItems((prev) => [...validItems, ...prev])
           if (!multiSelect) {
             handleSelect(validItems[0])
           } else {
             setSelectedItems((prev) => [...prev, ...validItems.map((item) => item.id)])
           }
+          // Switch to browse tab to show uploaded images
+          setActiveTab('browse')
         }
       }
     } catch (error) {
@@ -146,6 +170,23 @@ export default function MediaPickerModal({ open, onOpenChange, onSelect, multiSe
     const selected = mediaItems.filter((item) => selectedItems.includes(item.id))
     onSelect(selected)
     onOpenChange(false)
+  }
+
+  // Infinite scroll handler
+  const handleScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
+    const { scrollTop, scrollHeight, clientHeight } = e.currentTarget
+
+    // Load more when user scrolls near the bottom (within 200px)
+    if (scrollHeight - scrollTop - clientHeight < 200 && hasMore && !loadingMore && !loading) {
+      fetchMediaItems(currentPage + 1, true)
+    }
+  }, [hasMore, loadingMore, loading, currentPage])
+
+  // Load more function for button fallback
+  const loadMore = () => {
+    if (hasMore && !loadingMore && !loading) {
+      fetchMediaItems(currentPage + 1, true)
+    }
   }
 
   // Server handles all filtering now - ensure no undefined items
@@ -220,7 +261,7 @@ export default function MediaPickerModal({ open, onOpenChange, onSelect, multiSe
               )}
             </div>
 
-            <ScrollArea className="min-h-0 flex-1">
+            <ScrollArea className="min-h-0 flex-1" onScrollCapture={handleScroll}>
               <div className="px-6">
                 {uploading ? (
                   <div className="flex h-64 flex-col items-center justify-center">
@@ -300,35 +341,40 @@ export default function MediaPickerModal({ open, onOpenChange, onSelect, multiSe
                     ))}
                   </div>
                 )}
+
+                {/* Infinite scroll loading indicator */}
+                {loadingMore && (
+                  <div className="flex items-center justify-center py-8">
+                    <div className="flex items-center gap-3">
+                      <div className="h-6 w-6 animate-spin rounded-full border-2 border-muted border-t-primary" />
+                      <p className="text-sm text-muted-foreground">Cargando más imágenes...</p>
+                    </div>
+                  </div>
+                )}
+
+                {/* Load more button fallback */}
+                {!loadingMore && hasMore && filteredItems.length > 0 && (
+                  <div className="flex items-center justify-center py-6">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={loadMore}
+                      disabled={loading}
+                    >
+                      Cargar más imágenes
+                    </Button>
+                  </div>
+                )}
+
+                {/* End of results indicator */}
+                {!hasMore && filteredItems.length > 0 && (
+                  <div className="flex items-center justify-center py-6">
+                    <p className="text-sm text-muted-foreground">No hay más imágenes</p>
+                  </div>
+                )}
               </div>
             </ScrollArea>
 
-            {/* Pagination for all users */}
-            {totalPages > 1 && (
-              <div className="flex flex-shrink-0 items-center justify-center gap-2 border-t px-6 py-3">
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => fetchMediaItems(currentPage - 1)}
-                  disabled={currentPage === 1 || loading}
-                >
-                  Anterior
-                </Button>
-                <span className="text-sm text-muted-foreground">
-                  Página {currentPage} de {totalPages}
-                </span>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => fetchMediaItems(currentPage + 1)}
-                  disabled={currentPage === totalPages || loading}
-                >
-                  Siguiente
-                </Button>
-              </div>
-            )}
           </TabsContent>
 
           <TabsContent value="upload" className="m-0 flex flex-1 items-center justify-center">

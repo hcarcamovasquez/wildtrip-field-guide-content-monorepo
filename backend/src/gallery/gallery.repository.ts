@@ -172,6 +172,81 @@ export class GalleryRepository {
     };
   }
 
+  // Images-only method for MediaPickerModal
+  async findImagesOnly(params: {
+    page?: number;
+    limit?: number;
+    search?: string;
+    uploadedBy?: string;
+    type?: string;
+  }) {
+    const db = this.dbService.getDb();
+    const { page = 1, limit = 50, search, uploadedBy, type } = params;
+    const offset = (page - 1) * limit;
+
+    // Build where conditions for media only (no folders)
+    const mediaConditions: any[] = [];
+
+    if (uploadedBy) {
+      mediaConditions.push(eq(mediaGallery.uploadedBy, uploadedBy));
+    }
+
+    // Default to images only, but allow override
+    if (type && (type === 'image' || type === 'video')) {
+      mediaConditions.push(eq(mediaGallery.type, type));
+    } else {
+      // Default to images only
+      mediaConditions.push(eq(mediaGallery.type, 'image'));
+    }
+
+    if (search) {
+      mediaConditions.push(
+        or(
+          ilike(mediaGallery.filename, `%${search}%`),
+          ilike(mediaGallery.title, `%${search}%`),
+          ilike(mediaGallery.description, `%${search}%`)
+        )
+      );
+    }
+
+    const mediaWhereClause = mediaConditions.length > 0 ? and(...mediaConditions) : undefined;
+
+    // Get total count
+    const [{ totalCount }] = await db
+      .select({ totalCount: sql<number>`count(*)::int` })
+      .from(mediaGallery)
+      .where(mediaWhereClause);
+
+    // Get paginated images
+    const images = await db
+      .select({
+        id: mediaGallery.id,
+        filename: mediaGallery.filename,
+        url: mediaGallery.url,
+        title: mediaGallery.title,
+        altText: mediaGallery.altText,
+        width: mediaGallery.width,
+        height: mediaGallery.height,
+        size: mediaGallery.size,
+        uploadedAt: mediaGallery.createdAt,
+      })
+      .from(mediaGallery)
+      .where(mediaWhereClause)
+      .orderBy(desc(mediaGallery.createdAt))
+      .limit(limit)
+      .offset(offset);
+
+    return {
+      items: images,
+      pagination: {
+        page,
+        limit,
+        total: totalCount,
+        totalPages: Math.ceil(totalCount / limit),
+      },
+    };
+  }
+
   async findMediaById(id: number) {
     const db = this.dbService.getDb();
     const [result] = await db
