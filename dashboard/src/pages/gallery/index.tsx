@@ -40,14 +40,6 @@ export function GalleryPage() {
     enabled: !!folderId,
   })
 
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-full">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-      </div>
-    )
-  }
-
   const currentFolder = folderId && breadcrumbData ? breadcrumbData[breadcrumbData.length - 1] : null
 
   const initialData = {
@@ -68,7 +60,8 @@ export function GalleryPage() {
       id: String(currentUserId),
       name: user?.fullName || user?.username || 'Unknown',
       role: user?.publicMetadata?.role as string || 'user'
-    }
+    },
+    isLoading
   }
 
   return (

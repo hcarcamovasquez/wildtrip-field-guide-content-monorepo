@@ -91,6 +91,7 @@ interface GalleryExplorerProps {
       name: string
       role: string
     }
+    isLoading?: boolean
   }
 }
 
@@ -132,6 +133,13 @@ export default function GalleryExplorer({ initialData }: GalleryExplorerProps) {
     
     setHasMore(initialData.pagination.page < initialData.pagination.totalPages)
   }, [initialData.currentFolder?.id, initialData.pagination.page])
+
+  // Update items when initialData.items changes (important for initial load)
+  useEffect(() => {
+    if (initialData.items.length > 0 && items.length === 0) {
+      setItems(initialData.items)
+    }
+  }, [initialData.items])
 
   const formatFileSize = (bytes: number) => {
     if (bytes === 0) return '0 Bytes'
@@ -521,7 +529,14 @@ export default function GalleryExplorer({ initialData }: GalleryExplorerProps) {
 
         {/* File list/grid */}
         <div className="flex-1 overflow-y-auto">
-          {viewMode === 'list' ? (
+          {initialData.isLoading && items.length === 0 ? (
+            <div className="flex items-center justify-center h-full">
+              <div className="text-center">
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground mx-auto mb-4" />
+                <p className="text-muted-foreground">Cargando archivos...</p>
+              </div>
+            </div>
+          ) : viewMode === 'list' ? (
             <div>
               <table className="w-full">
                 <thead className="sticky top-0 z-10 bg-background shadow-sm">
