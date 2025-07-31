@@ -81,6 +81,27 @@ interface NewsFormProps {
   currentUserId?: number
 }
 
+// Helper function to clean news data and avoid null/empty values
+const cleanNewsData = (data: any): any => {
+  return {
+    ...data,
+    // Ensure strings are never null
+    title: data.title || '',
+    slug: data.slug || '',
+    excerpt: data.excerpt || '',
+    status: data.status || 'draft',
+    category: data.category || 'general',
+    author: data.author || '',
+    publishedAt: data.publishedAt || null,
+    richContent: data.richContent || null,
+    mainImage: data.mainImage || null,
+    galleryImages: data.galleryImages || [],
+    seoTitle: data.seoTitle || '',
+    seoDescription: data.seoDescription || '',
+    seoKeywords: data.seoKeywords || '',
+  }
+}
+
 export default function NewsForm({ initialData, isEditing = false, newsId, currentUserId }: NewsFormProps) {
   const navigate = useNavigate()
   const { toast } = useToast()
@@ -130,15 +151,47 @@ export default function NewsForm({ initialData, isEditing = false, newsId, curre
     lockedByUser: initialData?.lockOwner || null,
   })
 
-  const checkLockStatus = () => {
-    const locked = !!(initialData?.lockedBy && initialData.lockedBy !== currentUserId)
-    setLockInfo({
-      isLocked: locked,
-      lockedByUser: initialData?.lockOwner || null,
-    })
-    // If user already has the lock, enable edit mode
-    if (initialData?.lockedBy === currentUserId) {
-      setIsEditMode(true)
+  const checkLockStatus = async () => {
+    if (!newsId) return
+    
+    try {
+      console.log('Checking lock status for news:', newsId)
+      const data = await apiClient.news.checkLock(newsId)
+      console.log('Lock status response:', data)
+      console.log('Current user ID:', currentUserId, 'Type:', typeof currentUserId)
+      console.log('Locked by:', data?.lockedBy, 'Type:', typeof data?.lockedBy)
+      
+      if (data && data.lockedBy !== null) {
+        // Ensure both values are numbers for comparison
+        const lockedByUserId = Number(data.lockedBy)
+        const currentUserIdNum = Number(currentUserId)
+        
+        console.log('Comparing:', lockedByUserId, 'vs', currentUserIdNum)
+        
+        if (lockedByUserId === currentUserIdNum) {
+          // User already has the lock, restore edit mode
+          console.log('User has lock, restoring edit mode')
+          setIsEditMode(true)
+          setLockInfo({
+            isLocked: false,
+            lockedByUser: null,
+          })
+          setLockError(null)
+          // If the news has draft data, ensure hasDraft is set
+          if (initialData?.draftData) {
+            setHasDraft(true)
+          }
+        } else {
+          // Someone else has the lock
+          setLockInfo({
+            isLocked: true,
+            lockedByUser: { name: 'otro usuario' },
+          })
+          setLockError(`Este contenido está siendo editado por otro usuario`)
+        }
+      }
+    } catch (error) {
+      console.error('Error checking lock status:', error)
     }
   }
 
@@ -160,18 +213,16 @@ export default function NewsForm({ initialData, isEditing = false, newsId, curre
 
     try {
       await apiClient.news.lock(newsId)
-
-      if (response.ok) {
-        setIsEditMode(true)
-        setShowEditConfirm(false)
-        setLockError(null)
-      } else if (response.status === 423) {
-        const data = await response.json()
-        setLockError(`Este contenido está siendo editado por ${data.lockedBy?.name || 'otro usuario'}`)
-      }
-    } catch (error) {
+      setIsEditMode(true)
+      setShowEditConfirm(false)
+      setLockError(null)
+    } catch (error: any) {
       console.error('Error acquiring lock:', error)
-      setLockError('Error al intentar editar el contenido')
+      if (error.response?.status === 409) {
+        setLockError(`Este contenido está siendo editado por otro usuario`)
+      } else {
+        setLockError('Error al intentar editar el contenido')
+      }
     }
   }
 
@@ -269,30 +320,41 @@ export default function NewsForm({ initialData, isEditing = false, newsId, curre
     setShowPublishDialog(false)
 
     try {
+      let updatedNews
       if (!isEditing) {
         // Create and publish new article
-        await apiClient.news.create({ ...formData, status: 'published' })
+        updatedNews = await apiClient.news.create({ ...formData, status: 'published' })
         navigate('/news')
       } else if (formData.status === 'draft') {
         // First time publish
-        await apiClient.news.update(newsId, { 
+        updatedNews = await apiClient.news.update(newsId, { 
           status: 'published', 
           publishedAt: new Date().toISOString() 
         })
-        navigate('/news')
       } else if (formData.status === 'published' && hasDraft) {
         // Publish draft changes
-        await apiClient.news.publish(newsId)
-        navigate('/news')
+        updatedNews = await apiClient.news.publish(newsId)
       }
 
-      // Release lock after publishing
-      if (isEditMode) {
-        await releaseLock()
+      if (updatedNews && isEditing) {
+        // Clean and update form data
+        const cleanedData = cleanNewsData(updatedNews)
+        setFormData(cleanedData)
+        setHasDraft(false)
+        setHasLocalChanges(false)
+        
+        toast({
+          title: "Contenido publicado",
+          description: "Los cambios han sido publicados correctamente.",
+        })
       }
     } catch (error) {
       console.error('Error publishing:', error)
-      alert('Error al publicar')
+      toast({
+        title: "Error",
+        description: "No se pudo publicar el contenido",
+        variant: "destructive",
+      })
     } finally {
       setSaving(false)
     }
@@ -304,17 +366,18 @@ export default function NewsForm({ initialData, isEditing = false, newsId, curre
 
     try {
       const updatedNews = await apiClient.news.discardDraft(newsId)
+      console.log('Draft discarded successfully', updatedNews)
       
-      // Update the form with published data (no draft)
-      setFormData({
-        ...updatedNews,
-        mainImage: updatedNews.mainImage,
-      })
+      // Clean the data to avoid null/empty values that cause validation errors
+      const cleanedData = cleanNewsData(updatedNews)
+      
+      // Update the form with cleaned published data (no draft)
+      setFormData(cleanedData)
       setHasDraft(false)
       setHasLocalChanges(false)
       
       // Update editor content with published version
-      const publishedContent = updatedNews?.content?.blocks ? richContentToHtml(updatedNews.content) : ''
+      const publishedContent = updatedNews?.richContent?.blocks ? richContentToHtml(updatedNews.richContent) : ''
       setEditorContent(publishedContent)
       
       toast({

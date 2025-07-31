@@ -90,7 +90,7 @@ export class NewsController {
   @UseGuards(ClerkAuthGuard, RolesGuard)
   @Roles('admin', 'content_editor', 'news_editor')
   async acquireLock(@Param('id') id: string, @CurrentUser() user: ICurrentUser) {
-    const userId = Number(user.id);
+    const userId = Number((user as any).dbUserId);
     await this.locksService.acquireLock('news', +id, userId);
     return { locked: true };
   }
@@ -99,7 +99,7 @@ export class NewsController {
   @UseGuards(ClerkAuthGuard, RolesGuard)
   @Roles('admin', 'content_editor', 'news_editor')
   async releaseLock(@Param('id') id: string, @CurrentUser() user: ICurrentUser) {
-    const userId = Number(user.id);
+    const userId = Number((user as any).dbUserId);
     await this.locksService.releaseLock('news', +id, userId);
     return { locked: false };
   }

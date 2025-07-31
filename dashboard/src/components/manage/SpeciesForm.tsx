@@ -233,7 +233,7 @@ export default function SpeciesForm({ species, currentUserId, isEditing }: Speci
       console.log('Lock status response:', data)
 
       if (data && data.lockedBy !== null) {
-        if (data.lockedBy === currentUserId) {
+        if (String(data.lockedBy) === currentUserId) {
           // User already has the lock, restore edit mode
           console.log('User has lock, restoring edit mode')
           setIsEditMode(true)

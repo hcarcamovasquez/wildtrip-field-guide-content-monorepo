@@ -50,7 +50,7 @@ export default function ProtectedAreaManagement({
 
   const handlePreview = (id: number, slug: string, name: string, status?: string, hasDraft?: boolean) => {
     setPreviewData({
-      url: `${import.meta.env.VITE_WEB_URL}/content/protected-areas/preview/${id}`,
+      url: `${import.meta.env.VITE_WEB_URL}/content/protected-areas/preview/${id}?t=${Date.now()}`,
       publicUrl: status === 'published' && !hasDraft ? `${import.meta.env.VITE_WEB_URL}/content/protected-areas/${slug}` : undefined,
       title: `Vista previa: ${name}`,
     })

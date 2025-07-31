@@ -107,6 +107,32 @@ interface ProtectedAreaFormProps {
   currentUserId: string
 }
 
+// Helper function to clean protected area data and avoid null/empty values
+const cleanProtectedAreaData = (data: any): any => {
+  return {
+    ...data,
+    // Ensure strings are never null
+    name: data.name || '',
+    slug: data.slug || '',
+    description: data.description || '',
+    type: data.type || 'other',
+    status: data.status || 'draft',
+    region: data.region || '',
+    // Ensure arrays are never null
+    ecosystems: data.ecosystems || [],
+    // Keep other fields as is but handle undefined
+    area: data.area || null,
+    creationYear: data.creationYear || null,
+    visitorInformation: data.visitorInformation || null,
+    richContent: data.richContent || null,
+    mainImage: data.mainImage || null,
+    galleryImages: data.galleryImages || [],
+    seoTitle: data.seoTitle || '',
+    seoDescription: data.seoDescription || '',
+    seoKeywords: data.seoKeywords || '',
+  }
+}
+
 export default function ProtectedAreaForm({ initialData, isEditing, areaId, currentUserId }: ProtectedAreaFormProps) {
   const navigate = useNavigate()
   const { toast } = useToast()
@@ -117,6 +143,7 @@ export default function ProtectedAreaForm({ initialData, isEditing, areaId, curr
 
   // Estados principales
   const [isEditMode, setIsEditMode] = useState(false)
+  const [hasLock, setHasLock] = useState(false)
   const [formData, setFormData] = useState(effectiveData)
   const [saving, setSaving] = useState(false)
   const [updating, setUpdating] = useState<string | null>(null)
@@ -159,15 +186,48 @@ export default function ProtectedAreaForm({ initialData, isEditing, areaId, curr
     lockedByUser: initialData?.lockOwner || null,
   })
 
-  const checkLockStatus = () => {
-    const locked = !!(initialData?.lockedBy && initialData.lockedBy !== currentUserId)
-    setLockInfo({
-      isLocked: locked,
-      lockedByUser: initialData?.lockOwner || null,
-    })
-    // If user already has the lock, enable edit mode
-    if (initialData?.lockedBy === currentUserId) {
-      setIsEditMode(true)
+  const checkLockStatus = async () => {
+    if (!areaId) return
+    
+    try {
+      console.log('Checking lock status for protected area:', areaId)
+      const data = await apiClient.protectedAreas.checkLock(areaId)
+      console.log('Lock status response:', data)
+      console.log('Current user ID:', currentUserId, 'Type:', typeof currentUserId)
+      console.log('Locked by:', data?.lockedBy, 'Type:', typeof data?.lockedBy)
+      
+      if (data && data.lockedBy !== null) {
+        // Ensure both values are numbers for comparison
+        const lockedByUserId = Number(data.lockedBy)
+        const currentUserIdNum = Number(currentUserId)
+        
+        console.log('Comparing:', lockedByUserId, 'vs', currentUserIdNum)
+        
+        if (lockedByUserId === currentUserIdNum) {
+          // User already has the lock, restore edit mode
+          console.log('User has lock, restoring edit mode')
+          setIsEditMode(true)
+          setHasLock(true)
+          setLockInfo({
+            isLocked: false,
+            lockedByUser: null,
+          })
+          setLockError(null)
+          // If the area has draft data, ensure hasDraft is set
+          if (initialData?.draftData) {
+            setHasDraft(true)
+          }
+        } else {
+          // Someone else has the lock
+          setLockInfo({
+            isLocked: true,
+            lockedByUser: { name: 'otro usuario' },
+          })
+          setLockError(`Este contenido está siendo editado por otro usuario`)
+        }
+      }
+    } catch (error) {
+      console.error('Error checking lock status:', error)
     }
   }
 
@@ -179,6 +239,15 @@ export default function ProtectedAreaForm({ initialData, isEditing, areaId, curr
       fetchGalleryImages()
     }
   }, [])
+
+  // Release lock when component unmounts or when hasLock changes
+  useEffect(() => {
+    return () => {
+      if (hasLock && areaId) {
+        releaseLock()
+      }
+    }
+  }, [hasLock, areaId])
 
   // Release lock on unmount if in edit mode
   useEffect(() => {
@@ -193,21 +262,19 @@ export default function ProtectedAreaForm({ initialData, isEditing, areaId, curr
     if (!areaId) return
 
     try {
-      const response = await fetch(`/api/manage/protected-areas/${areaId}/lock`, {
-        method: 'POST',
-      })
-
-      if (response.ok) {
-        setIsEditMode(true)
-        setShowEditConfirm(false)
-        setLockError(null)
-      } else if (response.status === 423) {
-        const data = await response.json()
-        setLockError(`Este contenido está siendo editado por ${data.lockedBy?.name || 'otro usuario'}`)
-      }
-    } catch (error) {
+      await apiClient.protectedAreas.lock(areaId)
+      setIsEditMode(true)
+      setShowEditConfirm(false)
+      setLockError(null)
+      setHasLock(true)
+    } catch (error: any) {
       console.error('Error acquiring lock:', error)
-      setLockError('Error al intentar editar el contenido')
+      if (error.response?.status === 409) {
+        const data = error.response.data
+        setLockError(`Este contenido está siendo editado por ${data.lockOwner?.name || 'otro usuario'}`)
+      } else {
+        setLockError('Error al intentar editar el contenido')
+      }
     }
   }
 
@@ -235,9 +302,8 @@ export default function ProtectedAreaForm({ initialData, isEditing, areaId, curr
     if (!areaId) return
 
     try {
-      await fetch(`/api/manage/protected-areas/${areaId}/lock`, {
-        method: 'DELETE',
-      })
+      await apiClient.protectedAreas.unlock(areaId)
+      setHasLock(false)
     } catch (error) {
       console.error('Error releasing lock:', error)
     }
@@ -322,10 +388,16 @@ export default function ProtectedAreaForm({ initialData, isEditing, areaId, curr
 
       // Update hasDraft based on server response
       if (formData.status === 'published') {
+        console.log('Protected area draft response:', { 
+          field, 
+          hasDraft: data.hasDraft,
+          fullResponse: data 
+        })
         if (data.hasDraft !== undefined) {
           setHasDraft(data.hasDraft)
-          setHasLocalChanges(false)
         }
+        // Always reset local changes after saving
+        setHasLocalChanges(false)
         // The form state already has the updated value from local changes
         // We don't need to update it again from the server response
       }
@@ -338,6 +410,7 @@ export default function ProtectedAreaForm({ initialData, isEditing, areaId, curr
 
   const handleInputChange = (field: string, value: unknown) => {
     setFormData((prev) => ({ ...prev, [field]: value }))
+    setHasLocalChanges(true)
   }
 
   const handlePublish = () => {
@@ -357,27 +430,37 @@ export default function ProtectedAreaForm({ initialData, isEditing, areaId, curr
     setShowPublishDialog(false)
 
     try {
+      let updatedArea
       if (formData.status === 'draft') {
         // First time publish
-        await apiClient.protectedAreas.update(areaId, { 
+        updatedArea = await apiClient.protectedAreas.update(areaId, { 
           status: 'published',
           publishedAt: new Date().toISOString()
         })
-        navigate('/protected-areas')
       } else if (formData.status === 'published' && hasDraft) {
         // Publish draft changes
-        await apiClient.protectedAreas.publish(areaId)
-
-        navigate('/protected-areas')
+        updatedArea = await apiClient.protectedAreas.publish(areaId)
       }
 
-      // Release lock after publishing
-      if (isEditMode) {
-        await releaseLock()
+      if (updatedArea) {
+        // Clean and update form data
+        const cleanedData = cleanProtectedAreaData(updatedArea)
+        setFormData(cleanedData)
+        setHasDraft(false)
+        setHasLocalChanges(false)
+        
+        toast({
+          title: "Contenido publicado",
+          description: "Los cambios han sido publicados correctamente.",
+        })
       }
     } catch (error) {
       console.error('Error publishing:', error)
-      alert('Error al publicar')
+      toast({
+        title: "Error",
+        description: "No se pudo publicar el contenido",
+        variant: "destructive",
+      })
     } finally {
       setSaving(false)
     }
@@ -389,13 +472,13 @@ export default function ProtectedAreaForm({ initialData, isEditing, areaId, curr
 
     try {
       const updatedProtectedArea = await apiClient.protectedAreas.discardDraft(areaId)
+      console.log('Draft discarded successfully', updatedProtectedArea)
       
-      // Update the form with published data (no draft)
-      setFormData({
-        ...updatedProtectedArea,
-        mainImage: updatedProtectedArea.mainImage,
-        galleryImages: updatedProtectedArea.galleryImages,
-      })
+      // Clean the data to avoid null/empty values that cause validation errors
+      const cleanedData = cleanProtectedAreaData(updatedProtectedArea)
+      
+      // Update the form with cleaned published data (no draft)
+      setFormData(cleanedData)
       setHasDraft(false)
       setHasLocalChanges(false)
       
@@ -504,7 +587,19 @@ export default function ProtectedAreaForm({ initialData, isEditing, areaId, curr
             <div className="flex flex-wrap gap-2">
               {/* Vista previa - siempre visible cuando hay ID */}
               {isEditing && areaId && (
-                <Button variant="outline" size="sm" onClick={() => setShowPreview(true)} type="button">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={() => {
+                    console.log('Opening preview for protected area:', {
+                      id: areaId,
+                      hasDraft,
+                      formData: formData
+                    })
+                    setShowPreview(true)
+                  }} 
+                  type="button"
+                >
                   <Eye className="h-4 w-4 sm:mr-2" />
                   <span className="hidden sm:inline">Vista previa</span>
                 </Button>
@@ -516,7 +611,15 @@ export default function ProtectedAreaForm({ initialData, isEditing, areaId, curr
                   type="button"
                   variant="outline"
                   size="sm"
-                  onClick={() => setShowDiscardDialog(true)}
+                  onClick={() => {
+                    console.log('Discard button clicked:', { 
+                      status: formData.status, 
+                      hasDraft, 
+                      isEditMode,
+                      initialHasDraft: initialData?.hasDraft 
+                    })
+                    setShowDiscardDialog(true)
+                  }}
                   className="text-destructive hover:text-destructive"
                 >
                   <Trash2 className="h-4 w-4 sm:mr-2" />
@@ -1141,7 +1244,7 @@ export default function ProtectedAreaForm({ initialData, isEditing, areaId, curr
         <PreviewModal
           isOpen={showPreview}
           onClose={() => setShowPreview(false)}
-          previewUrl={`${import.meta.env.VITE_WEB_URL}/content/protected-areas/preview/${areaId}`}
+          previewUrl={`${import.meta.env.VITE_WEB_URL}/content/protected-areas/preview/${areaId}?t=${Date.now()}`}
           publicUrl={
             formData.status === 'published' && !hasDraft ? `${import.meta.env.VITE_WEB_URL}/content/protected-areas/${formData.slug}` : undefined
           }

@@ -91,8 +91,7 @@ export class SpeciesController {
   @UseGuards(ClerkAuthGuard, RolesGuard)
   @Roles('admin', 'content_editor', 'species_editor')
   async acquireLock(@Param('id') id: string, @CurrentUser() user: ICurrentUser) {
-    // For now, use a numeric ID - in a real app, you'd use the database user ID
-    const userId = 1; // TODO: Get actual DB user ID from user object
+    const userId = Number((user as any).dbUserId);
     await this.locksService.acquireLock('species', +id, userId);
     return { success: true };
   }
@@ -102,7 +101,7 @@ export class SpeciesController {
   @Roles('admin', 'content_editor', 'species_editor')
   async releaseLock(@Param('id') id: string, @CurrentUser() user: ICurrentUser) {
     console.log('Release lock endpoint called for species:', id);
-    const userId = 1; // TODO: Get actual DB user ID from user object
+    const userId = Number((user as any).dbUserId);
     await this.locksService.releaseLock('species', +id, userId);
     return { success: true };
   }

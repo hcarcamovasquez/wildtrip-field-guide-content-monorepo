@@ -90,7 +90,7 @@ export class ProtectedAreasController {
   @UseGuards(ClerkAuthGuard, RolesGuard)
   @Roles('admin', 'content_editor', 'areas_editor')
   async acquireLock(@Param('id') id: string, @CurrentUser() user: ICurrentUser) {
-    const userId = Number(user.id);
+    const userId = Number((user as any).dbUserId);
     await this.locksService.acquireLock('protectedAreas', +id, userId);
     return { locked: true };
   }
@@ -99,7 +99,7 @@ export class ProtectedAreasController {
   @UseGuards(ClerkAuthGuard, RolesGuard)
   @Roles('admin', 'content_editor', 'areas_editor')
   async releaseLock(@Param('id') id: string, @CurrentUser() user: ICurrentUser) {
-    const userId = Number(user.id);
+    const userId = Number((user as any).dbUserId);
     await this.locksService.releaseLock('protectedAreas', +id, userId);
     return { locked: false };
   }

@@ -32,8 +32,31 @@ if (!protectedAreaData) {
 
 // For preview, we need to show draft data if available
 const previewData = protectedAreaData.hasDraft && protectedAreaData.draftData 
-  ? { ...protectedAreaData, ...protectedAreaData.draftData }
-  : protectedAreaData
+  ? { 
+      ...protectedAreaData, 
+      ...protectedAreaData.draftData,
+      // Convert mainImage object to mainImageUrl string
+      mainImageUrl: protectedAreaData.draftData.mainImage?.url || protectedAreaData.mainImage?.url || protectedAreaData.mainImageUrl,
+      // Convert galleryImages to images array
+      images: protectedAreaData.draftData.galleryImages 
+        ? protectedAreaData.draftData.galleryImages.map((img: any) => img.url)
+        : protectedAreaData.galleryImages?.map((img: any) => img.url) || protectedAreaData.images || []
+    }
+  : {
+      ...protectedAreaData,
+      // Ensure mainImageUrl is set even for non-draft
+      mainImageUrl: protectedAreaData.mainImage?.url || protectedAreaData.mainImageUrl,
+      // Convert galleryImages to images array
+      images: protectedAreaData.galleryImages?.map((img: any) => img.url) || protectedAreaData.images || []
+    }
+
+// Debug log
+console.log('Preview data for protected area', protectedAreaId, {
+  hasDraft: protectedAreaData.hasDraft,
+  mainImageUrl: previewData.mainImageUrl,
+  draftMainImage: protectedAreaData.draftData?.mainImage,
+  images: previewData.images
+})
 ---
 
 <Layout

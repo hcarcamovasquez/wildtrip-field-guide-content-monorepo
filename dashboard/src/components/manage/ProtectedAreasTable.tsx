@@ -33,6 +33,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
 import CreateProtectedAreaModal from './CreateProtectedAreaModal'
+import PreviewModal from './PreviewModal'
 import type { ProtectedAreaWithBase } from '@/types'
 import type { Role } from '@/lib/utils/permissions'
 import { PROTECTED_AREA_TYPES, getRegionLabel } from '@wildtrip/shared/constants'
