@@ -1128,9 +1128,9 @@ export default function ProtectedAreaForm({ initialData, isEditing, areaId, curr
         <PreviewModal
           isOpen={showPreview}
           onClose={() => setShowPreview(false)}
-          previewUrl={`/content/protected-areas/preview/${areaId}`}
+          previewUrl={`${import.meta.env.VITE_WEB_URL}/content/protected-areas/preview/${areaId}`}
           publicUrl={
-            formData.status === 'published' && !hasDraft ? `/content/protected-areas/${formData.slug}` : undefined
+            formData.status === 'published' && !hasDraft ? `${import.meta.env.VITE_WEB_URL}/content/protected-areas/${formData.slug}` : undefined
           }
           title={`Vista previa: ${formData.name}`}
         />

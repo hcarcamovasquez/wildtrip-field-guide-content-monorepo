@@ -331,10 +331,10 @@ export default function SpeciesTable({ canDelete = false }: SpeciesTableProps) {
                               <DropdownMenuItem
                                 onClick={() => {
                                   setPreviewData({
-                                    url: `/content/species/preview/${item.id}`,
+                                    url: `${import.meta.env.VITE_WEB_URL}/content/species/preview/${item.id}`,
                                     publicUrl:
                                       item.status === 'published' && !item.hasDraft
-                                        ? `/content/species/${item.slug}`
+                                        ? `${import.meta.env.VITE_WEB_URL}/content/species/${item.slug}`
                                         : undefined,
                                     title: `Vista previa: ${item.commonName || item.scientificName}`,
                                   })

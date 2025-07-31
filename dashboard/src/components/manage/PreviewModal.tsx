@@ -73,7 +73,10 @@ export default function PreviewModal({
       >
         {/* Header */}
         <div className="flex flex-shrink-0 items-center justify-between rounded-t-lg border-b bg-background px-6 py-4">
-          <h2 className="truncate pr-4 text-lg font-semibold">{title}</h2>
+          <div className="flex-1 min-w-0 pr-4">
+            <h2 className="truncate text-lg font-semibold">{title}</h2>
+            <p className="truncate text-xs text-muted-foreground mt-1">{previewUrl}</p>
+          </div>
           <div className="flex items-center gap-2">
             {publicUrl && (
               <Button

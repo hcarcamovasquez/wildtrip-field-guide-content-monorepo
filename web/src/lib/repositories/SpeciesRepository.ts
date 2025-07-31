@@ -105,6 +105,23 @@ class SpeciesRepository {
     }
   }
 
+  async findById(id: number): Promise<any> {
+    try {
+      const response = await apiClient.species.findById(id)
+      if (!response) {
+        return null
+      }
+      // Map mainImage.url to mainImageUrl and include draft data
+      return {
+        ...response,
+        mainImageUrl: response.mainImage?.url || response.mainImageUrl || null
+      }
+    } catch (error) {
+      console.error('Error fetching species by id:', error)
+      return null
+    }
+  }
+
   async getTotalPublished(): Promise<number> {
     const response = await apiClient.species.findAll({
       page: 1,

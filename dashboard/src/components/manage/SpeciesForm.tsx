@@ -1095,8 +1095,8 @@ export default function SpeciesForm({ species, currentUserId, isEditing }: Speci
         <PreviewModal
           isOpen={showPreview}
           onClose={() => setShowPreview(false)}
-          previewUrl={`/content/species/preview/${species.id}`}
-          publicUrl={species.status === 'published' && !hasDraft ? `/content/species/${species.slug}` : undefined}
+          previewUrl={`${import.meta.env.VITE_WEB_URL}/content/species/preview/${species.id}`}
+          publicUrl={species.status === 'published' && !hasDraft ? `${import.meta.env.VITE_WEB_URL}/content/species/${species.slug}` : undefined}
           title={`Vista previa: ${species.commonName || species.scientificName}`}
         />
       )}

@@ -345,7 +345,7 @@ export default function NewsTable({ currentUserId, canDelete = false, onEdit, on
                               )}
                               {onPreview && (
                                 <DropdownMenuItem
-                                  onClick={() => window.open(`${import.meta.env.VITE_WEB_URL}/content/news/preview/${item.id}`, '_blank')}
+                                  onClick={() => onPreview(item.id, item.slug, item.status, item.hasDraft)}
                                 >
                                   <Eye className="mr-2 h-4 w-4" />
                                   Vista previa

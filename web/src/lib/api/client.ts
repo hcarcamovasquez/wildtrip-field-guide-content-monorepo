@@ -46,6 +46,8 @@ class APIClient {
       this.request<any>('/api/species', { params }),
     findBySlug: (slug: string) => 
       this.request<any>(`/api/species/slug/${slug}`),
+    findById: (id: number) => 
+      this.request<any>(`/api/species/${id}`),
   }
 
   // Protected Areas endpoints
@@ -54,6 +56,8 @@ class APIClient {
       this.request<any>('/api/protected-areas', { params }),
     findBySlug: (slug: string) => 
       this.request<any>(`/api/protected-areas/slug/${slug}`),
+    findById: (id: number) => 
+      this.request<any>(`/api/protected-areas/${id}`),
   }
 
   // News endpoints
@@ -62,6 +66,8 @@ class APIClient {
       this.request<any>('/api/news', { params }),
     findBySlug: (slug: string) => 
       this.request<any>(`/api/news/slug/${slug}`),
+    findById: (id: number) => 
+      this.request<any>(`/api/news/${id}`),
   }
 }
 

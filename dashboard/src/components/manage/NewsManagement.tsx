@@ -16,8 +16,8 @@ export default function NewsManagement({ currentUserId, canDelete }: NewsManagem
 
   const handlePreview = (id: number, slug: string, status?: string, hasDraft?: boolean) => {
     setPreviewData({
-      url: `/content/news/preview/${id}`,
-      publicUrl: status === 'published' && !hasDraft ? `/content/news/${slug}` : undefined,
+      url: `${import.meta.env.VITE_WEB_URL}/content/news/preview/${id}`,
+      publicUrl: status === 'published' && !hasDraft ? `${import.meta.env.VITE_WEB_URL}/content/news/${slug}` : undefined,
       title: 'Vista previa de noticia',
     })
   }

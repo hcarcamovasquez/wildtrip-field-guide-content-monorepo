@@ -111,6 +111,33 @@ class ProtectedAreaRepository {
     }
   }
 
+  async findById(id: number): Promise<any> {
+    try {
+      const response = await apiClient.protectedAreas.findById(id)
+      if (!response) {
+        return null
+      }
+      // Map mainImage.url to mainImageUrl and include draft data
+      return {
+        ...response,
+        mainImageUrl: response.mainImage?.url || response.mainImageUrl || null,
+        images: response.galleryImages?.map((img: any) => img.url) || null,
+        surface: response.area?.toString() || null,
+        area: response.area || undefined,
+        creationYear: response.creationYear || undefined,
+        content: response.richContent || null,
+        richContent: response.richContent || null,
+        visitorInfo: response.visitorInformation || null,
+        visitorInformation: response.visitorInformation || null,
+        ecosystems: response.ecosystems || null,
+        howToGet: null
+      }
+    } catch (error) {
+      console.error('Error fetching protected area by id:', error)
+      return null
+    }
+  }
+
   async getLastPublished(limit: number = 3): Promise<PublicProtectedArea[]> {
     const response = await apiClient.protectedAreas.findAll({
       page: 1,
@@ -137,4 +164,4 @@ class ProtectedAreaRepository {
   }
 }
 
-export const protectedAreaRepository = new ProtectedAreaRepository()
+export const protectedAreasRepository = new ProtectedAreaRepository()

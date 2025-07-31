@@ -905,8 +905,8 @@ export default function NewsForm({ initialData, isEditing = false, newsId, curre
           <PreviewModal
             isOpen={showPreview}
             onClose={() => setShowPreview(false)}
-            previewUrl={`/content/news/preview/${newsId}`}
-            publicUrl={formData.status === 'published' && !hasDraft ? `/content/news/${formData.slug}` : undefined}
+            previewUrl={`${import.meta.env.VITE_WEB_URL}/content/news/preview/${newsId}`}
+            publicUrl={formData.status === 'published' && !hasDraft ? `${import.meta.env.VITE_WEB_URL}/content/news/${formData.slug}` : undefined}
             title="Vista previa de noticia"
           />
         )}

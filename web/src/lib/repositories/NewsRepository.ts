@@ -87,6 +87,23 @@ class NewsRepository {
     }
   }
 
+  async findById(id: number): Promise<any> {
+    try {
+      const response = await apiClient.news.findById(id)
+      if (!response) {
+        return null
+      }
+      // Map mainImage.url to mainImageUrl and include draft data
+      return {
+        ...response,
+        mainImageUrl: response.mainImage?.url || response.mainImageUrl || null
+      }
+    } catch (error) {
+      console.error('Error fetching news by id:', error)
+      return null
+    }
+  }
+
   async getLastPublished(limit: number = 3): Promise<PublicNews[]> {
     const response = await apiClient.news.findAll({
       page: 1,
