@@ -143,7 +143,7 @@ export class APIClient {
       this.request<any>({ method: 'PATCH', url: `/api/gallery/media/${id}`, data }),
     deleteMedia: (id: number) => 
       this.request<void>({ method: 'DELETE', url: `/api/gallery/media/${id}` }),
-    batchDelete: (ids: number[]) => 
+    deleteMediaBatch: (ids: number[]) => 
       this.request<void>({ method: 'POST', url: '/api/gallery/media/batch-delete', data: { ids } }),
     moveMedia: (mediaIds: number[], folderId: number | null) => 
       this.request<any>({ method: 'POST', url: '/api/gallery/media/move', data: { mediaIds, folderId } }),

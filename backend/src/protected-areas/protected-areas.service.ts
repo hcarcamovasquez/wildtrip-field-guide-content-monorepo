@@ -44,11 +44,12 @@ export class ProtectedAreasService {
     const area = await this.findOne(id);
     
     // Update slug if name changed
-    if (updateProtectedAreaDto.name && !updateProtectedAreaDto.slug) {
-      (updateProtectedAreaDto as any).slug = slugify(updateProtectedAreaDto.name);
+    const updateData: any = { ...updateProtectedAreaDto };
+    if ('name' in updateData && updateData.name && !('slug' in updateData)) {
+      updateData.slug = slugify(updateData.name);
     }
     
-    return this.protectedAreasRepository.update(id, updateProtectedAreaDto);
+    return this.protectedAreasRepository.update(id, updateData);
   }
 
   async remove(id: number) {

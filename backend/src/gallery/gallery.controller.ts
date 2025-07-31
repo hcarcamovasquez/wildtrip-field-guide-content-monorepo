@@ -31,7 +31,16 @@ export class GalleryController {
   // Media endpoints
   @Get('browse')
   browseMedia(@Query() query: any) {
-    return this.galleryService.findAllMedia(query);
+    // Convert numeric parameters
+    const params = {
+      ...query,
+      page: query.page ? parseInt(query.page, 10) : undefined,
+      limit: query.limit ? parseInt(query.limit, 10) : undefined,
+      folderId: query.folderId !== undefined ? 
+        (query.folderId === 'null' || query.folderId === null ? null : parseInt(query.folderId, 10)) : 
+        undefined,
+    };
+    return this.galleryService.findAllMedia(params);
   }
 
   @Get('by-ids')

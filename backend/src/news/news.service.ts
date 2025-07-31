@@ -44,11 +44,12 @@ export class NewsService {
     const article = await this.findOne(id);
     
     // Update slug if title changed
-    if (updateNewsDto.title && !updateNewsDto.slug) {
-      (updateNewsDto as any).slug = slugify(updateNewsDto.title);
+    const updateData: any = { ...updateNewsDto };
+    if ('title' in updateData && updateData.title && !('slug' in updateData)) {
+      updateData.slug = slugify(updateData.title);
     }
     
-    return this.newsRepository.update(id, updateNewsDto);
+    return this.newsRepository.update(id, updateData);
   }
 
   async remove(id: number) {

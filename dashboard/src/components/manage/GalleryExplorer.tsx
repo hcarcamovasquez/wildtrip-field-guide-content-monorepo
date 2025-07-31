@@ -1,4 +1,5 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import {
   Folder,
   FolderOpen,
@@ -19,6 +20,7 @@ import {
   ChevronRight,
   FolderPlus,
   HardDrive,
+  Loader2,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -45,23 +47,44 @@ import { ScrollArea } from '@/components/ui/scroll-area'
 import { convertToWebP } from '@/lib/utils/image-upload'
 import FileDetails from './FileDetails'
 import type { MediaWithFolder, FolderWithCount, MediaFolder } from '@/types'
+import { apiClient } from '@/lib/api/client'
+import { useQueryClient } from '@tanstack/react-query'
+import { useInfiniteScroll } from '@/hooks/useInfiniteScroll'
+import { getOptimizedImageUrl } from '@/lib/utils/cloudflare-images'
 
-interface GalleryFolderWithCount extends FolderWithCount {
-  fileCount: number
-  folderCount: number
+interface GalleryItem {
+  id: number
+  type: 'folder' | 'image' | 'video'
+  name?: string // for folders
+  filename?: string // for media
+  url?: string // for media
+  title?: string | null
+  description?: string | null
+  fileCount?: number // for folders
+  folderCount?: number // for folders
+  size?: number // for media
+  mimeType?: string // for media
+  width?: number | null // for media
+  height?: number | null // for media
+  createdAt: Date | string
+  updatedAt: Date | string
+  [key: string]: any
 }
 
 interface GalleryExplorerProps {
   initialData: {
     currentFolder: MediaFolder | null
     breadcrumb: MediaFolder[]
-    folders: GalleryFolderWithCount[]
-    media: MediaWithFolder[]
+    items: GalleryItem[]
     stats: {
-      totalSize: number
       totalFiles: number
       totalFolders: number
-      byType: { type: string; count: number; size: number }[]
+    }
+    pagination: {
+      page: number
+      limit: number
+      total: number
+      totalPages: number
     }
     currentUser: {
       id: string
@@ -72,18 +95,37 @@ interface GalleryExplorerProps {
 }
 
 export default function GalleryExplorer({ initialData }: GalleryExplorerProps) {
+  const queryClient = useQueryClient()
+  const [searchParams, setSearchParams] = useSearchParams()
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('list')
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set())
-  const [selectedFile, setSelectedFile] = useState<MediaWithFolder | null>(null)
+  const [selectedFile, setSelectedFile] = useState<GalleryItem | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
-  const [folders, setFolders] = useState(initialData.folders)
-  const [media, setMedia] = useState(initialData.media)
+  const [items, setItems] = useState(initialData.items)
+  const [currentFolder, setCurrentFolder] = useState(initialData.currentFolder)
+  const [breadcrumb, setBreadcrumb] = useState(initialData.breadcrumb)
   const [uploading, setUploading] = useState(false)
   const [showNewFolderDialog, setShowNewFolderDialog] = useState(false)
   const [newFolderName, setNewFolderName] = useState('')
   const [showMoveDialog, setShowMoveDialog] = useState(false)
   const [targetFolderId, setTargetFolderId] = useState<number | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  
+  // Infinite scroll state
+  const [page, setPage] = useState(initialData.pagination.page)
+  const [hasMore, setHasMore] = useState(initialData.pagination.page < initialData.pagination.totalPages)
+  const [isLoadingMore, setIsLoadingMore] = useState(false)
+  const itemsPerPage = 10
+  
+  // Update state when initialData changes (URL navigation)
+  useEffect(() => {
+    setItems(initialData.items)
+    setCurrentFolder(initialData.currentFolder)
+    setBreadcrumb(initialData.breadcrumb)
+    setPage(initialData.pagination.page)
+    setHasMore(initialData.pagination.page < initialData.pagination.totalPages)
+    setSelectedItems(new Set())
+  }, [initialData])
 
   const formatFileSize = (bytes: number) => {
     if (bytes === 0) return '0 Bytes'
@@ -103,13 +145,81 @@ export default function GalleryExplorer({ initialData }: GalleryExplorerProps) {
     })
   }
 
+  const handleFolderClick = async (folder: GalleryItem) => {
+    // Update URL params
+    const newParams = new URLSearchParams(searchParams)
+    newParams.set('folder', folder.id.toString())
+    newParams.delete('page') // Reset to page 1 when changing folders
+    setSearchParams(newParams)
+    
+    // The rest of the navigation will be handled by the page component
+    // when it detects the URL change
+  }
+
+  const handleBreadcrumbClick = async (index: number) => {
+    const newParams = new URLSearchParams(searchParams)
+    
+    if (index === -1) {
+      // Go to root
+      newParams.delete('folder')
+      newParams.delete('page')
+    } else {
+      // Navigate to breadcrumb folder
+      const folder = breadcrumb[index]
+      newParams.set('folder', folder.id.toString())
+      newParams.delete('page')
+    }
+    
+    setSearchParams(newParams)
+  }
+  
+  const loadMoreItems = async () => {
+    if (isLoadingMore || !hasMore) return
+    
+    setIsLoadingMore(true)
+    try {
+      const nextPage = page + 1
+      const browseData = await apiClient.gallery.browse({ 
+        folderId: currentFolder?.id || null,
+        page: nextPage,
+        limit: itemsPerPage
+      })
+      
+      if (browseData.data && browseData.data.length > 0) {
+        setItems(prev => [...prev, ...browseData.data])
+        setPage(nextPage)
+        setHasMore(browseData.pagination.page < browseData.pagination.totalPages)
+        
+        // Update URL with new page
+        const newParams = new URLSearchParams(searchParams)
+        newParams.set('page', nextPage.toString())
+        setSearchParams(newParams, { replace: true })
+      } else {
+        setHasMore(false)
+      }
+    } catch (error) {
+      console.error('Error loading more items:', error)
+    } finally {
+      setIsLoadingMore(false)
+    }
+  }
+  
+  const { sentinelRef } = useInfiniteScroll({
+    hasMore,
+    onLoadMore: loadMoreItems,
+    isLoading: isLoadingMore,
+    threshold: 200
+  })
+
   const handleSelectAll = () => {
-    if (selectedItems.size === folders.length + media.length) {
+    if (selectedItems.size === items.length) {
       setSelectedItems(new Set())
     } else {
       const allIds = new Set<string>()
-      folders.forEach((f) => allIds.add(`folder-${f.id}`))
-      media.forEach((m) => allIds.add(`media-${m.id}`))
+      items.forEach((item) => {
+        const prefix = item.type === 'folder' ? 'folder-' : 'media-'
+        allIds.add(`${prefix}${item.id}`)
+      })
       setSelectedItems(allIds)
     }
   }
@@ -141,21 +251,17 @@ export default function GalleryExplorer({ initialData }: GalleryExplorerProps) {
           uploadFile = await convertToWebP(file)
         }
 
-        const formData = new FormData()
-        formData.append('file', uploadFile)
-        formData.append('originalName', file.name)
-        if (initialData.currentFolder) {
-          formData.append('folderId', initialData.currentFolder.id.toString())
+        const uploadData: any = {}
+        if (currentFolder) {
+          uploadData.folderId = currentFolder.id
         }
 
-        const response = await fetch('/api/gallery/upload', {
-          method: 'POST',
-          body: formData,
-        })
-
-        if (response.ok) {
-          const newMedia = await response.json()
-          setMedia((prev) => [newMedia, ...prev])
+        const newMedia = await apiClient.gallery.upload(uploadFile, uploadData)
+        if (newMedia) {
+          setItems((prev) => [{
+            ...newMedia,
+            type: 'image' as const
+          }, ...prev])
         }
       }
     } catch (error) {
@@ -172,21 +278,24 @@ export default function GalleryExplorer({ initialData }: GalleryExplorerProps) {
     if (!newFolderName.trim()) return
 
     try {
-      const response = await fetch('/api/gallery/folders', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: newFolderName,
-          parentId: initialData.currentFolder?.id || null,
-        }),
+      const newFolder = await apiClient.gallery.createFolder({
+        name: newFolderName,
+        parentId: currentFolder?.id || null,
       })
-
-      if (response.ok) {
-        const newFolder = await response.json()
-        setFolders((prev) => [...prev, { ...newFolder, fileCount: 0, folderCount: 0 }])
-        setNewFolderName('')
-        setShowNewFolderDialog(false)
-      }
+      
+      // Add the new folder to items
+      setItems((prev) => [{
+        ...newFolder,
+        type: 'folder' as const,
+        fileCount: 0,
+        folderCount: 0
+      }, ...prev])
+      
+      setNewFolderName('')
+      setShowNewFolderDialog(false)
+      
+      // Invalidate queries to refresh data
+      queryClient.invalidateQueries({ queryKey: ['gallery', 'browse'] })
     } catch (error) {
       console.error('Error creating folder:', error)
     }
@@ -211,20 +320,24 @@ export default function GalleryExplorer({ initialData }: GalleryExplorerProps) {
 
       // Delete media files
       if (mediaIds.length > 0) {
-        await fetch('/api/gallery/media/batch-delete', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ ids: mediaIds }),
-        })
-        setMedia((prev) => prev.filter((m) => !mediaIds.includes(m.id)))
+        await apiClient.gallery.deleteMediaBatch(mediaIds)
+        setItems((prev) => prev.filter((item) => {
+          if (item.type !== 'folder' && mediaIds.includes(item.id)) {
+            return false
+          }
+          return true
+        }))
       }
 
       // Delete folders
       for (const folderId of folderIds) {
-        await fetch(`/api/gallery/folders/${folderId}`, {
-          method: 'DELETE',
-        })
-        setFolders((prev) => prev.filter((f) => f.id !== folderId))
+        await apiClient.gallery.deleteFolder(folderId)
+        setItems((prev) => prev.filter((item) => {
+          if (item.type === 'folder' && item.id === folderId) {
+            return false
+          }
+          return true
+        }))
       }
 
       setSelectedItems(new Set())
@@ -245,17 +358,18 @@ export default function GalleryExplorer({ initialData }: GalleryExplorerProps) {
       })
 
       if (mediaIds.length > 0) {
-        await fetch('/api/gallery/media/move', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            ids: mediaIds,
-            targetFolderId,
-          }),
+        await apiClient.gallery.moveMedia({
+          mediaIds,
+          folderId: targetFolderId,
         })
 
         // Remove moved items from current view
-        setMedia((prev) => prev.filter((m) => !mediaIds.includes(m.id)))
+        setItems((prev) => prev.filter((item) => {
+          if (item.type !== 'folder' && mediaIds.includes(item.id)) {
+            return false
+          }
+          return true
+        }))
         setSelectedItems(new Set())
         setShowMoveDialog(false)
       }
@@ -264,24 +378,28 @@ export default function GalleryExplorer({ initialData }: GalleryExplorerProps) {
     }
   }
 
-  const getItemIcon = (item: MediaWithFolder | GalleryFolderWithCount) => {
-    if ('fileCount' in item) {
-      return item.fileCount > 0 || item.folderCount > 0 ? FolderOpen : Folder
+  const getItemIcon = (item: GalleryItem) => {
+    if (item.type === 'folder') {
+      return (item.fileCount && item.fileCount > 0) || (item.folderCount && item.folderCount > 0) ? FolderOpen : Folder
     }
     return item.type === 'video' ? Video : Image
   }
 
-  const filteredMedia = media.filter(
-    (m) =>
-      searchQuery === '' ||
-      m.filename.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      m.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      m.description?.toLowerCase().includes(searchQuery.toLowerCase()),
-  )
-
-  const filteredFolders = folders.filter(
-    (f) => searchQuery === '' || f.name.toLowerCase().includes(searchQuery.toLowerCase()),
-  )
+  const filteredItems = items.filter((item) => {
+    if (searchQuery === '') return true
+    
+    const searchLower = searchQuery.toLowerCase()
+    
+    if (item.type === 'folder') {
+      return item.name?.toLowerCase().includes(searchLower)
+    } else {
+      return (
+        item.filename?.toLowerCase().includes(searchLower) ||
+        item.title?.toLowerCase().includes(searchLower) ||
+        item.description?.toLowerCase().includes(searchLower)
+      )
+    }
+  })
 
   return (
     <div className="flex h-full">
@@ -301,6 +419,37 @@ export default function GalleryExplorer({ initialData }: GalleryExplorerProps) {
                   <span>{formatFileSize(initialData.stats.totalSize)}</span>
                 </div>
               </div>
+            </div>
+            
+            {/* Breadcrumb */}
+            <div className="flex items-center gap-2 text-sm text-muted-foreground mt-2">
+              <button
+                onClick={() => handleBreadcrumbClick(-1)}
+                className="hover:text-foreground transition-colors"
+              >
+                <Home className="h-4 w-4" />
+              </button>
+              {breadcrumb.map((folder, index) => (
+                <div key={folder.id} className="flex items-center gap-2">
+                  <ChevronRight className="h-4 w-4" />
+                  <button
+                    onClick={() => handleBreadcrumbClick(index)}
+                    className="hover:text-foreground transition-colors"
+                  >
+                    {folder.name}
+                  </button>
+                </div>
+              ))}
+              {currentFolder && (
+                <div className="flex items-center gap-2">
+                  <ChevronRight className="h-4 w-4" />
+                  <span className="text-foreground font-medium">{currentFolder.name}</span>
+                </div>
+              )}
+            </div>
+            
+            <div className="flex items-center justify-between">
+              <div></div>
               <div className="flex items-center gap-2">
                 <Button variant="outline" size="sm" onClick={() => setShowNewFolderDialog(true)}>
                   <FolderPlus className="mr-2 h-4 w-4" />
@@ -319,23 +468,6 @@ export default function GalleryExplorer({ initialData }: GalleryExplorerProps) {
                   className="hidden"
                 />
               </div>
-            </div>
-
-            {/* Breadcrumb */}
-            <div className="flex items-center gap-2 text-sm">
-              <Button variant="ghost" size="sm" className="h-7 px-2" asChild>
-                <a href="/gallery">
-                  <Home className="h-4 w-4" />
-                </a>
-              </Button>
-              {initialData.breadcrumb.map((folder) => (
-                <div key={folder.id} className="flex items-center gap-2">
-                  <ChevronRight className="h-4 w-4 text-muted-foreground" />
-                  <Button variant="ghost" size="sm" className="h-7 px-2" asChild>
-                    <a href={`/gallery?folder=${folder.id}`}>{folder.name}</a>
-                  </Button>
-                </div>
-              ))}
             </div>
           </div>
 
@@ -396,7 +528,7 @@ export default function GalleryExplorer({ initialData }: GalleryExplorerProps) {
                     <th className="w-10 bg-background px-6 py-3 pr-4">
                       <Checkbox
                         checked={
-                          selectedItems.size === filteredFolders.length + filteredMedia.length && selectedItems.size > 0
+                          selectedItems.size === filteredItems.length && selectedItems.size > 0
                         }
                         onCheckedChange={handleSelectAll}
                       />
@@ -409,217 +541,229 @@ export default function GalleryExplorer({ initialData }: GalleryExplorerProps) {
                   </tr>
                 </thead>
                 <tbody>
-                  {/* Folders */}
-                  {filteredFolders.map((folder) => {
-                    const Icon = getItemIcon(folder)
-                    const itemId = `folder-${folder.id}`
-                    return (
-                      <tr key={itemId} className="border-b hover:bg-muted/50">
-                        <td className="px-6 py-3 pr-4">
-                          <Checkbox
-                            checked={selectedItems.has(itemId)}
-                            onCheckedChange={() => handleSelectItem(itemId)}
-                            onClick={(e) => e.stopPropagation()}
-                          />
-                        </td>
-                        <td className="px-6 py-3 pr-4">
-                          <div className="flex items-center gap-3">
-                            <Icon className="h-5 w-5 text-muted-foreground" />
-                            <button
-                              onClick={() => (window.location.href = `/gallery?folder=${folder.id}`)}
-                              className="text-left hover:underline"
-                            >
-                              <div className="font-medium">{folder.name}</div>
-                              <div className="text-sm text-muted-foreground">
-                                {folder.fileCount} archivos, {folder.folderCount} carpetas
-                              </div>
-                            </button>
-                          </div>
-                        </td>
-                        <td className="px-6 py-3 pr-4 text-muted-foreground">—</td>
-                        <td className="px-6 py-3 pr-4">
-                          <Badge variant="secondary">Carpeta</Badge>
-                        </td>
-                        <td className="px-6 py-3 pr-4 text-muted-foreground">
-                          {formatDate(typeof folder.updatedAt === 'string' ? folder.updatedAt : folder.updatedAt.toISOString())}
-                        </td>
-                        <td className="px-6 py-3">
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="icon">
-                                <MoreVertical className="h-4 w-4" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuItem
-                                onClick={() => (window.location.href = `/gallery?folder=${folder.id}`)}
-                              >
-                                <FolderOpen className="mr-2 h-4 w-4" />
-                                Abrir
-                              </DropdownMenuItem>
-                              <DropdownMenuItem>
-                                <Edit3 className="mr-2 h-4 w-4" />
-                                Renombrar
-                              </DropdownMenuItem>
-                              <DropdownMenuSeparator />
-                              <DropdownMenuItem className="text-destructive">
-                                <Trash2 className="mr-2 h-4 w-4" />
-                                Eliminar
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </td>
-                      </tr>
-                    )
-                  })}
-
-                  {/* Media files */}
-                  {filteredMedia.map((file) => {
-                    const Icon = getItemIcon(file)
-                    const itemId = `media-${file.id}`
-                    return (
-                      <tr
-                        key={itemId}
-                        className="cursor-pointer border-b hover:bg-muted/50"
-                        onClick={() => setSelectedFile(file)}
-                      >
-                        <td className="px-6 py-3 pr-4">
-                          <Checkbox
-                            checked={selectedItems.has(itemId)}
-                            onCheckedChange={() => handleSelectItem(itemId)}
-                            onClick={(e) => e.stopPropagation()}
-                          />
-                        </td>
-                        <td className="px-6 py-3 pr-4">
-                          <div className="flex items-center gap-3">
-                            {file.type === 'image' && file.url ? (
-                              <img
-                                src={file.url}
-                                alt={file.title || file.filename}
-                                className="h-10 w-10 rounded object-cover"
-                              />
-                            ) : (
+                  {/* Render items (folders and media) */}
+                  {filteredItems.map((item) => {
+                    const Icon = getItemIcon(item)
+                    const itemId = `${item.type === 'folder' ? 'folder' : 'media'}-${item.id}`
+                    
+                    if (item.type === 'folder') {
+                      return (
+                        <tr key={itemId} className="border-b hover:bg-muted/50">
+                          <td className="px-6 py-3 pr-4">
+                            <Checkbox
+                              checked={selectedItems.has(itemId)}
+                              onCheckedChange={() => handleSelectItem(itemId)}
+                              onClick={(e) => e.stopPropagation()}
+                            />
+                          </td>
+                          <td className="px-6 py-3 pr-4">
+                            <div className="flex items-center gap-3">
                               <Icon className="h-5 w-5 text-muted-foreground" />
-                            )}
-                            <div>
-                              <div className="font-medium">{file.title || file.filename}</div>
-                              {file.description && (
-                                <div className="line-clamp-1 text-sm text-muted-foreground">{file.description}</div>
-                              )}
+                              <button
+                                onClick={() => handleFolderClick(item)}
+                                className="text-left hover:underline"
+                              >
+                                <div className="font-medium">{item.name}</div>
+                                <div className="text-sm text-muted-foreground">
+                                  Contiene: {item.fileCount || 0} {(item.fileCount || 0) === 1 ? 'archivo' : 'archivos'}, {item.folderCount || 0} {(item.folderCount || 0) === 1 ? 'carpeta' : 'carpetas'}
+                                </div>
+                              </button>
                             </div>
-                          </div>
-                        </td>
-                        <td className="px-6 py-3 pr-4 text-muted-foreground">{formatFileSize(file.size)}</td>
-                        <td className="px-6 py-3 pr-4">
-                          <Badge variant="outline">{file.type === 'image' ? 'Imagen' : 'Video'}</Badge>
-                        </td>
-                        <td className="px-6 py-3 pr-4 text-muted-foreground">
-                          {formatDate(typeof file.updatedAt === 'string' ? file.updatedAt : file.updatedAt.toISOString())}
-                        </td>
-                        <td className="px-6 py-3">
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="icon">
-                                <MoreVertical className="h-4 w-4" />
+                          </td>
+                          <td className="px-6 py-3 pr-4 text-muted-foreground">—</td>
+                          <td className="px-6 py-3 pr-4">
+                            <Badge variant="secondary">Carpeta</Badge>
+                          </td>
+                          <td className="px-6 py-3 pr-4 text-muted-foreground">
+                            {formatDate(typeof item.updatedAt === 'string' ? item.updatedAt : item.updatedAt.toISOString())}
+                          </td>
+                          <td className="px-6 py-3">
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="icon">
+                                  <MoreVertical className="h-4 w-4" />
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end">
+                                <DropdownMenuItem
+                                  onClick={() => handleFolderClick(item)}
+                                >
+                                  <FolderOpen className="mr-2 h-4 w-4" />
+                                  Abrir
+                                </DropdownMenuItem>
+                                <DropdownMenuItem>
+                                  <Edit3 className="mr-2 h-4 w-4" />
+                                  Renombrar
+                                </DropdownMenuItem>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem className="text-destructive">
+                                  <Trash2 className="mr-2 h-4 w-4" />
+                                  Eliminar
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          </td>
+                        </tr>
+                      )
+                    } else {
+                      // Media item
+                      return (
+                        <tr
+                          key={itemId}
+                          className="cursor-pointer border-b hover:bg-muted/50"
+                          onClick={() => setSelectedFile(item)}
+                        >
+                          <td className="px-6 py-3 pr-4">
+                            <Checkbox
+                              checked={selectedItems.has(itemId)}
+                              onCheckedChange={() => handleSelectItem(itemId)}
+                              onClick={(e) => e.stopPropagation()}
+                            />
+                          </td>
+                          <td className="px-6 py-3 pr-4">
+                            <div className="flex items-center gap-3">
+                              {item.type === 'image' && item.url ? (
+                                <img
+                                  src={getOptimizedImageUrl(item.url, 'thumb')}
+                                  alt={item.title || item.filename}
+                                  className="h-10 w-10 rounded object-cover"
+                                />
+                              ) : (
+                                <Icon className="h-5 w-5 text-muted-foreground" />
+                              )}
+                              <div>
+                                <div className="font-medium">{item.title || item.filename}</div>
+                                {item.description && (
+                                  <div className="line-clamp-1 text-sm text-muted-foreground">{item.description}</div>
+                                )}
+                              </div>
+                            </div>
+                          </td>
+                          <td className="px-6 py-3 pr-4 text-muted-foreground">{formatFileSize(item.size || 0)}</td>
+                          <td className="px-6 py-3 pr-4">
+                            <Badge variant="outline">{item.type === 'image' ? 'Imagen' : 'Video'}</Badge>
+                          </td>
+                          <td className="px-6 py-3 pr-4 text-muted-foreground">
+                            {formatDate(typeof item.updatedAt === 'string' ? item.updatedAt : item.updatedAt.toISOString())}
+                          </td>
+                          <td className="px-6 py-3">
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="icon">
+                                  <MoreVertical className="h-4 w-4" />
                               </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuItem onClick={() => setSelectedFile(file)}>
-                                <Eye className="mr-2 h-4 w-4" />
-                                Ver detalles
-                              </DropdownMenuItem>
-                              <DropdownMenuItem>
-                                <Edit3 className="mr-2 h-4 w-4" />
-                                Editar
-                              </DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => navigator.clipboard.writeText(file.url)}>
-                                <Copy className="mr-2 h-4 w-4" />
-                                Copiar URL
-                              </DropdownMenuItem>
-                              <DropdownMenuItem asChild>
-                                <a href={file.url} download={file.filename}>
-                                  <Download className="mr-2 h-4 w-4" />
-                                  Descargar
-                                </a>
-                              </DropdownMenuItem>
-                              <DropdownMenuSeparator />
-                              <DropdownMenuItem className="text-destructive">
-                                <Trash2 className="mr-2 h-4 w-4" />
-                                Eliminar
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </td>
-                      </tr>
-                    )
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end">
+                                <DropdownMenuItem onClick={() => setSelectedFile(item)}>
+                                  <Eye className="mr-2 h-4 w-4" />
+                                  Ver detalles
+                                </DropdownMenuItem>
+                                <DropdownMenuItem>
+                                  <Edit3 className="mr-2 h-4 w-4" />
+                                  Editar
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => navigator.clipboard.writeText(item.url || '')}>
+                                  <Copy className="mr-2 h-4 w-4" />
+                                  Copiar URL
+                                </DropdownMenuItem>
+                                <DropdownMenuItem asChild>
+                                  <a href={item.url} download={item.filename}>
+                                    <Download className="mr-2 h-4 w-4" />
+                                    Descargar
+                                  </a>
+                                </DropdownMenuItem>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem className="text-destructive">
+                                  <Trash2 className="mr-2 h-4 w-4" />
+                                  Eliminar
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          </td>
+                        </tr>
+                      )
+                    }
                   })}
                 </tbody>
               </table>
             </div>
           ) : (
             <div className="grid grid-cols-2 gap-4 p-6 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
-              {/* Folders */}
-              {filteredFolders.map((folder) => {
-                const itemId = `folder-${folder.id}`
-                return (
-                  <Card
-                    key={itemId}
-                    className="cursor-pointer transition-shadow hover:shadow-md"
-                    onClick={() => (window.location.href = `/gallery?folder=${folder.id}`)}
-                  >
-                    <CardContent className="p-4">
-                      <div className="mb-3 flex items-start justify-between">
-                        <Folder className="h-8 w-8 text-muted-foreground" />
-                        <Checkbox
-                          checked={selectedItems.has(itemId)}
-                          onCheckedChange={() => handleSelectItem(itemId)}
-                          onClick={(e) => e.stopPropagation()}
-                        />
-                      </div>
-                      <div className="space-y-1">
-                        <div className="line-clamp-2 text-sm font-medium">{folder.name}</div>
-                        <div className="text-xs text-muted-foreground">{folder.fileCount} archivos</div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                )
-              })}
-
-              {/* Media files */}
-              {filteredMedia.map((file) => {
-                const itemId = `media-${file.id}`
-                return (
-                  <Card
-                    key={itemId}
-                    className="cursor-pointer transition-shadow hover:shadow-md"
-                    onClick={() => setSelectedFile(file)}
-                  >
-                    <CardContent className="p-4">
-                      <div className="mb-3 flex items-start justify-between">
-                        {file.type === 'image' && file.url ? (
-                          <img
-                            src={file.url}
-                            alt={file.title || file.filename}
-                            className="h-24 w-full rounded object-cover"
+              {/* Render items (folders and media) */}
+              {filteredItems.map((item) => {
+                const itemId = `${item.type === 'folder' ? 'folder' : 'media'}-${item.id}`
+                
+                if (item.type === 'folder') {
+                  return (
+                    <Card
+                      key={itemId}
+                      className="cursor-pointer transition-shadow hover:shadow-md"
+                      onClick={() => handleFolderClick(item)}
+                    >
+                      <CardContent className="p-4">
+                        <div className="mb-3 flex items-start justify-between">
+                          <Folder className="h-8 w-8 text-muted-foreground" />
+                          <Checkbox
+                            checked={selectedItems.has(itemId)}
+                            onCheckedChange={() => handleSelectItem(itemId)}
+                            onClick={(e) => e.stopPropagation()}
                           />
-                        ) : (
-                          <Video className="h-8 w-8 text-muted-foreground" />
-                        )}
-                        <Checkbox
-                          checked={selectedItems.has(itemId)}
-                          onCheckedChange={() => handleSelectItem(itemId)}
-                          onClick={(e) => e.stopPropagation()}
-                          className="absolute top-2 right-2 rounded bg-white"
-                        />
-                      </div>
-                      <div className="space-y-1">
-                        <div className="line-clamp-2 text-sm font-medium">{file.title || file.filename}</div>
-                        <div className="text-xs text-muted-foreground">{formatFileSize(file.size)}</div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                )
+                        </div>
+                        <div className="space-y-1">
+                          <div className="line-clamp-2 text-sm font-medium">{item.name}</div>
+                          <div className="text-xs text-muted-foreground">Contiene: {item.fileCount || 0} {(item.fileCount || 0) === 1 ? 'archivo' : 'archivos'}</div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )
+                } else {
+                  // Media item
+                  return (
+                    <Card
+                      key={itemId}
+                      className="cursor-pointer transition-shadow hover:shadow-md"
+                      onClick={() => setSelectedFile(item)}
+                    >
+                      <CardContent className="p-4">
+                        <div className="mb-3 flex items-start justify-between">
+                          {item.type === 'image' && item.url ? (
+                            <img
+                              src={getOptimizedImageUrl(item.url, 'thumb')}
+                              alt={item.title || item.filename}
+                              className="h-24 w-full rounded object-cover"
+                              loading="lazy"
+                            />
+                          ) : (
+                            <Video className="h-8 w-8 text-muted-foreground" />
+                          )}
+                          <Checkbox
+                            checked={selectedItems.has(itemId)}
+                            onCheckedChange={() => handleSelectItem(itemId)}
+                            onClick={(e) => e.stopPropagation()}
+                            className="absolute top-2 right-2 rounded bg-white"
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <div className="line-clamp-2 text-sm font-medium">{item.title || item.filename}</div>
+                          <div className="text-xs text-muted-foreground">{formatFileSize(item.size || 0)}</div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )
+                }
               })}
+              
+              {/* Infinite scroll sentinel and loading indicator */}
+              {viewMode === 'grid' && (
+                <>
+                  <div ref={sentinelRef} className="col-span-full h-10" />
+                  {isLoadingMore && (
+                    <div className="col-span-full flex justify-center py-4">
+                      <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                    </div>
+                  )}
+                </>
+              )}
             </div>
           )}
         </div>
@@ -631,8 +775,8 @@ export default function GalleryExplorer({ initialData }: GalleryExplorerProps) {
           file={selectedFile}
           onClose={() => setSelectedFile(null)}
           onUpdate={(updatedFile) => {
-            setMedia((prev) => prev.map((m) => (m.id === updatedFile.id ? updatedFile : m)))
-            setSelectedFile(updatedFile)
+            setItems((prev) => prev.map((item) => (item.id === updatedFile.id && item.type !== 'folder' ? {...updatedFile, type: item.type} as GalleryItem : item)))
+            setSelectedFile(updatedFile as GalleryItem)
           }}
         />
       )}

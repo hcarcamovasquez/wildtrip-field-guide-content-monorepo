@@ -186,6 +186,7 @@ export interface MediaFile {
   url: string
   thumbnailUrl?: string | null
   folderId?: number | null
+  folderPath?: string | null
   tags?: string[] | null
   metadata?: any
   source?: string | null

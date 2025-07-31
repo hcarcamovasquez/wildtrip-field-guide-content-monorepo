@@ -27,10 +27,33 @@ import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import type { MediaWithFolder } from '@/types'
 
+interface GalleryItem {
+  id: number
+  type: 'folder' | 'image' | 'video'
+  name?: string // for folders
+  filename?: string // for media
+  url?: string // for media
+  title?: string | null
+  description?: string | null
+  fileCount?: number // for folders
+  folderCount?: number // for folders
+  size?: number // for media
+  mimeType?: string // for media
+  width?: number | null // for media
+  height?: number | null // for media
+  createdAt: Date | string
+  updatedAt: Date | string
+  altText?: string | null
+  tags?: string[] | null
+  uploadedByName?: string | null
+  folder?: any | null
+  [key: string]: any
+}
+
 interface FileDetailsProps {
-  file: MediaWithFolder
+  file: MediaWithFolder | GalleryItem
   onClose: () => void
-  onUpdate: (file: MediaWithFolder) => void
+  onUpdate: (file: MediaWithFolder | GalleryItem) => void
 }
 
 // ImageVariantItem function removed - not currently in use

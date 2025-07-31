@@ -21,27 +21,32 @@ export class GalleryRepository {
     const { page = 1, limit = 50, search, folderId, folderPath, uploadedBy, type } = params;
     const offset = (page - 1) * limit;
 
-    // Build where conditions
-    const conditions: any[] = [];
+    // Build where conditions for media
+    const mediaConditions: any[] = [];
 
+    // Filter by folder - only show items in current folder (not subfolders)
+    // If folderId is not provided, default to showing root items (folderId = null)
     if (folderId !== undefined) {
-      conditions.push(folderId === null ? isNull(mediaGallery.folderId) : eq(mediaGallery.folderId, folderId));
+      mediaConditions.push(folderId === null ? isNull(mediaGallery.folderId) : eq(mediaGallery.folderId, folderId));
+    } else {
+      // Default to root directory when no folderId is specified
+      mediaConditions.push(isNull(mediaGallery.folderId));
     }
 
     if (folderPath) {
-      conditions.push(eq(mediaGallery.folderPath, folderPath));
+      mediaConditions.push(eq(mediaGallery.folderPath, folderPath));
     }
 
     if (uploadedBy) {
-      conditions.push(eq(mediaGallery.uploadedBy, uploadedBy));
+      mediaConditions.push(eq(mediaGallery.uploadedBy, uploadedBy));
     }
 
     if (type && (type === 'image' || type === 'video')) {
-      conditions.push(eq(mediaGallery.type, type));
+      mediaConditions.push(eq(mediaGallery.type, type));
     }
 
     if (search) {
-      conditions.push(
+      mediaConditions.push(
         or(
           ilike(mediaGallery.filename, `%${search}%`),
           ilike(mediaGallery.title, `%${search}%`),
@@ -50,34 +55,87 @@ export class GalleryRepository {
       );
     }
 
-    const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
+    const mediaWhereClause = mediaConditions.length > 0 ? and(...mediaConditions) : undefined;
 
-    // Get total count
-    const [{ count }] = await db
+    // Get folders in current directory
+    const folderConditions: any[] = [];
+    if (folderId !== undefined) {
+      folderConditions.push(folderId === null ? isNull(mediaFolders.parentId) : eq(mediaFolders.parentId, folderId));
+    } else {
+      // Default to root directory when no folderId is specified
+      folderConditions.push(isNull(mediaFolders.parentId));
+    }
+    
+    if (search) {
+      folderConditions.push(ilike(mediaFolders.name, `%${search}%`));
+    }
+
+    const folderWhereClause = folderConditions.length > 0 ? and(...folderConditions) : undefined;
+
+    // Get folders with counts
+    const folders = await db
+      .select({
+        folder: mediaFolders,
+        fileCount: sql<number>`(
+          SELECT COUNT(*)::int FROM media_gallery 
+          WHERE media_gallery.folder_id = media_folders.id
+        )`,
+        folderCount: sql<number>`(
+          SELECT COUNT(*)::int FROM media_folders AS subfolders 
+          WHERE subfolders.parent_id = media_folders.id
+        )`,
+      })
+      .from(mediaFolders)
+      .where(folderWhereClause)
+      .orderBy(mediaFolders.name);
+
+    // Get total media count
+    const [{ count: mediaCount }] = await db
       .select({ count: sql<number>`count(*)::int` })
       .from(mediaGallery)
-      .where(whereClause);
+      .where(mediaWhereClause);
 
-    // Get data with folder info
-    const data = await db
+    // Calculate how many media items to fetch (limit minus folders shown)
+    const foldersShown = folders.length;
+    const mediaLimit = Math.max(0, limit - foldersShown);
+    const mediaOffset = Math.max(0, offset - foldersShown);
+
+    // Get media files
+    const mediaData = mediaLimit > 0 ? await db
       .select()
       .from(mediaGallery)
       .leftJoin(mediaFolders, eq(mediaGallery.folderId, mediaFolders.id))
-      .where(whereClause)
+      .where(mediaWhereClause)
       .orderBy(desc(mediaGallery.createdAt))
-      .limit(limit)
-      .offset(offset);
+      .limit(mediaLimit)
+      .offset(mediaOffset) : [];
 
-    return {
-      data: data.map(row => ({
+    // Combine folders and media
+    const combinedData = [
+      ...folders.map(f => ({
+        ...f.folder,
+        type: 'folder' as const,
+        fileCount: f.fileCount,
+        folderCount: f.folderCount,
+      })),
+      ...mediaData.map(row => ({
         ...row.media_gallery,
+        type: row.media_gallery.type as 'image' | 'video',
         folder: row.media_folders,
       })),
+    ];
+
+    return {
+      data: combinedData,
       pagination: {
         page,
         limit,
-        total: count,
-        totalPages: Math.ceil(count / limit),
+        total: folders.length + mediaCount,
+        totalPages: Math.ceil((folders.length + mediaCount) / limit),
+      },
+      stats: {
+        totalFolders: folders.length,
+        totalFiles: mediaCount,
       },
     };
   }
