@@ -98,6 +98,7 @@ const cleanSpeciesData = (data: any): any => {
     slug: data.slug || '',
     description: data.description || '',
     habitat: data.habitat || '',
+    distribution: data.distribution || '',
     distinctiveFeatures: data.distinctiveFeatures || '',
     seoTitle: data.seoTitle || '',
     seoDescription: data.seoDescription || '',
@@ -282,7 +283,17 @@ export default function SpeciesForm({ species, currentUserId, isEditing }: Speci
   }
 
   const handleFieldChange = (field: keyof SpeciesData, value: unknown) => {
-    setFormData((prev) => ({ ...prev, [field]: value }))
+    // Ensure text fields are never null
+    const textFields = ['description', 'habitat', 'distribution', 'commonName', 'scientificName', 
+                       'family', 'order', 'class', 'phylum', 'kingdom', 'specificCategory',
+                       'seoTitle', 'seoDescription', 'seoKeywords', 'slug', 'distinctiveFeatures']
+    
+    let cleanedValue = value
+    if (textFields.includes(field) && (value === null || value === undefined)) {
+      cleanedValue = ''
+    }
+    
+    setFormData((prev) => ({ ...prev, [field]: cleanedValue }))
   }
 
   const fetchGalleryImages = async () => {
@@ -400,21 +411,34 @@ export default function SpeciesForm({ species, currentUserId, isEditing }: Speci
     setShowPublishDialog(false)
     setIsSaving(true)
     try {
+      let updatedSpecies
       if (species.status === 'published' && hasDraft) {
         // Publish draft changes
-        await apiClient.species.publish(species.id)
+        updatedSpecies = await apiClient.species.publish(species.id)
       } else {
         // First time publish - update status
-        await apiClient.species.update(species.id, { 
+        updatedSpecies = await apiClient.species.update(species.id, { 
           status: 'published', 
           publishedAt: new Date().toISOString() 
         })
       }
 
-      window.location.reload()
+      // Clean and update form data
+      const cleanedData = cleanSpeciesData(updatedSpecies)
+      setFormData(cleanedData)
+      setHasDraft(false)
+      
+      toast({
+        title: "Contenido publicado",
+        description: "Los cambios han sido publicados correctamente.",
+      })
     } catch (error) {
       console.error('Error publishing species:', error)
-      alert('Error al publicar')
+      toast({
+        title: "Error",
+        description: "No se pudo publicar el contenido",
+        variant: "destructive",
+      })
     } finally {
       setIsSaving(false)
     }
@@ -533,7 +557,20 @@ export default function SpeciesForm({ species, currentUserId, isEditing }: Speci
             <div className="flex flex-wrap gap-2">
               {/* Vista previa - siempre visible cuando hay ID */}
               {isEditing && species.id && (
-                <Button variant="outline" size="sm" onClick={() => setShowPreview(true)} type="button">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={() => {
+                    console.log('Opening preview with data:', {
+                      id: species.id,
+                      hasDraft,
+                      draftData: species.draftData,
+                      formData: formData
+                    })
+                    setShowPreview(true)
+                  }} 
+                  type="button"
+                >
                   <Eye className="h-4 w-4 sm:mr-2" />
                   <span className="hidden sm:inline">Vista previa</span>
                 </Button>
@@ -1191,7 +1228,7 @@ export default function SpeciesForm({ species, currentUserId, isEditing }: Speci
         <PreviewModal
           isOpen={showPreview}
           onClose={() => setShowPreview(false)}
-          previewUrl={`${import.meta.env.VITE_WEB_URL}/content/species/preview/${species.id}`}
+          previewUrl={`${import.meta.env.VITE_WEB_URL}/content/species/preview/${species.id}?t=${Date.now()}`}
           publicUrl={species.status === 'published' && !hasDraft ? `${import.meta.env.VITE_WEB_URL}/content/species/${species.slug}` : undefined}
           title={`Vista previa: ${species.commonName || species.scientificName}`}
         />

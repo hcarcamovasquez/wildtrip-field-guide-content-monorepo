@@ -26,8 +26,32 @@ if (!speciesData) {
 
 // For preview, we need to show draft data if available
 const previewData = speciesData.hasDraft && speciesData.draftData 
-  ? { ...speciesData, ...speciesData.draftData }
-  : speciesData
+  ? { 
+      ...speciesData, 
+      ...speciesData.draftData,
+      // Convert mainImage object to mainImageUrl string
+      mainImageUrl: speciesData.draftData.mainImage?.url || speciesData.mainImage?.url || speciesData.mainImageUrl,
+      // Convert galleryImages to images array
+      images: speciesData.draftData.galleryImages 
+        ? speciesData.draftData.galleryImages.map((img: any) => img.url)
+        : speciesData.galleryImages?.map((img: any) => img.url) || speciesData.images || []
+    }
+  : {
+      ...speciesData,
+      // Ensure mainImageUrl is set even for non-draft
+      mainImageUrl: speciesData.mainImage?.url || speciesData.mainImageUrl,
+      // Convert galleryImages to images array
+      images: speciesData.galleryImages?.map((img: any) => img.url) || speciesData.images || []
+    }
+
+// Debug log
+console.log('Preview data for species', speciesId, {
+  hasDraft: speciesData.hasDraft,
+  mainImage: previewData.mainImage,
+  mainImageUrl: previewData.mainImageUrl,
+  draftMainImage: speciesData.draftData?.mainImage,
+  mergedCorrectly: previewData.mainImageUrl === speciesData.draftData?.mainImage?.url
+})
 ---
 
 <Layout
