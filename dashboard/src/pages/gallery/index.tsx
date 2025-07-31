@@ -17,7 +17,7 @@ export function GalleryPage() {
   // Fetch directory contents based on URL params
   const { data: browseData, isLoading } = useQuery({
     queryKey: ['gallery', 'browse', { folderId, page }],
-    queryFn: () => apiClient.gallery.browse({ folderId, page, limit: 10 }),
+    queryFn: () => apiClient.gallery.browse({ folderId, page, limit: 20 }),
   })
 
   // Fetch breadcrumb if we're in a folder
@@ -60,7 +60,7 @@ export function GalleryPage() {
     },
     pagination: browseData?.pagination || {
       page,
-      limit: 10,
+      limit: 20,
       total: 0,
       totalPages: 0,
     },

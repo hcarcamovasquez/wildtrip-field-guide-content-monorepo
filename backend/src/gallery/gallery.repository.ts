@@ -72,7 +72,18 @@ export class GalleryRepository {
 
     const folderWhereClause = folderConditions.length > 0 ? and(...folderConditions) : undefined;
 
-    // Get folders with counts
+    // Get total counts first
+    const [{ totalFolderCount }] = await db
+      .select({ totalFolderCount: sql<number>`count(*)::int` })
+      .from(mediaFolders)
+      .where(folderWhereClause);
+
+    const [{ totalMediaCount }] = await db
+      .select({ totalMediaCount: sql<number>`count(*)::int` })
+      .from(mediaGallery)
+      .where(mediaWhereClause);
+
+    // Get folders (always show all folders on current page)
     const folders = await db
       .select({
         folder: mediaFolders,
@@ -89,36 +100,52 @@ export class GalleryRepository {
       .where(folderWhereClause)
       .orderBy(mediaFolders.name);
 
-    // Get total media count
-    const [{ count: mediaCount }] = await db
-      .select({ count: sql<number>`count(*)::int` })
-      .from(mediaGallery)
-      .where(mediaWhereClause);
-
-    // Calculate how many media items to fetch (limit minus folders shown)
-    const foldersShown = folders.length;
-    const mediaLimit = Math.max(0, limit - foldersShown);
-    const mediaOffset = Math.max(0, offset - foldersShown);
-
-    // Get media files
-    const mediaData = mediaLimit > 0 ? await db
-      .select()
-      .from(mediaGallery)
-      .leftJoin(mediaFolders, eq(mediaGallery.folderId, mediaFolders.id))
-      .where(mediaWhereClause)
-      .orderBy(desc(mediaGallery.createdAt))
-      .limit(mediaLimit)
-      .offset(mediaOffset) : [];
+    // Calculate pagination for mixed content
+    const itemsToSkip = (page - 1) * limit;
+    const foldersCount = folders.length;
+    
+    // Determine which items to show on this page
+    let pageFolders = [];
+    let pageMedia = [];
+    
+    if (itemsToSkip < foldersCount) {
+      // We're still in the folders section
+      pageFolders = folders.slice(itemsToSkip, itemsToSkip + limit);
+      const remainingLimit = limit - pageFolders.length;
+      
+      if (remainingLimit > 0) {
+        // Get some media items too
+        pageMedia = await db
+          .select()
+          .from(mediaGallery)
+          .leftJoin(mediaFolders, eq(mediaGallery.folderId, mediaFolders.id))
+          .where(mediaWhereClause)
+          .orderBy(desc(mediaGallery.createdAt))
+          .limit(remainingLimit)
+          .offset(0);
+      }
+    } else {
+      // We're in the media section
+      const mediaOffset = itemsToSkip - foldersCount;
+      pageMedia = await db
+        .select()
+        .from(mediaGallery)
+        .leftJoin(mediaFolders, eq(mediaGallery.folderId, mediaFolders.id))
+        .where(mediaWhereClause)
+        .orderBy(desc(mediaGallery.createdAt))
+        .limit(limit)
+        .offset(mediaOffset);
+    }
 
     // Combine folders and media
     const combinedData = [
-      ...folders.map(f => ({
+      ...pageFolders.map(f => ({
         ...f.folder,
         type: 'folder' as const,
         fileCount: f.fileCount,
         folderCount: f.folderCount,
       })),
-      ...mediaData.map(row => ({
+      ...pageMedia.map(row => ({
         ...row.media_gallery,
         type: row.media_gallery.type as 'image' | 'video',
         folder: row.media_folders,
@@ -130,12 +157,12 @@ export class GalleryRepository {
       pagination: {
         page,
         limit,
-        total: folders.length + mediaCount,
-        totalPages: Math.ceil((folders.length + mediaCount) / limit),
+        total: totalFolderCount + totalMediaCount,
+        totalPages: Math.ceil((totalFolderCount + totalMediaCount) / limit),
       },
       stats: {
-        totalFolders: folders.length,
-        totalFiles: mediaCount,
+        totalFolders: totalFolderCount,
+        totalFiles: totalMediaCount,
       },
     };
   }

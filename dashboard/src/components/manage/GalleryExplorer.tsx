@@ -46,7 +46,7 @@ import { Label } from '@/components/ui/label'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { convertToWebP } from '@/lib/utils/image-upload'
 import FileDetails from './FileDetails'
-import type { MediaWithFolder, FolderWithCount, MediaFolder } from '@/types'
+import type { MediaFolder } from '@/types'
 import { apiClient } from '@/lib/api/client'
 import { useQueryClient } from '@tanstack/react-query'
 import { useInfiniteScroll } from '@/hooks/useInfiniteScroll'
@@ -115,17 +115,23 @@ export default function GalleryExplorer({ initialData }: GalleryExplorerProps) {
   const [page, setPage] = useState(initialData.pagination.page)
   const [hasMore, setHasMore] = useState(initialData.pagination.page < initialData.pagination.totalPages)
   const [isLoadingMore, setIsLoadingMore] = useState(false)
-  const itemsPerPage = 10
+  const itemsPerPage = 20
   
   // Update state when initialData changes (URL navigation)
   useEffect(() => {
-    setItems(initialData.items)
+    // Only reset items when folder changes or on initial load
     setCurrentFolder(initialData.currentFolder)
     setBreadcrumb(initialData.breadcrumb)
-    setPage(initialData.pagination.page)
+    
+    // Only reset items on initial page load or folder change
+    if (initialData.pagination.page === 1) {
+      setItems(initialData.items)
+      setPage(1)
+      setSelectedItems(new Set())
+    }
+    
     setHasMore(initialData.pagination.page < initialData.pagination.totalPages)
-    setSelectedItems(new Set())
-  }, [initialData])
+  }, [initialData.currentFolder?.id, initialData.pagination.page])
 
   const formatFileSize = (bytes: number) => {
     if (bytes === 0) return '0 Bytes'
@@ -295,7 +301,7 @@ export default function GalleryExplorer({ initialData }: GalleryExplorerProps) {
       setShowNewFolderDialog(false)
       
       // Invalidate queries to refresh data
-      queryClient.invalidateQueries({ queryKey: ['gallery', 'browse'] })
+      await queryClient.invalidateQueries({ queryKey: ['gallery', 'browse'] })
     } catch (error) {
       console.error('Error creating folder:', error)
     }
@@ -358,10 +364,7 @@ export default function GalleryExplorer({ initialData }: GalleryExplorerProps) {
       })
 
       if (mediaIds.length > 0) {
-        await apiClient.gallery.moveMedia({
-          mediaIds,
-          folderId: targetFolderId,
-        })
+        await apiClient.gallery.moveMedia(mediaIds, targetFolderId)
 
         // Remove moved items from current view
         setItems((prev) => prev.filter((item) => {
@@ -416,7 +419,7 @@ export default function GalleryExplorer({ initialData }: GalleryExplorerProps) {
                   <HardDrive className="h-4 w-4" />
                   <span>{initialData.stats.totalFiles} archivos</span>
                   <span>•</span>
-                  <span>{formatFileSize(initialData.stats.totalSize)}</span>
+                  <span>{initialData.stats.totalFolders} carpetas</span>
                 </div>
               </div>
             </div>
@@ -432,20 +435,18 @@ export default function GalleryExplorer({ initialData }: GalleryExplorerProps) {
               {breadcrumb.map((folder, index) => (
                 <div key={folder.id} className="flex items-center gap-2">
                   <ChevronRight className="h-4 w-4" />
-                  <button
-                    onClick={() => handleBreadcrumbClick(index)}
-                    className="hover:text-foreground transition-colors"
-                  >
-                    {folder.name}
-                  </button>
+                  {index === breadcrumb.length - 1 ? (
+                    <span className="text-foreground font-medium">{folder.name}</span>
+                  ) : (
+                    <button
+                      onClick={() => handleBreadcrumbClick(index)}
+                      className="hover:text-foreground transition-colors"
+                    >
+                      {folder.name}
+                    </button>
+                  )}
                 </div>
               ))}
-              {currentFolder && (
-                <div className="flex items-center gap-2">
-                  <ChevronRight className="h-4 w-4" />
-                  <span className="text-foreground font-medium">{currentFolder.name}</span>
-                </div>
-              )}
             </div>
             
             <div className="flex items-center justify-between">
@@ -686,6 +687,14 @@ export default function GalleryExplorer({ initialData }: GalleryExplorerProps) {
                   })}
                 </tbody>
               </table>
+              
+              {/* Infinite scroll sentinel and loading indicator for list view */}
+              <div ref={sentinelRef} className="h-10" />
+              {isLoadingMore && (
+                <div className="flex justify-center py-4">
+                  <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                </div>
+              )}
             </div>
           ) : (
             <div className="grid grid-cols-2 gap-4 p-6 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">

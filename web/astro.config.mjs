@@ -27,6 +27,12 @@ export default defineConfig({
   },
   vite: {
     plugins: [tailwindcss()],
+    server: {
+      host: true,
+      hmr: {
+        host: 'localhost'
+      }
+    },
     ssr: {
       external: ['node:buffer', 'node:stream', 'node:events'],
     },
