@@ -251,7 +251,11 @@ export default function SpeciesTable({ canDelete = false }: SpeciesTableProps) {
                     </tr>
                   ) : (
                     species.map((item) => (
-                      <tr key={item.id} className="border-b hover:bg-muted/50">
+                      <tr 
+                        key={item.id} 
+                        className="border-b hover:bg-muted/50 cursor-pointer"
+                        onClick={() => window.location.href = `/species/${item.id}/edit`}
+                      >
                         <td className="px-6 py-3 pr-4">
                           <div className="flex items-center gap-3">
                             {item.mainImage?.url ? (
@@ -304,7 +308,7 @@ export default function SpeciesTable({ canDelete = false }: SpeciesTableProps) {
                         <td className="px-6 py-3 pr-4 text-muted-foreground">
                           {item.updatedAt ? formatDate(item.updatedAt) : '—'}
                         </td>
-                        <td className="px-6 py-3">
+                        <td className="px-6 py-3" onClick={(e) => e.stopPropagation()}>
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                               <Button variant="ghost" size="icon">

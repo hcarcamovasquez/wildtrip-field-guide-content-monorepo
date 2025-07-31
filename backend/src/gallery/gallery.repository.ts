@@ -3,6 +3,11 @@ import { DbService } from '../db/db.service';
 import { mediaGallery, mediaFolders } from '../db/schema';
 import { eq, desc, ilike, and, or, sql, isNull, inArray } from 'drizzle-orm';
 
+type MediaWithFolder = {
+  media_gallery: typeof mediaGallery.$inferSelect;
+  media_folders: typeof mediaFolders.$inferSelect | null;
+};
+
 @Injectable()
 export class GalleryRepository {
   constructor(private dbService: DbService) {}
@@ -105,8 +110,8 @@ export class GalleryRepository {
     const foldersCount = folders.length;
     
     // Determine which items to show on this page
-    let pageFolders = [];
-    let pageMedia = [];
+    let pageFolders: typeof folders = [];
+    let pageMedia: MediaWithFolder[] = [];
     
     if (itemsToSkip < foldersCount) {
       // We're still in the folders section

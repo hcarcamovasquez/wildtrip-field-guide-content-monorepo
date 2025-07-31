@@ -274,7 +274,11 @@ export default function NewsTable({ currentUserId, canDelete = false, onEdit, on
                     </tr>
                   ) : (
                     news.map((item) => (
-                      <tr key={item.id} className="border-b hover:bg-muted/50">
+                      <tr 
+                        key={item.id} 
+                        className="border-b hover:bg-muted/50 cursor-pointer"
+                        onClick={() => window.location.href = `/news/${item.id}/edit`}
+                      >
                         <td className="px-6 py-3 pr-4">
                           <div className="flex items-center gap-3">
                             {item.mainImage?.url ? (
@@ -319,7 +323,7 @@ export default function NewsTable({ currentUserId, canDelete = false, onEdit, on
                         </td>
                         <td className="px-6 py-3 pr-4 text-muted-foreground">{item.author || '—'}</td>
                         <td className="px-6 py-3 pr-4 text-muted-foreground">{formatDate(item.updatedAt)}</td>
-                        <td className="px-6 py-3">
+                        <td className="px-6 py-3" onClick={(e) => e.stopPropagation()}>
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                               <Button variant="ghost" size="icon">

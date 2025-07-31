@@ -224,7 +224,11 @@ export default function ProtectedAreasTable({
                     </tr>
                   ) : (
                     paginatedAreas.map((area) => (
-                      <tr key={area.id} className="border-b hover:bg-muted/50">
+                      <tr 
+                        key={area.id} 
+                        className="border-b hover:bg-muted/50 cursor-pointer"
+                        onClick={() => window.location.href = `/protected-areas/${area.id}/edit`}
+                      >
                         <td className="px-6 py-3 pr-4">
                           <div className="flex items-center gap-3">
                             {area.mainImage?.url ? (
@@ -273,7 +277,7 @@ export default function ProtectedAreasTable({
                           {area.region ? getRegionLabel(area.region) : '—'}
                         </td>
                         <td className="px-6 py-3 pr-4 text-muted-foreground">{formatDate(area.updatedAt)}</td>
-                        <td className="px-6 py-3">
+                        <td className="px-6 py-3" onClick={(e) => e.stopPropagation()}>
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                               <Button variant="ghost" size="icon">
