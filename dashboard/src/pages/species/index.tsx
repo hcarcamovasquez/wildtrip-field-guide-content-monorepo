@@ -9,7 +9,11 @@ export function SpeciesPage() {
 
   return (
     <Routes>
-      <Route index element={<SpeciesTable canDelete={canDelete} />} />
+      <Route index element={
+        <div className="h-full flex flex-col overflow-hidden">
+          <SpeciesTable canDelete={canDelete} />
+        </div>
+      } />
       <Route path=":id/edit" element={<SpeciesEditPage />} />
     </Routes>
   )

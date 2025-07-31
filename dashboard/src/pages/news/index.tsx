@@ -9,7 +9,7 @@ function NewsListPage() {
   const currentUserId = Number(user?.publicMetadata?.userId) || 0
 
   return (
-    <div>
+    <div className="h-full flex flex-col overflow-hidden">
       <NewsManagement canDelete={canDelete} currentUserId={currentUserId} />
     </div>
   )

@@ -85,7 +85,11 @@ export function Layout({ children }: LayoutProps) {
         </div>
       </header>
       <main className="flex-1 bg-gray-50 dark:bg-gray-950 flex flex-col overflow-hidden">
-        {location.pathname === '/gallery' ? (
+        {location.pathname === '/gallery' || 
+         location.pathname === '/species' || 
+         location.pathname === '/protected-areas' || 
+         location.pathname === '/news' || 
+         location.pathname === '/users' ? (
           <div className="flex-1 overflow-hidden">
             {children}
           </div>

@@ -38,7 +38,7 @@ function ProtectedAreasListPage() {
   }
 
   return (
-    <div>
+    <div className="h-full flex flex-col overflow-hidden">
       <ProtectedAreaManagement 
         initialAreas={areas?.data || areas || []} 
         currentUserRole={currentUserRole as any} 

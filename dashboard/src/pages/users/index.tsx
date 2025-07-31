@@ -75,7 +75,7 @@ export function UsersPage() {
   }
 
   return (
-    <div className="h-[calc(100vh-112px)] overflow-hidden">
+    <div className="h-full flex flex-col overflow-hidden">
       <UsersTable 
         users={users} 
         pagination={pagination}

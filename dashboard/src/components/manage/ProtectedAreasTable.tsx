@@ -128,8 +128,8 @@ export default function ProtectedAreasTable({
 
   return (
     <>
-      <div className="flex h-full">
-        <div className="flex flex-1 flex-col">
+      <div className="flex h-full overflow-hidden">
+        <div className="flex flex-1 flex-col h-full overflow-hidden">
           {/* Fixed Header Container */}
           <div className="flex-shrink-0 border-b bg-background">
             {/* Header */}
@@ -202,8 +202,8 @@ export default function ProtectedAreasTable({
           </div>
 
           {/* Table */}
-          <div className="relative flex-1 overflow-auto">
-            <div className="h-full">
+          <div className="flex-1 overflow-y-auto">
+            <div>
               <table className="w-full">
                 <thead className="sticky top-0 z-10 bg-background shadow-sm">
                   <tr className="border-b text-left">
