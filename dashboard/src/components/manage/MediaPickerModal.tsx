@@ -51,6 +51,9 @@ export default function MediaPickerModal({ open, onOpenChange, onSelect, multiSe
   const [uploadProgress, setUploadProgress] = useState<{[key: string]: number}>({})
   const [uploadingFiles, setUploadingFiles] = useState<{[key: string]: string}>({})
   const [completedFiles, setCompletedFiles] = useState<{[key: string]: string}>({})
+  const [isDragOver, setIsDragOver] = useState(false)
+  const [showSuccess, setShowSuccess] = useState(false)
+  const [uploadStats, setUploadStats] = useState({ total: 0, completed: 0 })
   const scrollAreaRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -59,6 +62,8 @@ export default function MediaPickerModal({ open, onOpenChange, onSelect, multiSe
       setMediaItems([])
       setCurrentPage(1)
       setHasMore(true)
+      setShowSuccess(false)
+      setUploadStats({ total: 0, completed: 0 })
       fetchMediaItems(1, false)
     }
   }, [open])
@@ -116,6 +121,7 @@ export default function MediaPickerModal({ open, onOpenChange, onSelect, multiSe
     if (!files || files.length === 0) return
 
     setUploading(true)
+    setUploadStats({ total: files.length, completed: 0 })
     const uploadedItems: MediaItem[] = []
 
     try {
@@ -171,6 +177,7 @@ export default function MediaPickerModal({ open, onOpenChange, onSelect, multiSe
           
           // Show success state
           setCompletedFiles(prev => ({ ...prev, [fileId]: file.name }))
+          setUploadStats(prev => ({ total: prev.total, completed: prev.completed + 1 }))
           
           // Clean up progress tracking after showing success
           setTimeout(() => {
@@ -199,19 +206,67 @@ export default function MediaPickerModal({ open, onOpenChange, onSelect, multiSe
         if (validItems.length > 0) {
           // Add new items to the beginning of the list
           setMediaItems((prev) => [...validItems, ...prev])
-          if (!multiSelect) {
-            handleSelect(validItems[0])
-          } else {
-            setSelectedItems((prev) => [...prev, ...validItems.map((item) => item.id)])
-          }
-          // Switch to browse tab to show uploaded images
-          setActiveTab('browse')
+          
+          // Show success state
+          setShowSuccess(true)
+          
+          // Auto close modal after showing success
+          setTimeout(() => {
+            if (!multiSelect) {
+              handleSelect(validItems[0])
+            } else {
+              setSelectedItems((prev) => [...prev, ...validItems.map((item) => item.id)])
+            }
+            
+            // Switch to browse tab and close modal after delay
+            setActiveTab('browse')
+            
+            // Close modal if single select, or wait for user action in multi-select
+            if (!multiSelect) {
+              setTimeout(() => {
+                onOpenChange(false)
+              }, 500)
+            }
+          }, 3000) // Show success for 3 seconds
         }
       }
     } catch (error) {
       console.error('Error uploading files:', error)
     } finally {
       setUploading(false)
+    }
+  }
+
+  // Drag and drop handlers
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    if (!uploading) {
+      setIsDragOver(true)
+    }
+  }
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setIsDragOver(false)
+  }
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setIsDragOver(false)
+    
+    if (uploading) return
+
+    const files = e.dataTransfer.files
+    if (files && files.length > 0) {
+      // Create a synthetic event for handleFileUpload
+      const syntheticEvent = {
+        target: { files }
+      } as React.ChangeEvent<HTMLInputElement>
+      
+      handleFileUpload(syntheticEvent)
     }
   }
 
@@ -445,7 +500,35 @@ export default function MediaPickerModal({ open, onOpenChange, onSelect, multiSe
             <div className="flex flex-1 items-center justify-center p-6">
               <div className="text-center w-full max-w-md">
                 {/* Upload Area or Progress Display */}
-                {Object.keys(uploadingFiles).length > 0 ? (
+                {showSuccess ? (
+                  // Success Display
+                  <div className="space-y-6">
+                    <div className="flex flex-col items-center">
+                      <div className="relative mb-4">
+                        <div className="h-20 w-20 mx-auto rounded-full bg-green-100 flex items-center justify-center">
+                          <CheckCircle2 className="h-12 w-12 text-green-600" />
+                        </div>
+                        <div className="absolute inset-0 h-20 w-20 mx-auto rounded-full border-4 border-green-200 animate-ping opacity-20" />
+                      </div>
+                      <h3 className="text-xl font-semibold text-green-700 mb-2">¡Carga exitosa!</h3>
+                      <p className="text-sm text-muted-foreground mb-4">
+                        {uploadStats.completed} archivo{uploadStats.completed !== 1 ? 's' : ''} subido{uploadStats.completed !== 1 ? 's' : ''} correctamente
+                      </p>
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <div className="flex items-center gap-1">
+                          <div className="h-2 w-2 bg-green-500 rounded-full"></div>
+                          <span>Optimizado y almacenado</span>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    {!multiSelect && (
+                      <p className="text-xs text-muted-foreground">
+                        Cerrando automáticamente...
+                      </p>
+                    )}
+                  </div>
+                ) : Object.keys(uploadingFiles).length > 0 ? (
                   // Progress Display
                   <div className="space-y-6">
                     <div className="flex flex-col items-center">
@@ -455,7 +538,7 @@ export default function MediaPickerModal({ open, onOpenChange, onSelect, multiSe
                       </div>
                       <h3 className="text-lg font-semibold text-foreground mb-2">Subiendo archivos</h3>
                       <p className="text-sm text-muted-foreground">
-                        {Object.keys(completedFiles).length} de {Object.keys(uploadingFiles).length} completados
+                        {uploadStats.completed} de {uploadStats.total} completados
                       </p>
                     </div>
                     
@@ -510,25 +593,51 @@ export default function MediaPickerModal({ open, onOpenChange, onSelect, multiSe
                   </div>
                 ) : (
                   // Upload Area
-                  <label className="relative block cursor-pointer">
-                    <div className="rounded-lg border-2 border-dashed border-muted-foreground/25 p-12 transition-colors hover:border-muted-foreground/50">
-                      <Upload className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-                      <h3 className="text-lg font-semibold text-foreground mb-2">Arrastra imágenes aquí</h3>
+                  <div className="relative">
+                    <div 
+                      className={cn(
+                        "rounded-lg border-2 border-dashed p-12 transition-colors cursor-pointer",
+                        isDragOver 
+                          ? "border-primary bg-primary/5" 
+                          : "border-muted-foreground/25 hover:border-muted-foreground/50"
+                      )}
+                      onClick={() => {
+                        if (!uploading) {
+                          document.getElementById('file-input')?.click()
+                        }
+                      }}
+                      onDragOver={handleDragOver}
+                      onDragLeave={handleDragLeave}
+                      onDrop={handleDrop}
+                    >
+                      <Upload className={cn(
+                        "mx-auto h-12 w-12 mb-4 transition-colors",
+                        isDragOver ? "text-primary" : "text-muted-foreground"
+                      )} />
+                      <h3 className={cn(
+                        "text-lg font-semibold mb-2 transition-colors",
+                        isDragOver ? "text-primary" : "text-foreground"
+                      )}>
+                        {isDragOver ? "Suelta las imágenes aquí" : "Arrastra imágenes aquí"}
+                      </h3>
                       <p className="text-sm text-muted-foreground mb-4">o haz clic para seleccionar archivos</p>
                       <div className="text-xs text-muted-foreground space-y-1">
                         <p>PNG, JPG, WebP, AVIF hasta 15MB</p>
                         <p>Las imágenes se convertirán a formato WebP</p>
                       </div>
                     </div>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      multiple={multiSelect}
-                      onChange={handleFileUpload}
-                      disabled={uploading}
-                      className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
-                    />
-                  </label>
+                    {!uploading && Object.keys(uploadingFiles).length === 0 && (
+                      <input
+                        id="file-input"
+                        type="file"
+                        accept="image/*"
+                        multiple={multiSelect}
+                        onChange={handleFileUpload}
+                        className="absolute inset-0 h-full w-full cursor-pointer opacity-0 pointer-events-none"
+                        style={{ fontSize: '0px', color: 'transparent' }}
+                      />
+                    )}
+                  </div>
                 )}
               </div>
             </div>
