@@ -1,0 +1,27 @@
+---
+import type { PublicDetailSpecie } from '../../lib/repositories'
+import ResponsiveImage from '../ResponsiveImage.astro'
+
+interface Props {
+  species: PublicDetailSpecie
+}
+
+const { species } = Astro.props
+const mainImageSrc = species.mainImageUrl || (species.images && species.images[0])
+---
+
+{
+  mainImageSrc && (
+    <div class="mb-8">
+      <ResponsiveImage
+        src={mainImageSrc}
+        alt={species.commonName}
+        class="h-96 w-full rounded-lg object-cover shadow-lg"
+        sizes="(max-width: 640px) 100vw, (max-width: 1536px) 896px, 1024px"
+        loading="eager"
+        fetchpriority="high"
+        variant="hero"
+      />
+    </div>
+  )
+}

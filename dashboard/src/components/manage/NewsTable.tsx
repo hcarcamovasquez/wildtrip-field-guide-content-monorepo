@@ -13,6 +13,7 @@ import {
   MoreVertical,
   Newspaper,
   HardDrive,
+  Loader2,
 } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import { CreateNewsModal } from './CreateNewsModal'
@@ -262,8 +263,13 @@ export default function NewsTable({ currentUserId, canDelete = false, onEdit, on
                 <tbody>
                   {loading ? (
                     <tr>
-                      <td colSpan={6} className="px-6 py-8 text-center text-muted-foreground">
-                        Cargando noticias...
+                      <td colSpan={6} className="px-6 py-8">
+                        <div className="flex items-center justify-center">
+                          <div className="text-center">
+                            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground mx-auto mb-4" />
+                            <p className="text-muted-foreground">Cargando noticias...</p>
+                          </div>
+                        </div>
                       </td>
                     </tr>
                   ) : news.length === 0 ? (

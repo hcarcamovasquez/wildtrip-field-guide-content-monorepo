@@ -11,12 +11,16 @@ interface ProtectedAreaManagementProps {
   initialAreas: ProtectedAreaWithBase[]
   currentUserRole: Role
   currentUserId: number
+  isLoading?: boolean
+  error?: any
 }
 
 export default function ProtectedAreaManagement({
   initialAreas,
   currentUserRole,
   currentUserId,
+  isLoading,
+  error,
 }: ProtectedAreaManagementProps) {
   const [previewData, setPreviewData] = useState<{ url: string; publicUrl?: string; title: string } | null>(null)
 
@@ -61,6 +65,8 @@ export default function ProtectedAreaManagement({
         onDelete={handleDelete}
         onRefresh={() => queryClient.invalidateQueries({ queryKey: ['protected-areas'] })}
         onPreview={handlePreview}
+        isLoading={isLoading}
+        error={error}
       />
       {previewData && (
         <PreviewModal

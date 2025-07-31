@@ -1,14 +1,14 @@
 ---
-import Footer from '../../../components/public/Footer.astro'
-import Header from '../../../components/public/Header.astro'
-import ProtectedAreaEcosystems from '../../../components/public/protected-area/ProtectedAreaEcosystems.astro'
-import ProtectedAreaGallery from '../../../components/public/protected-area/ProtectedAreaGallery.astro'
-import ProtectedAreaHeader from '../../../components/public/protected-area/ProtectedAreaHeader.astro'
-import ProtectedAreaHero from '../../../components/public/protected-area/ProtectedAreaHero.astro'
-import ProtectedAreaInfo from '../../../components/public/protected-area/ProtectedAreaInfo.astro'
-import ProtectedAreaLocation from '../../../components/public/protected-area/ProtectedAreaLocation.astro'
+import Footer from '../../../components/Footer.astro'
+import Header from '../../../components/Header.astro'
+import ProtectedAreaEcosystems from '../../../components/protected-area/ProtectedAreaEcosystems.astro'
+import ProtectedAreaGallery from '../../../components/protected-area/ProtectedAreaGallery.astro'
+import ProtectedAreaHeader from '../../../components/protected-area/ProtectedAreaHeader.astro'
+import ProtectedAreaHero from '../../../components/protected-area/ProtectedAreaHero.astro'
+import ProtectedAreaInfo from '../../../components/protected-area/ProtectedAreaInfo.astro'
+import ProtectedAreaLocation from '../../../components/protected-area/ProtectedAreaLocation.astro'
 import Layout from '../../../layouts/Layout.astro'
-import { protectedAreaRepository } from '../../../lib/public/repositories'
+import { protectedAreaRepository } from '../../../lib/repositories'
 import { renderContentBlock } from '../../../lib/utils/render-content'
 
 const { slug } = Astro.params
@@ -31,7 +31,7 @@ if (!areaData) {
   <article class="mx-auto max-w-4xl bg-white px-4 py-8 sm:px-6 lg:px-8 dark:bg-gray-900">
     <ProtectedAreaHeader title={areaData.name} type={areaData.type} region={areaData.region} />
 
-    <ProtectedAreaHero images={areaData.images} mainImageUrl={areaData.mainImageUrl} title={areaData.name} />
+    <ProtectedAreaHero images={areaData.images || undefined} mainImageUrl={areaData.mainImageUrl} title={areaData.name} />
 
     {
       areaData.description && (
@@ -46,10 +46,10 @@ if (!areaData) {
       area={areaData.area}
       creationYear={areaData.creationYear}
       type={areaData.type}
-      visitorInformation={areaData.visitorInformation}
+      visitorInformation={null}
     />
 
-    <ProtectedAreaEcosystems ecosystems={areaData.ecosystems} />
+    <ProtectedAreaEcosystems ecosystems={areaData.ecosystems || undefined} />
 
     {
       areaData.richContent && areaData.richContent.blocks && areaData.richContent.blocks.length > 0 && (
@@ -63,7 +63,7 @@ if (!areaData) {
       )
     }
 
-    <ProtectedAreaGallery images={areaData.images} title={areaData.name} />
+    <ProtectedAreaGallery images={areaData.images || undefined} title={areaData.name} />
 
     <ProtectedAreaLocation location={areaData.location} />
   </article>

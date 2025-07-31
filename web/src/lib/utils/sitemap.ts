@@ -1,9 +1,4 @@
-import { RedisCache } from '../cache/redis'
 import { apiClient } from '../api/client'
-
-// Cache configuration
-const SITEMAP_URLS_CACHE_KEY = 'sitemap:dynamic-urls'
-const SITEMAP_CACHE_TTL = 3600 * 24 // 24 hours
 
 interface DynamicUrl {
   url: string
@@ -11,18 +6,9 @@ interface DynamicUrl {
 }
 
 /**
- * Get all dynamic URLs for the sitemap with caching
+ * Get all dynamic URLs for the sitemap
  */
 export async function getDynamicSitemapUrls(): Promise<DynamicUrl[]> {
-  // Try to get from cache first
-  const cached = await RedisCache.get<DynamicUrl[]>(SITEMAP_URLS_CACHE_KEY)
-  if (cached) {
-    // Convert date strings back to Date objects
-    return cached.map(item => ({
-      ...item,
-      lastModified: item.lastModified ? new Date(item.lastModified) : undefined
-    }))
-  }
 
   // Generate dynamic URLs
   const urls: DynamicUrl[] = []
@@ -100,19 +86,9 @@ export async function getDynamicSitemapUrls(): Promise<DynamicUrl[]> {
       page++
     }
 
-    // Cache the results
-    await RedisCache.set(SITEMAP_URLS_CACHE_KEY, urls, SITEMAP_CACHE_TTL)
-
     return urls
   } catch (error) {
     console.error('Error generating dynamic sitemap URLs:', error)
     return []
   }
-}
-
-/**
- * Clear sitemap cache - call this when content is updated
- */
-export async function clearSitemapCache(): Promise<void> {
-  await RedisCache.delete(SITEMAP_URLS_CACHE_KEY)
 }

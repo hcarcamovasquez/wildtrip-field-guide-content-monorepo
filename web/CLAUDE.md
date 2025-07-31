@@ -17,7 +17,17 @@ This is the public-facing Wildtrip Guia de Campo web application - a biodiversit
 - No direct database access
 - No management/admin functionality
 
-### Recent Updates
+### Recent Updates (31 Enero 2025)
+- **Major Cleanup**: Removed all legacy code from when web was a fullstack app
+  - Eliminated database dependencies (Drizzle, PostgreSQL)
+  - Removed Redis cache implementation 
+  - Deleted R2 upload utilities (handled by backend)
+  - Removed TipTap editor dependencies (only used in dashboard)
+  - Cleaned up data migration files and scripts
+- **Structure Refactoring**:
+  - Moved all components from `components/public/` to `components/`
+  - Renamed `lib/public/repositories/` to `lib/repositories/`
+  - Removed empty `lib/services/` directory
 - All imports from relative paths (`../../../lib/utils/...`) updated to use `@wildtrip/shared`
 - `@wildtrip/shared` added as dependency
 - All image components now use ResponsiveImage or optimization functions
@@ -99,13 +109,16 @@ web/
 │   │   ├── sign-in/        # Clerk authentication
 │   │   ├── sign-up/        # Clerk registration
 │   │   └── index.astro     # Homepage
-│   ├── components/         
-│   │   ├── public/         # Public UI components (Astro)
+│   ├── components/         # All UI components (no more public subdirectory)
+│   │   ├── icons/          # Icon components
+│   │   ├── news/           # News-specific components
+│   │   ├── protected-area/ # Protected area components
+│   │   ├── species/        # Species components
 │   │   └── ui/             # shadcn/ui components
 │   ├── layouts/            # Page layouts
 │   └── lib/
 │       ├── api/            # API client for backend
-│       ├── public/         # Public repositories (use API)
+│       ├── repositories/   # Data repositories (use API)
 │       └── utils/          # Utility functions
 ```
 

@@ -1,0 +1,186 @@
+---
+import MapPin from '../icons/MapPin.astro'
+import ChevronRight from '../icons/ChevronRight.astro'
+import ResponsiveImage from '../ResponsiveImage.astro'
+import { PROTECTED_AREA_TYPES, getRegionLabel } from '@wildtrip/shared'
+import type { PublicProtectedArea } from '../../lib/repositories'
+
+export interface Props {
+  area: PublicProtectedArea
+}
+
+const { area } = Astro.props
+
+const getCategoryLabel = (category: string) => {
+  const type = PROTECTED_AREA_TYPES.find((t) => t.value === category)
+  return type?.label || 'Área Protegida'
+}
+const getCategoryColor = (category: string) => {
+  const type = PROTECTED_AREA_TYPES.find((t) => t.value === category)
+  return type?.color || 'bg-gray-500 text-white'
+}
+---
+
+<div class="card-container relative h-[320px]">
+  <div class="card-flipper transform-style-preserve-3d relative h-full w-full">
+    <!-- Front of card -->
+    <a
+      href={`/content/protected-areas/${area.slug}`}
+      class="card-front absolute inset-0 block h-full w-full overflow-hidden rounded-2xl bg-white shadow-md transition-shadow duration-300 backface-hidden dark:bg-gray-800"
+    >
+      <div class="relative h-full w-full">
+        <div class="h-full w-full overflow-hidden bg-gray-100 dark:bg-gray-700">
+          {
+            area.mainImageUrl ? (
+              <ResponsiveImage
+                src={area.mainImageUrl}
+                alt={area.name}
+                class="h-full w-full object-cover"
+                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                loading="lazy"
+                variant="medium"
+              />
+            ) : (
+              <div class="flex h-full w-full items-center justify-center">
+                <MapPin className="h-16 w-16 text-gray-300 dark:text-gray-600" />
+              </div>
+            )
+          }
+        </div>
+
+        <!-- Text overlay -->
+        <div class="absolute right-0 bottom-0 left-0 bg-gradient-to-t from-black/80 via-black/60 to-transparent p-4">
+          <h3 class="mb-1 text-base font-bold text-white md:text-lg">{area.name}</h3>
+          <p class="text-sm text-gray-200">
+            <span class="flex items-center gap-1">
+              <MapPin className="h-3 w-3" />
+              {area.region ? getRegionLabel(area.region) : 'Chile'}
+            </span>
+          </p>
+        </div>
+
+        {
+          area.type && (
+            <div class="absolute top-3 right-3">
+              <span
+                class={`inline-flex items-center rounded-lg px-2.5 py-1 text-xs font-bold shadow-lg ${getCategoryColor(area.type)}`}
+              >
+                {getCategoryLabel(area.type)}
+              </span>
+            </div>
+          )
+        }
+      </div>
+    </a>
+
+    <!-- Back of card -->
+    <a
+      href={`/content/protected-areas/${area.slug}`}
+      class="card-back absolute inset-0 flex flex-col justify-between overflow-hidden rounded-2xl bg-gradient-to-br from-primary to-primary/80 p-6 text-white shadow-lg transition-shadow duration-300 backface-hidden"
+    >
+      <div>
+        <h3 class="mb-3 text-xl font-bold">{area.name}</h3>
+        <p class="mb-2 text-sm opacity-90">{area.type ? getCategoryLabel(area.type) : 'Área Protegida'}</p>
+
+        {
+          area.description ? (
+            <p class="mb-3 line-clamp-6 text-sm leading-relaxed">{area.description}</p>
+          ) : (
+            <p class="mb-3 text-sm italic opacity-75">No hay descripción disponible para esta área protegida.</p>
+          )
+        }
+      </div>
+      <div class="mt-4 flex items-center justify-between">
+        <span class="text-sm font-medium opacity-90">Ver más detalles</span>
+        <ChevronRight class="h-5 w-5" />
+      </div>
+    </a>
+  </div>
+</div>
+
+<style>
+  .line-clamp-6 {
+    display: -webkit-box;
+    -webkit-line-clamp: 6;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .card-container {
+    perspective: 1200px;
+    width: 100%;
+  }
+
+  .card-flipper {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    transition: transform 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+    transform-style: preserve-3d;
+  }
+
+  /* Disable hover effect on touch devices */
+  @media (hover: hover) and (pointer: fine) {
+    .card-container:hover {
+      transform: scale(1.02);
+    }
+
+    .card-container:hover .card-flipper {
+      transform: rotateY(180deg);
+      transition-duration: 0.8s;
+      transition-timing-function: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    }
+  }
+
+  /* Ensure no hover effects on mobile */
+  @media (max-width: calc(var(--breakpoint-md) - 1px)) {
+    .card-container:hover {
+      transform: none;
+    }
+
+    .card-container:hover .card-flipper {
+      transform: none;
+    }
+  }
+
+  .card-front,
+  .card-back {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+  }
+
+  /* Shadow effects only on desktop */
+  @media (min-width: var(--breakpoint-md)) {
+    .card-container:hover .card-front {
+      box-shadow:
+        0 10px 25px -5px rgba(0, 0, 0, 0.1),
+        0 8px 10px -6px rgba(0, 0, 0, 0.1);
+    }
+
+    .card-container:hover .card-back {
+      box-shadow:
+        0 10px 25px -5px rgba(0, 0, 0, 0.2),
+        0 8px 10px -6px rgba(0, 0, 0, 0.1);
+    }
+  }
+
+  .card-back {
+    transform: rotateY(180deg);
+  }
+
+  .transform-style-preserve-3d {
+    transform-style: preserve-3d;
+  }
+
+  .backface-hidden {
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+  }
+
+  .rotate-y-180 {
+    transform: rotateY(180deg);
+  }
+</style>

@@ -126,9 +126,6 @@ importers:
       '@types/uuid':
         specifier: ^10.0.0
         version: 10.0.0
-      dotenv:
-        specifier: ^17.2.1
-        version: 17.2.1
       eslint:
         specifier: ^9.18.0
         version: 9.31.0(jiti@2.5.1)
@@ -355,18 +352,12 @@ importers:
       '@astrojs/sitemap':
         specifier: ^3.4.1
         version: 3.4.2
-      '@aws-sdk/client-s3':
-        specifier: ^3.848.0
-        version: 3.855.0
       '@clerk/astro':
         specifier: ^2.10.7
         version: 2.10.11(astro@5.12.5(@types/node@24.1.0)(@upstash/redis@1.35.2)(jiti@2.5.1)(lightningcss@1.30.1)(rollup@4.46.1)(terser@5.43.1)(typescript@5.8.3)(yaml@2.8.0))(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
       '@clerk/localizations':
         specifier: ^3.17.2
         version: 3.20.4
-      '@neondatabase/serverless':
-        specifier: ^1.0.1
-        version: 1.0.1
       '@radix-ui/react-alert-dialog':
         specifier: ^1.1.14
         version: 1.1.14(@types/react-dom@19.1.7(@types/react@19.1.9))(@types/react@19.1.9)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
@@ -406,57 +397,12 @@ importers:
       '@tailwindcss/vite':
         specifier: ^4.1.11
         version: 4.1.11(vite@6.3.5(@types/node@24.1.0)(jiti@2.5.1)(lightningcss@1.30.1)(terser@5.43.1)(yaml@2.8.0))
-      '@tiptap/core':
-        specifier: ^3.0.7
-        version: 3.0.7(@tiptap/pm@3.0.7)
-      '@tiptap/extension-image':
-        specifier: ^3.0.7
-        version: 3.0.7(@tiptap/core@3.0.7(@tiptap/pm@3.0.7))
-      '@tiptap/extension-link':
-        specifier: ^3.0.7
-        version: 3.0.7(@tiptap/core@3.0.7(@tiptap/pm@3.0.7))(@tiptap/pm@3.0.7)
-      '@tiptap/extension-placeholder':
-        specifier: ^3.0.7
-        version: 3.0.7(@tiptap/extensions@3.0.7(@tiptap/core@3.0.7(@tiptap/pm@3.0.7))(@tiptap/pm@3.0.7))
-      '@tiptap/extension-table':
-        specifier: ^3.0.7
-        version: 3.0.7(@tiptap/core@3.0.7(@tiptap/pm@3.0.7))(@tiptap/pm@3.0.7)
-      '@tiptap/extension-table-cell':
-        specifier: ^3.0.7
-        version: 3.0.7(@tiptap/extension-table@3.0.7(@tiptap/core@3.0.7(@tiptap/pm@3.0.7))(@tiptap/pm@3.0.7))
-      '@tiptap/extension-table-header':
-        specifier: ^3.0.7
-        version: 3.0.7(@tiptap/extension-table@3.0.7(@tiptap/core@3.0.7(@tiptap/pm@3.0.7))(@tiptap/pm@3.0.7))
-      '@tiptap/extension-table-row':
-        specifier: ^3.0.7
-        version: 3.0.7(@tiptap/extension-table@3.0.7(@tiptap/core@3.0.7(@tiptap/pm@3.0.7))(@tiptap/pm@3.0.7))
-      '@tiptap/extension-text-align':
-        specifier: ^3.0.7
-        version: 3.0.7(@tiptap/core@3.0.7(@tiptap/pm@3.0.7))
-      '@tiptap/extension-underline':
-        specifier: ^3.0.7
-        version: 3.0.7(@tiptap/core@3.0.7(@tiptap/pm@3.0.7))
-      '@tiptap/pm':
-        specifier: ^3.0.7
-        version: 3.0.7
-      '@tiptap/react':
-        specifier: ^3.0.7
-        version: 3.0.7(@floating-ui/dom@1.7.2)(@tiptap/core@3.0.7(@tiptap/pm@3.0.7))(@tiptap/pm@3.0.7)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
-      '@tiptap/starter-kit':
-        specifier: ^3.0.7
-        version: 3.0.7
-      '@types/jszip':
-        specifier: ^3.4.1
-        version: 3.4.1
       '@types/react':
         specifier: ^19.1.8
         version: 19.1.9
       '@types/react-dom':
         specifier: ^19.1.6
         version: 19.1.7(@types/react@19.1.9)
-      '@upstash/redis':
-        specifier: ^1.35.1
-        version: 1.35.2
       '@wildtrip/shared':
         specifier: workspace:*
         version: link:../shared
@@ -469,12 +415,6 @@ importers:
       clsx:
         specifier: ^2.1.1
         version: 2.1.1
-      drizzle-zod:
-        specifier: ^0.8.2
-        version: 0.8.2(drizzle-orm@0.44.4(@neondatabase/serverless@1.0.1)(@types/pg@8.15.5)(@upstash/redis@1.35.2)(postgres@3.4.7))(zod@3.25.76)
-      jszip:
-        specifier: ^3.10.1
-        version: 3.10.1
       lucide-react:
         specifier: ^0.525.0
         version: 0.525.0(react@19.1.1)
@@ -484,18 +424,12 @@ importers:
       react-dom:
         specifier: ^19.1.0
         version: 19.1.1(react@19.1.1)
-      sharp:
-        specifier: ^0.34.3
-        version: 0.34.3
       tailwind-merge:
         specifier: ^3.3.1
         version: 3.3.1
       tailwindcss:
         specifier: ^4.1.11
         version: 4.1.11
-      uuid:
-        specifier: ^11.1.0
-        version: 11.1.0
     devDependencies:
       '@eslint/js':
         specifier: 9.31.0
@@ -4587,12 +4521,6 @@ packages:
         optional: true
       sqlite3:
         optional: true
-
-  drizzle-zod@0.8.2:
-    resolution: {integrity: sha512-9Do/16OjFFNrQDZgvMtxtDDwKWbFOxUAIwNPKX98SfxrP8H18vhN1BvNXbhelLcdgCE7GEaXDJqBjMExSkhpkA==}
-    peerDependencies:
-      drizzle-orm: '>=0.36.0'
-      zod: ^3.25.1
 
   dset@3.1.4:
     resolution: {integrity: sha512-2QF/g9/zTaPDc3BjNcVTGoBbXBgYfMTTceLaYcFJ/W9kggFUkhxD/hMEeuLKbugyef9SqAx8cpgwlIP/jinUTA==}
@@ -12840,11 +12768,6 @@ snapshots:
       '@types/pg': 8.15.5
       '@upstash/redis': 1.35.2
       postgres: 3.4.7
-
-  drizzle-zod@0.8.2(drizzle-orm@0.44.4(@neondatabase/serverless@1.0.1)(@types/pg@8.15.5)(@upstash/redis@1.35.2)(postgres@3.4.7))(zod@3.25.76):
-    dependencies:
-      drizzle-orm: 0.44.4(@neondatabase/serverless@1.0.1)(@types/pg@8.15.5)(@upstash/redis@1.35.2)(postgres@3.4.7)
-      zod: 3.25.76
 
   dset@3.1.4: {}
 

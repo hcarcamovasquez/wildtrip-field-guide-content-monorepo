@@ -142,7 +142,8 @@ export function Layout({ children }: LayoutProps) {
          location.pathname === '/species' || 
          location.pathname === '/protected-areas' || 
          location.pathname === '/news' || 
-         location.pathname === '/users' ? (
+         location.pathname === '/users' ||
+         location.pathname.includes('/edit') ? (
           <div className="flex-1 overflow-hidden">
             {children}
           </div>

@@ -1,0 +1,31 @@
+---
+import SpeciesHeader from './SpeciesHeader.astro'
+import SpeciesMainImage from './SpeciesMainImage.astro'
+import SpeciesDescription from './SpeciesDescription.astro'
+import SpeciesDistinctiveFeatures from './SpeciesDistinctiveFeatures.astro'
+import SpeciesCategory from './SpeciesCategory.astro'
+import SpeciesTaxonomicInfo from './SpeciesTaxonomicInfo.astro'
+import SpeciesRichContent from './SpeciesRichContent.astro'
+import SpeciesGallery from './SpeciesGallery.astro'
+import SpeciesReferences from './SpeciesReferences.astro'
+import type { PublicDetailSpecie } from '../../lib/repositories'
+import { CONSERVATION_STATUSES } from '@wildtrip/shared'
+
+interface Props {
+  species: PublicDetailSpecie
+}
+
+const { species } = Astro.props
+---
+
+<article class="mx-auto max-w-4xl bg-white px-4 py-8 sm:px-6 lg:px-8 dark:bg-gray-900">
+  <SpeciesHeader species={species} conservationStatuses={CONSERVATION_STATUSES} />
+  <SpeciesMainImage species={species} />
+  <SpeciesCategory species={species} />
+  <SpeciesDescription species={species} />
+  <SpeciesDistinctiveFeatures species={species} />
+  <SpeciesTaxonomicInfo species={species} conservationStatuses={CONSERVATION_STATUSES} />
+  <SpeciesRichContent species={species} />
+  <SpeciesGallery species={species} />
+  <SpeciesReferences species={species} />
+</article>

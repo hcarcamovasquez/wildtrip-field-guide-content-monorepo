@@ -1,0 +1,14 @@
+---
+import SpeciesCard from './SpeciesCard.astro'
+import { type PublicSpecie } from '../../lib/repositories'
+
+export interface Props {
+  species: PublicSpecie[]
+}
+
+const { species } = Astro.props
+---
+
+<div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+  {species.map((sp) => <SpeciesCard specie={sp} />)}
+</div>

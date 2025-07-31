@@ -13,6 +13,7 @@ import {
   ChevronRight,
   ChevronsLeft,
   ChevronsRight,
+  Loader2,
 } from 'lucide-react'
 import ResponsiveImage from './ResponsiveImage'
 import { Badge } from '@/components/ui/badge'
@@ -43,6 +44,8 @@ interface ProtectedAreasTableProps {
   onDelete: (id: number) => void
   onRefresh: () => void
   onPreview?: (id: number, slug: string, name: string, status?: string, hasDraft?: boolean) => void
+  isLoading?: boolean
+  error?: any
 }
 
 const getStatusVariant = (status: string): 'default' | 'secondary' | 'outline' | 'destructive' => {
@@ -71,6 +74,8 @@ export default function ProtectedAreasTable({
   onDelete,
   onRefresh,
   onPreview,
+  isLoading,
+  error,
 }: ProtectedAreasTableProps) {
   const [deleteDialog, setDeleteDialog] = useState<{ open: boolean; areaId: number | null }>({
     open: false,
@@ -216,7 +221,24 @@ export default function ProtectedAreasTable({
                   </tr>
                 </thead>
                 <tbody>
-                  {paginatedAreas.length === 0 ? (
+                  {isLoading ? (
+                    <tr>
+                      <td colSpan={6} className="px-6 py-8">
+                        <div className="flex items-center justify-center">
+                          <div className="text-center">
+                            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground mx-auto mb-4" />
+                            <p className="text-muted-foreground">Cargando áreas protegidas...</p>
+                          </div>
+                        </div>
+                      </td>
+                    </tr>
+                  ) : error ? (
+                    <tr>
+                      <td colSpan={6} className="px-6 py-8 text-center text-destructive">
+                        Error al cargar las áreas protegidas
+                      </td>
+                    </tr>
+                  ) : paginatedAreas.length === 0 ? (
                     <tr>
                       <td colSpan={6} className="px-6 py-8 text-center text-muted-foreground">
                         No se encontraron áreas protegidas

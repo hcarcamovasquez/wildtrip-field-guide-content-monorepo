@@ -399,7 +399,9 @@ export default function SpeciesForm({ species, currentUserId, isEditing }: Speci
   const isFieldDisabled = isLocked || !isEditMode
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+    <div className="h-full flex flex-col overflow-hidden">
+      <div className="flex-1 overflow-y-auto">
+        <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 pb-20">
       {/* Lock banner */}
       {lockError && (
         <div className="mb-6">
@@ -438,7 +440,7 @@ export default function SpeciesForm({ species, currentUserId, isEditing }: Speci
 
       <form onSubmit={(e) => e.preventDefault()}>
         {/* Toolbar superior */}
-        <div className="sticky top-0 z-10 -mx-4 mb-6 border-b bg-background px-4 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8">
+        <div className="sticky top-0 z-10 mb-6 border-b bg-background px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col gap-4 py-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
               <h1 className="text-lg font-semibold sm:text-xl">{isEditing ? 'Editar Especie' : 'Nueva Especie'}</h1>
@@ -1098,6 +1100,8 @@ export default function SpeciesForm({ species, currentUserId, isEditing }: Speci
           title={`Vista previa: ${species.commonName || species.scientificName}`}
         />
       )}
+        </div>
+      </div>
     </div>
   )
 }

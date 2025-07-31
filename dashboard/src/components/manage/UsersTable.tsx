@@ -13,6 +13,7 @@ import {
   Bird,
   HardDrive,
   MoreVertical,
+  Loader2,
 } from 'lucide-react'
 import { useState } from 'react'
 import { Badge } from '@/components/ui/badge'
@@ -49,6 +50,8 @@ interface UsersTableProps {
     page?: number
   }
   baseUrl: string
+  isLoading?: boolean
+  error?: string | null
 }
 
 const getRoleVariant = (role: string): 'default' | 'secondary' | 'destructive' | 'outline' => {
@@ -87,7 +90,7 @@ const getRoleIcon = (role: string) => {
   }
 }
 
-export default function UsersTable({ users, pagination, currentUserId, searchParams, baseUrl }: UsersTableProps) {
+export default function UsersTable({ users, pagination, currentUserId, searchParams, baseUrl, isLoading, error }: UsersTableProps) {
   const [roleChangeModal, setRoleChangeModal] = useState<{ open: boolean; user: UserWithRole | null }>({
     open: false,
     user: null,
@@ -226,7 +229,24 @@ export default function UsersTable({ users, pagination, currentUserId, searchPar
                   </tr>
                 </thead>
                 <tbody>
-                  {users.length === 0 ? (
+                  {isLoading ? (
+                    <tr>
+                      <td colSpan={6} className="px-6 py-8">
+                        <div className="flex items-center justify-center">
+                          <div className="text-center">
+                            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground mx-auto mb-4" />
+                            <p className="text-muted-foreground">Cargando usuarios...</p>
+                          </div>
+                        </div>
+                      </td>
+                    </tr>
+                  ) : error ? (
+                    <tr>
+                      <td colSpan={6} className="px-6 py-8 text-center text-destructive">
+                        {error}
+                      </td>
+                    </tr>
+                  ) : users.length === 0 ? (
                     <tr>
                       <td colSpan={6} className="px-6 py-8 text-center text-muted-foreground">
                         No se encontraron usuarios

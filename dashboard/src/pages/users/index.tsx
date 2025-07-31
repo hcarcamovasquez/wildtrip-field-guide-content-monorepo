@@ -58,22 +58,6 @@ export function UsersPage() {
     }
   }
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-      </div>
-    )
-  }
-
-  if (error) {
-    return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <p className="text-destructive">{error}</p>
-      </div>
-    )
-  }
-
   return (
     <div className="h-full flex flex-col overflow-hidden">
       <UsersTable 
@@ -82,6 +66,8 @@ export function UsersPage() {
         currentUserId={currentUserId}
         searchParams={{ search, role: roleFilter, page }}
         baseUrl="/users"
+        isLoading={loading}
+        error={error}
       />
     </div>
   )

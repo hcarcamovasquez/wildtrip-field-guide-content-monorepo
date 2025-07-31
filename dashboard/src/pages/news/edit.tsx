@@ -69,20 +69,22 @@ export function NewsEditPage() {
   }
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-      <div className="mb-8 border-b pb-6">
-        <h1 className="text-3xl font-bold">
-          {news?.content?.blocks?.length && news.content.blocks.length > 0 ? 'Editar' : 'Completar'} Noticia
-        </h1>
-        <p className="mt-2 text-muted-foreground">{news?.title}</p>
-      </div>
+    <div className="h-full overflow-y-auto">
+      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 pb-20">
+        <div className="mb-8 border-b pb-6">
+          <h1 className="text-3xl font-bold">
+            {news?.content?.blocks?.length && news.content.blocks.length > 0 ? 'Editar' : 'Completar'} Noticia
+          </h1>
+          <p className="mt-2 text-muted-foreground">{news?.title}</p>
+        </div>
 
-      <NewsForm 
-        initialData={initialData} 
-        isEditing={true} 
-        newsId={Number(id)}
-        currentUserId={currentUserId}
-      />
+        <NewsForm 
+          initialData={initialData} 
+          isEditing={true} 
+          newsId={Number(id)}
+          currentUserId={currentUserId}
+        />
+      </div>
     </div>
   )
 }

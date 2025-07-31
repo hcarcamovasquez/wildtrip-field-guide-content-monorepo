@@ -13,6 +13,7 @@ import {
   ChevronsLeft,
   ChevronsRight,
   AlertTriangle,
+  Loader2,
 } from 'lucide-react'
 import ResponsiveImage from './ResponsiveImage'
 import PreviewModal from './PreviewModal'
@@ -239,8 +240,13 @@ export default function SpeciesTable({ canDelete = false }: SpeciesTableProps) {
                 <tbody>
                   {loading ? (
                     <tr>
-                      <td colSpan={8} className="px-6 py-8 text-center text-muted-foreground">
-                        Cargando especies...
+                      <td colSpan={8} className="px-6 py-8">
+                        <div className="flex items-center justify-center">
+                          <div className="text-center">
+                            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground mx-auto mb-4" />
+                            <p className="text-muted-foreground">Cargando especies...</p>
+                          </div>
+                        </div>
                       </td>
                     </tr>
                   ) : species.length === 0 ? (
