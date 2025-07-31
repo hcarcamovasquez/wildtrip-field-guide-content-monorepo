@@ -72,6 +72,18 @@ export class SpeciesRepository {
   async findById(id: number) {
     const db = this.dbService.getDb();
     const [result] = await db.select().from(species).where(eq(species.id, id));
+    
+    // Log draft data for debugging
+    if (result && result.draftData) {
+      console.log('Species findById - Draft data:', {
+        id,
+        hasDraft: result.hasDraft,
+        draftData: result.draftData,
+        mainImage: result.draftData.mainImage,
+        galleryImages: result.draftData.galleryImages
+      });
+    }
+    
     return result;
   }
 
@@ -135,21 +147,29 @@ export class SpeciesRepository {
       throw new Error('Species not found');
     }
 
-    // Merge current data with draft changes
-    const draft = {
-      ...current,
+    // Merge with existing draft data (if any) instead of current data
+    const existingDraft = current.draftData || {};
+    const updatedDraft = {
+      ...existingDraft,
       ...draftData,
-      id: current.id, // Preserve ID
-      createdAt: current.createdAt, // Preserve creation date
-      updatedAt: new Date(),
     };
+
+    // Log what we're saving for debugging
+    console.log('Creating/updating draft with data:', {
+      id,
+      draftData,
+      existingDraft,
+      updatedDraft,
+      mainImage: updatedDraft.mainImage,
+      galleryImages: updatedDraft.galleryImages
+    });
 
     const [result] = await db
       .update(species)
       .set({
-        draftData: draft,
+        draftData: updatedDraft,
         hasDraft: true,
-        draftCreatedAt: new Date(),
+        draftCreatedAt: current.draftCreatedAt || new Date(),
         updatedAt: new Date(),
       })
       .where(eq(species.id, id))

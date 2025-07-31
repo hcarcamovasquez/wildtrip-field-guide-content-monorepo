@@ -17,6 +17,8 @@ import {
   Lock,
 } from 'lucide-react'
 import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { useToast } from '@/hooks/use-toast'
 import type { ContentBlock, ImageBlock } from '@wildtrip/shared/types'
 import LockBanner from './LockBanner'
 import { Alert, AlertDescription } from '@/components/ui/alert'
@@ -80,6 +82,8 @@ interface NewsFormProps {
 }
 
 export default function NewsForm({ initialData, isEditing = false, newsId, currentUserId }: NewsFormProps) {
+  const navigate = useNavigate()
+  const { toast } = useToast()
   const [saving, setSaving] = useState(false)
   const [showDiscardDialog, setShowDiscardDialog] = useState(false)
   const [isEditMode, setIsEditMode] = useState(false)
@@ -172,10 +176,23 @@ export default function NewsForm({ initialData, isEditing = false, newsId, curre
   }
 
   const handleExitEditMode = async () => {
-    await releaseLock()
-    setIsEditMode(false)
-    setShowExitConfirm(false)
-    window.location.href = '/news'
+    try {
+      await releaseLock()
+      setIsEditMode(false)
+      setShowExitConfirm(false)
+      
+      toast({
+        title: "Modo edición finalizado",
+        description: "Has salido del modo de edición correctamente.",
+      })
+    } catch (error) {
+      console.error('Error releasing lock:', error)
+      toast({
+        title: "Error",
+        description: "No se pudo salir del modo de edición",
+        variant: "destructive",
+      })
+    }
   }
 
   const releaseLock = async () => {
@@ -207,28 +224,27 @@ export default function NewsForm({ initialData, isEditing = false, newsId, curre
     setUpdating(field)
 
     try {
-      const response = await fetch(`/api/manage/news/${newsId}`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ [field]: value }),
-      })
-
-      if (!response.ok) {
-        throw new Error('Error al guardar')
+      let data
+      
+      // If it's published content, create/update draft
+      if (formData.status === 'published') {
+        data = await apiClient.news.createDraft(newsId, { [field]: value })
+      } else {
+        // If it's already a draft, just update it
+        data = await apiClient.news.update(newsId, { [field]: value })
       }
 
       setFieldSuccess(field)
       setTimeout(() => setFieldSuccess(null), 3000)
 
-      // Mark that we have local changes if this is a published item
+      // Update hasDraft based on server response
       if (formData.status === 'published') {
-        setHasLocalChanges(true)
-        // If this is the first change on a published item, it creates a draft
-        if (!hasDraft) {
-          setHasDraft(true)
+        if (data.hasDraft !== undefined) {
+          setHasDraft(data.hasDraft)
+          setHasLocalChanges(false)
         }
+        // The form state already has the updated value from local changes
+        // We don't need to update it again from the server response
       }
     } catch (error) {
       console.error(`Error saving ${field}:`, error)
@@ -254,49 +270,20 @@ export default function NewsForm({ initialData, isEditing = false, newsId, curre
 
     try {
       if (!isEditing) {
-        // Crear y publicar nueva noticia
-        const response = await fetch('/api/manage/news', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ ...formData, status: 'published' }),
-        })
-
-        if (!response.ok) {
-          throw new Error('Error al publicar')
-        }
-
-        window.location.href = '/news'
+        // Create and publish new article
+        await apiClient.news.create({ ...formData, status: 'published' })
+        navigate('/news')
       } else if (formData.status === 'draft') {
-        // Publicar borrador
-        const response = await fetch(`/api/manage/news/${newsId}`, {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ status: 'published', publishedAt: new Date().toISOString() }),
+        // First time publish
+        await apiClient.news.update(newsId, { 
+          status: 'published', 
+          publishedAt: new Date().toISOString() 
         })
-
-        if (!response.ok) {
-          throw new Error('Error al publicar')
-        }
-
-        window.location.href = '/news'
+        navigate('/news')
       } else if (formData.status === 'published' && hasDraft) {
-        // Publicar cambios del borrador (solo si realmente hay un borrador en la BD)
-        const response = await fetch(`/api/manage/news/${newsId}/publish-draft`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        })
-
-        if (!response.ok) {
-          throw new Error('Error al publicar cambios')
-        }
-
-        window.location.href = '/news'
+        // Publish draft changes
+        await apiClient.news.publish(newsId)
+        navigate('/news')
       }
 
       // Release lock after publishing
@@ -316,25 +303,31 @@ export default function NewsForm({ initialData, isEditing = false, newsId, curre
     setSaving(true)
 
     try {
-      const response = await fetch(`/api/manage/news/${newsId}/discard-draft`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+      const updatedNews = await apiClient.news.discardDraft(newsId)
+      
+      // Update the form with published data (no draft)
+      setFormData({
+        ...updatedNews,
+        mainImage: updatedNews.mainImage,
       })
-
-      if (!response.ok) {
-        throw new Error('Error al descartar cambios')
-      }
-
-      // Actualizar el estado local
       setHasDraft(false)
       setHasLocalChanges(false)
-      // Recargar la página para mostrar la versión publicada
-      window.location.reload()
+      
+      // Update editor content with published version
+      const publishedContent = updatedNews?.content?.blocks ? richContentToHtml(updatedNews.content) : ''
+      setEditorContent(publishedContent)
+      
+      toast({
+        title: "Cambios descartados",
+        description: "Los cambios del borrador han sido descartados correctamente.",
+      })
     } catch (error) {
       console.error('Error discarding draft:', error)
-      alert('Error al descartar los cambios')
+      toast({
+        title: "Error",
+        description: "No se pudieron descartar los cambios",
+        variant: "destructive",
+      })
     } finally {
       setSaving(false)
     }
@@ -348,21 +341,9 @@ export default function NewsForm({ initialData, isEditing = false, newsId, curre
   const handleSaveDraft = async () => {
     setSaving(true)
     try {
-      const response = await fetch('/api/manage/news', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ ...formData, status: 'draft' }),
-      })
-
-      if (!response.ok) {
-        throw new Error('Error al guardar borrador')
-      }
-
-      const result = await response.json()
+      const result = await apiClient.news.create({ ...formData, status: 'draft' })
       // Redirect to edit the newly created article
-      window.location.href = `/news/${result.id}/edit`
+      navigate(`/news/${result.id}/edit`)
     } catch (error) {
       console.error('Error saving draft:', error)
       alert('Error al guardar el borrador')
@@ -387,7 +368,7 @@ export default function NewsForm({ initialData, isEditing = false, newsId, curre
       {lockInfo.isLocked && lockInfo.lockedByUser && (
         <LockBanner
           lockedBy={lockInfo.lockedByUser.name || 'Otro usuario'}
-          onClose={() => (window.location.href = '/news')}
+          onClose={() => navigate('/news')}
         />
       )}
 

@@ -283,7 +283,7 @@ export default function NewsTable({ currentUserId, canDelete = false, onEdit, on
                       <tr 
                         key={item.id} 
                         className="border-b hover:bg-muted/50 cursor-pointer"
-                        onClick={() => window.location.href = `/news/${item.id}/edit`}
+                        onClick={() => navigate(`/news/${item.id}/edit`)}
                       >
                         <td className="px-6 py-3 pr-4">
                           <div className="flex items-center gap-3">

@@ -82,6 +82,7 @@ export class SpeciesController {
   @UseGuards(ClerkAuthGuard, RolesGuard)
   @Roles('admin', 'content_editor', 'species_editor')
   discardDraft(@Param('id') id: string) {
+    console.log('Discard draft endpoint called for species:', id);
     return this.speciesService.discardDraft(+id);
   }
 
@@ -100,6 +101,7 @@ export class SpeciesController {
   @UseGuards(ClerkAuthGuard, RolesGuard)
   @Roles('admin', 'content_editor', 'species_editor')
   async releaseLock(@Param('id') id: string, @CurrentUser() user: ICurrentUser) {
+    console.log('Release lock endpoint called for species:', id);
     const userId = 1; // TODO: Get actual DB user ID from user object
     await this.locksService.releaseLock('species', +id, userId);
     return { success: true };

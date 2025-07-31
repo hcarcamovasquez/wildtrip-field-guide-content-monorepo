@@ -58,6 +58,12 @@ export class APIClient {
       this.request<any>({ method: 'PATCH', url: `/api/species/${id}`, data }),
     delete: (id: number) => 
       this.request<void>({ method: 'DELETE', url: `/api/species/${id}` }),
+    publish: (id: number) => 
+      this.request<any>({ method: 'POST', url: `/api/species/${id}/publish` }),
+    createDraft: (id: number, data: any) => 
+      this.request<any>({ method: 'POST', url: `/api/species/${id}/draft`, data }),
+    discardDraft: (id: number) => 
+      this.request<any>({ method: 'POST', url: `/api/species/${id}/discard-draft` }),
     lock: (id: number) => 
       this.request<any>({ method: 'POST', url: `/api/species/${id}/lock` }),
     unlock: (id: number) => 
@@ -80,8 +86,8 @@ export class APIClient {
       this.request<void>({ method: 'DELETE', url: `/api/protected-areas/${id}` }),
     publish: (id: number) => 
       this.request<any>({ method: 'POST', url: `/api/protected-areas/${id}/publish` }),
-    draft: (id: number) => 
-      this.request<any>({ method: 'POST', url: `/api/protected-areas/${id}/draft` }),
+    createDraft: (id: number, data: any) => 
+      this.request<any>({ method: 'POST', url: `/api/protected-areas/${id}/draft`, data }),
     discardDraft: (id: number) => 
       this.request<any>({ method: 'POST', url: `/api/protected-areas/${id}/discard-draft` }),
     lock: (id: number) => 
@@ -106,8 +112,8 @@ export class APIClient {
       this.request<void>({ method: 'DELETE', url: `/api/news/${id}` }),
     publish: (id: number) => 
       this.request<any>({ method: 'POST', url: `/api/news/${id}/publish` }),
-    draft: (id: number) => 
-      this.request<any>({ method: 'POST', url: `/api/news/${id}/draft` }),
+    createDraft: (id: number, data: any) => 
+      this.request<any>({ method: 'POST', url: `/api/news/${id}/draft`, data }),
     discardDraft: (id: number) => 
       this.request<any>({ method: 'POST', url: `/api/news/${id}/discard-draft` }),
     lock: (id: number) => 

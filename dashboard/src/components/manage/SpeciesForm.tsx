@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
 import {
   AlertCircle,
   Check,
@@ -18,6 +18,7 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
+import { useToast } from '@/hooks/use-toast'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import {
@@ -87,34 +88,87 @@ const generateSlug = (text: string) => {
     .replace(/^-+|-+$/g, '')
 }
 
+// Helper function to clean species data and avoid null/empty values
+const cleanSpeciesData = (data: any): any => {
+  return {
+    ...data,
+    // Ensure strings are never null
+    commonName: data.commonName || '',
+    scientificName: data.scientificName || '',
+    slug: data.slug || '',
+    description: data.description || '',
+    habitat: data.habitat || '',
+    distinctiveFeatures: data.distinctiveFeatures || '',
+    seoTitle: data.seoTitle || '',
+    seoDescription: data.seoDescription || '',
+    seoKeywords: data.seoKeywords || '',
+    family: data.family || '',
+    order: data.order || '',
+    class: data.class || '',
+    phylum: data.phylum || '',
+    kingdom: data.kingdom || '',
+    specificCategory: data.specificCategory || '',
+    // Handle enums - if empty string, set to undefined so they're not sent
+    mainGroup: data.mainGroup || undefined,
+    conservationStatus: data.conservationStatus || undefined,
+    status: data.status || 'draft',
+    // Keep other fields as they are
+    mainImage: data.mainImage,
+    galleryImages: data.galleryImages,
+    richContent: data.richContent,
+    references: data.references || [],
+  }
+}
+
 export default function SpeciesForm({ species, currentUserId, isEditing }: SpeciesFormProps) {
+  const { toast } = useToast()
+  
   // Determine if we're editing a draft of published content
   const isEditingDraft = species.status === 'published' && species.hasDraft
-  const effectiveData = isEditingDraft && species.draftData ? { ...species, ...species.draftData } : species
+  
+  // Use useMemo to ensure effectiveData is computed correctly
+  const effectiveData = useMemo(() => {
+    if (isEditingDraft && species.draftData) {
+      return {
+        ...species,
+        ...species.draftData,
+        // Ensure we don't lose the ID and timestamps
+        id: species.id,
+        createdAt: species.createdAt,
+        updatedAt: species.updatedAt
+      }
+    }
+    return species
+  }, [species, isEditingDraft])
 
-  const [formData, setFormData] = useState<SpeciesData>({
-    scientificName: effectiveData.scientificName || '',
-    commonName: effectiveData.commonName || '',
-    family: effectiveData.family || '',
-    order: effectiveData.order || '',
-    class: effectiveData.class || '',
-    phylum: effectiveData.phylum || '',
-    kingdom: effectiveData.kingdom || '',
-    mainGroup: effectiveData.mainGroup || '',
-    specificCategory: effectiveData.specificCategory || '',
-    description: effectiveData.description || '',
-    habitat: effectiveData.habitat || '',
-    distribution: typeof effectiveData.distribution === 'string' ? effectiveData.distribution : '',
-    conservationStatus: effectiveData.conservationStatus || '',
-    mainImage: effectiveData.mainImage || null,
-    galleryImages: effectiveData.galleryImages || [],
-    distinctiveFeatures:
-      typeof effectiveData.distinctiveFeatures === 'string' ? {} : effectiveData.distinctiveFeatures || {},
-    references: Array.isArray(effectiveData.references) ? {} : effectiveData.references || {},
-    richContent: effectiveData.richContent || { blocks: [] },
-    seoTitle: effectiveData.seoTitle || '',
-    seoDescription: effectiveData.seoDescription || '',
-    seoKeywords: effectiveData.seoKeywords || '',
+  const [formData, setFormData] = useState<SpeciesData>(() => {
+    const initialData = {
+      scientificName: effectiveData.scientificName || '',
+      commonName: effectiveData.commonName || '',
+      family: effectiveData.family || '',
+      order: effectiveData.order || '',
+      class: effectiveData.class || '',
+      phylum: effectiveData.phylum || '',
+      kingdom: effectiveData.kingdom || '',
+      mainGroup: effectiveData.mainGroup || '',
+      specificCategory: effectiveData.specificCategory || '',
+      description: effectiveData.description || '',
+      habitat: effectiveData.habitat || '',
+      distribution: typeof effectiveData.distribution === 'string' ? effectiveData.distribution : '',
+      conservationStatus: effectiveData.conservationStatus || '',
+      mainImage: effectiveData.mainImage || null,
+      galleryImages: effectiveData.galleryImages || [],
+      distinctiveFeatures:
+        typeof effectiveData.distinctiveFeatures === 'string' ? {} : effectiveData.distinctiveFeatures || {},
+      references: Array.isArray(effectiveData.references) ? {} : effectiveData.references || {},
+      richContent: effectiveData.richContent || { blocks: [] },
+      seoTitle: effectiveData.seoTitle || '',
+      seoDescription: effectiveData.seoDescription || '',
+      seoKeywords: effectiveData.seoKeywords || '',
+    }
+    
+    console.log('Initial form data mainImage:', initialData.mainImage)
+    return initialData
   })
 
   const [isEditMode, setIsEditMode] = useState(false)
@@ -150,19 +204,8 @@ export default function SpeciesForm({ species, currentUserId, isEditing }: Speci
 
   // Check lock status on mount
   useEffect(() => {
-    // Check if species already has lock info from server
-    if (species.lock) {
-      if (species.lock.userId === String(currentUserId)) {
-        // User already has the lock, enable edit mode
-        setIsEditMode(true)
-        setHasLock(true)
-      } else {
-        // Someone else has the lock
-        setIsLocked(true)
-        setLockError(`Este contenido está siendo editado por ${species.lock.userName || 'otro usuario'}`)
-      }
-    } else {
-      // No lock info from server, check via API
+    // Always check lock status via API to get the most current state
+    if (species.id) {
       checkLockStatus()
     }
 
@@ -184,17 +227,24 @@ export default function SpeciesForm({ species, currentUserId, isEditing }: Speci
 
   const checkLockStatus = async () => {
     try {
+      console.log('Checking lock status for species:', species.id)
       const data = await apiClient.species.checkLock(species.id)
+      console.log('Lock status response:', data)
 
-      if (data.isLocked) {
+      if (data && data.lockedBy !== null) {
         if (data.lockedBy === currentUserId) {
-          // User already has the lock, enable edit mode
+          // User already has the lock, restore edit mode
+          console.log('User has lock, restoring edit mode')
           setIsEditMode(true)
           setHasLock(true)
+          // If the species has draft data, ensure hasDraft is set
+          if (species.draftData) {
+            setHasDraft(true)
+          }
         } else {
           // Someone else has the lock
           setIsLocked(true)
-          setLockError(`Este contenido está siendo editado por ${data.lockOwner?.name || 'otro usuario'}`)
+          setLockError(`Este contenido está siendo editado por otro usuario`)
         }
       }
     } catch (error) {
@@ -299,45 +349,44 @@ export default function SpeciesForm({ species, currentUserId, isEditing }: Speci
       return
     }
 
+    // Don't send empty strings for enum fields
+    const enumFields = ['mainGroup', 'conservationStatus']
+    if (enumFields.includes(field) && value === '') {
+      return
+    }
+
     setUpdating(field)
 
     try {
-      const data = await apiClient.species.update(species.id, { [field]: value })
+      let data
+      
+      // Prepare the value - convert empty strings to undefined for optional fields
+      const preparedValue = (value === '' && !required) ? undefined : value
+      
+      // If it's published content, create/update draft
+      if (species.status === 'published') {
+        data = await apiClient.species.createDraft(species.id, { [field]: preparedValue })
+      } else {
+        // If it's already a draft, just update it
+        data = await apiClient.species.update(species.id, { [field]: preparedValue })
+      }
       
       setFieldSuccess(field)
       setTimeout(() => setFieldSuccess(null), 3000)
 
       // Update hasDraft based on server response
-      if (species.status === 'published' && data.hasDraft !== undefined) {
-        setHasDraft(data.hasDraft)
+      if (species.status === 'published') {
+        // The server should return hasDraft=true after creating a draft
+        if (data.hasDraft !== undefined) {
+          setHasDraft(data.hasDraft)
+        }
         
-        // If the response includes draft data, update the form data with the merged state
-        if (data.draftData) {
-          const mergedData = { ...species, ...data.draftData }
-          
-          if (data.field === 'mainImage') {
-            setFormData(prev => ({
-              ...prev,
-              mainImage: mergedData.mainImage || null
-            }))
-          } else if (data.field === 'galleryImages') {
-            setFormData(prev => ({
-              ...prev,
-              galleryImages: mergedData.galleryImages || []
-            }))
-            
-            // Also update the gallery images state
-            const galleryImagesData = mergedData.galleryImages || []
-            const transformedImages = galleryImagesData.map(
-              (img: { id: string; url: string; galleryId: number }, index: number) => ({
-                id: img.galleryId || 0,
-                url: img.url,
-                filename: img.url.split('/').pop() || 'image.jpg',
-                _key: img.id || `gallery-${Date.now()}-${index}`,
-              })
-            )
-            setGalleryImages(transformedImages)
-          }
+        // For mainImage, we need to ensure the UI reflects the saved draft immediately
+        // The form state already has the value from handleFieldChange
+        // If this is the first draft change, update the badge
+        if (!species.hasDraft && data.hasDraft) {
+          // This is the first change creating a draft
+          // The badge should now show "Publicado con cambios"
         }
       }
     } catch (error) {
@@ -351,25 +400,18 @@ export default function SpeciesForm({ species, currentUserId, isEditing }: Speci
     setShowPublishDialog(false)
     setIsSaving(true)
     try {
-      let response
-
       if (species.status === 'published' && hasDraft) {
         // Publish draft changes
-        // For now, use update to publish (backend needs publish endpoint)
-        response = await apiClient.species.update(species.id, { status: 'published' })
+        await apiClient.species.publish(species.id)
       } else {
-        // First time publish
-        response = await apiClient.species.update(species.id, { 
+        // First time publish - update status
+        await apiClient.species.update(species.id, { 
           status: 'published', 
           publishedAt: new Date().toISOString() 
         })
       }
 
-      if (response.ok) {
-        window.location.reload()
-      } else {
-        throw new Error('Error al publicar')
-      }
+      window.location.reload()
     } catch (error) {
       console.error('Error publishing species:', error)
       alert('Error al publicar')
@@ -379,18 +421,47 @@ export default function SpeciesForm({ species, currentUserId, isEditing }: Speci
   }
 
   const handleDiscardDraft = async () => {
+    console.log('Discarding draft for species:', species.id)
     setShowDiscardDialog(false)
     setIsSaving(true)
 
     try {
-      // For now, reload to discard changes (backend needs discard endpoint)
-      window.location.reload()
-
-      // Recargar la página para mostrar la versión publicada
-      window.location.reload()
+      const updatedSpecies = await apiClient.species.discardDraft(species.id)
+      console.log('Draft discarded successfully', updatedSpecies)
+      
+      // Clean the data to avoid null/empty values that cause validation errors
+      const cleanedData = cleanSpeciesData(updatedSpecies)
+      
+      // Update the form with cleaned published data (no draft)
+      setFormData(cleanedData)
+      setHasDraft(false)
+      
+      // If we have gallery images, update them too
+      if (updatedSpecies.galleryImages) {
+        const transformedImages = updatedSpecies.galleryImages.map(
+          (img: any, index: number) => ({
+            id: img.galleryId || 0,
+            url: img.url,
+            filename: img.url.split('/').pop() || 'image.jpg',
+            _key: img.id || `gallery-${Date.now()}-${index}`,
+          }),
+        )
+        setGalleryImages(transformedImages)
+      }
+      
+      // Show success message
+      toast({
+        title: "Cambios descartados",
+        description: "Los cambios del borrador han sido descartados correctamente.",
+      })
+      
     } catch (error) {
       console.error('Error discarding draft:', error)
-      alert('Error al descartar los cambios')
+      toast({
+        title: "Error",
+        description: "No se pudieron descartar los cambios",
+        variant: "destructive",
+      })
     } finally {
       setIsSaving(false)
     }
@@ -431,7 +502,10 @@ export default function SpeciesForm({ species, currentUserId, isEditing }: Speci
           <Edit3 className="h-4 w-4" />
           <AlertDescription className="flex items-center justify-between">
             <span>Estás en modo de edición. Los cambios se guardarán automáticamente.</span>
-            <Button type="button" variant="outline" size="sm" onClick={() => setShowExitDialog(true)}>
+            <Button type="button" variant="outline" size="sm" onClick={() => {
+              console.log('Exit edit mode button clicked (alert), isEditMode:', isEditMode)
+              setShowExitDialog(true)
+            }}>
               Salir del modo edición
             </Button>
           </AlertDescription>
@@ -471,7 +545,10 @@ export default function SpeciesForm({ species, currentUserId, isEditing }: Speci
                   type="button"
                   variant="outline"
                   size="sm"
-                  onClick={() => setShowDiscardDialog(true)}
+                  onClick={() => {
+                    console.log('Discard button clicked, hasDraft:', hasDraft, 'isEditMode:', isEditMode)
+                    setShowDiscardDialog(true)
+                  }}
                   className="text-destructive hover:text-destructive"
                 >
                   <Trash2 className="h-4 w-4 sm:mr-2" />
@@ -481,7 +558,10 @@ export default function SpeciesForm({ species, currentUserId, isEditing }: Speci
 
               {/* Botón de salir del modo edición */}
               {isEditMode && (
-                <Button type="button" variant="outline" size="sm" onClick={() => setShowExitDialog(true)}>
+                <Button type="button" variant="outline" size="sm" onClick={() => {
+                  console.log('Exit edit mode button clicked (toolbar), isEditMode:', isEditMode)
+                  setShowExitDialog(true)
+                }}>
                   <X className="h-4 w-4 sm:mr-2" />
                   <span className="hidden sm:inline">Salir de edición</span>
                 </Button>
@@ -986,10 +1066,26 @@ export default function SpeciesForm({ species, currentUserId, isEditing }: Speci
             </Button>
             <Button
               onClick={async () => {
-                await releaseLock()
-                setIsEditMode(false)
-                setShowExitDialog(false)
-                window.location.reload()
+                console.log('Exiting edit mode...')
+                try {
+                  await releaseLock()
+                  console.log('Lock released successfully')
+                  setIsEditMode(false)
+                  setShowExitDialog(false)
+                  setHasLock(false)
+                  
+                  toast({
+                    title: "Modo edición finalizado",
+                    description: "Has salido del modo de edición correctamente.",
+                  })
+                } catch (error) {
+                  console.error('Error releasing lock:', error)
+                  toast({
+                    title: "Error",
+                    description: "No se pudo salir del modo de edición",
+                    variant: "destructive",
+                  })
+                }
               }}
             >
               Salir

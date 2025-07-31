@@ -55,12 +55,13 @@ interface FileDetailsProps {
   file: MediaWithFolder | GalleryItem | null
   onClose: () => void
   onUpdate: (file: MediaWithFolder | GalleryItem) => void
+  onDelete?: () => void
 }
 
 // ImageVariantItem function removed - not currently in use
 // Can be re-added when variant functionality is implemented
 
-export default function FileDetails({ file, onClose, onUpdate }: FileDetailsProps) {
+export default function FileDetails({ file, onClose, onUpdate, onDelete }: FileDetailsProps) {
   const [isEditing, setIsEditing] = useState(false)
   const [saving, setSaving] = useState(false)
   const [copySuccess, setCopySuccess] = useState(false)
@@ -152,7 +153,10 @@ export default function FileDetails({ file, onClose, onUpdate }: FileDetailsProp
     try {
       await apiClient.gallery.deleteMedia(file.id)
       onClose()
-      window.location.reload()
+      // Call the onDelete callback if provided to trigger parent component refresh
+      if (onDelete) {
+        onDelete()
+      }
     } catch (error) {
       console.error('Error deleting file:', error)
     }

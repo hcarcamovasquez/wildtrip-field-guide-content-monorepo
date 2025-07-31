@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { apiClient } from '@/lib/api/client'
 import {
@@ -19,6 +20,7 @@ interface CreateNewsModalProps {
 }
 
 export function CreateNewsModal({ open, onClose, onSuccess }: CreateNewsModalProps) {
+  const navigate = useNavigate()
   const [loading, setLoading] = useState(false)
   const [formData, setFormData] = useState({
     title: '',
@@ -45,7 +47,7 @@ export function CreateNewsModal({ open, onClose, onSuccess }: CreateNewsModalPro
       }
 
       // Redirigir a la página de edición
-      window.location.href = `/news/${data.id}/edit?new=true`
+      navigate(`/news/${data.id}/edit?new=true`)
     } catch (error) {
       console.error('Error creating news:', error)
       alert('Error al crear la noticia')

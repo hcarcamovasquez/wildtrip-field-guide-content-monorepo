@@ -16,6 +16,7 @@ import {
   Loader2,
 } from 'lucide-react'
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { Badge } from '@/components/ui/badge'
 import { apiClient } from '@/lib/api/client'
 import { Button } from '@/components/ui/button'
@@ -91,6 +92,7 @@ const getRoleIcon = (role: string) => {
 }
 
 export default function UsersTable({ users, pagination, currentUserId, searchParams, baseUrl, isLoading, error }: UsersTableProps) {
+  const navigate = useNavigate()
   const [roleChangeModal, setRoleChangeModal] = useState<{ open: boolean; user: UserWithRole | null }>({
     open: false,
     user: null,
@@ -112,20 +114,20 @@ export default function UsersTable({ users, pagination, currentUserId, searchPar
   }
 
   const buildUrl = (params: Record<string, string | number | undefined>) => {
-    const url = new URL(baseUrl, window.location.origin)
+    const searchParams = new URLSearchParams()
     Object.entries(params).forEach(([key, value]) => {
       if (value !== undefined && value !== '') {
-        url.searchParams.set(key, String(value))
+        searchParams.set(key, String(value))
       }
     })
-    return url.toString()
+    return baseUrl + (searchParams.toString() ? `?${searchParams.toString()}` : '')
   }
 
   const handleSearch = () => {
     const params: Record<string, string | undefined> = { page: '1' }
     if (search) params.search = search
     if (roleFilter !== 'all') params.role = roleFilter
-    window.location.href = buildUrl(params)
+    navigate(buildUrl(params))
   }
 
   const openRoleModal = (user: UserWithRole) => {
@@ -145,8 +147,8 @@ export default function UsersTable({ users, pagination, currentUserId, searchPar
     setIsUpdating(true)
     try {
       await apiClient.users.update(roleChangeModal.user.id, { role: selectedRole })
-      // Recargar la página para mostrar los cambios (enfoque MPA)
-      window.location.reload()
+      // Refresh the current page to show changes
+      navigate(0)
     } catch (error) {
       console.error('Error updating role:', error)
       alert('Error al actualizar el rol del usuario. Por favor, intenta nuevamente.')
@@ -205,8 +207,8 @@ export default function UsersTable({ users, pagination, currentUserId, searchPar
                     <Search className="h-4 w-4" />
                   </Button>
                   {(searchParams.search || searchParams.role) && (
-                    <Button variant="outline" asChild>
-                      <a href={baseUrl}>Limpiar</a>
+                    <Button variant="outline" onClick={() => navigate(baseUrl)}>
+                      Limpiar
                     </Button>
                   )}
                 </div>
@@ -319,15 +321,21 @@ export default function UsersTable({ users, pagination, currentUserId, searchPar
                       {Math.min(pagination.page * pagination.limit, pagination.total)} de {pagination.total} usuarios
                     </div>
                     <div className="flex items-center gap-2">
-                      <Button variant="outline" size="icon" asChild disabled={pagination.page === 1}>
-                        <a href={buildUrl({ ...searchParams, page: 1 })}>
-                          <ChevronsLeft className="h-4 w-4" />
-                        </a>
+                      <Button 
+                        variant="outline" 
+                        size="icon" 
+                        disabled={pagination.page === 1}
+                        onClick={() => navigate(buildUrl({ ...searchParams, page: 1 }))}
+                      >
+                        <ChevronsLeft className="h-4 w-4" />
                       </Button>
-                      <Button variant="outline" size="icon" asChild disabled={pagination.page === 1}>
-                        <a href={buildUrl({ ...searchParams, page: pagination.page - 1 })}>
-                          <ChevronLeft className="h-4 w-4" />
-                        </a>
+                      <Button 
+                        variant="outline" 
+                        size="icon" 
+                        disabled={pagination.page === 1}
+                        onClick={() => navigate(buildUrl({ ...searchParams, page: pagination.page - 1 }))}
+                      >
+                        <ChevronLeft className="h-4 w-4" />
                       </Button>
                       <span className="text-sm text-muted-foreground">
                         Página {pagination.page} de {pagination.totalPages}
@@ -335,22 +343,18 @@ export default function UsersTable({ users, pagination, currentUserId, searchPar
                       <Button
                         variant="outline"
                         size="icon"
-                        asChild
                         disabled={pagination.page === pagination.totalPages}
+                        onClick={() => navigate(buildUrl({ ...searchParams, page: pagination.page + 1 }))}
                       >
-                        <a href={buildUrl({ ...searchParams, page: pagination.page + 1 })}>
-                          <ChevronRight className="h-4 w-4" />
-                        </a>
+                        <ChevronRight className="h-4 w-4" />
                       </Button>
                       <Button
                         variant="outline"
                         size="icon"
-                        asChild
                         disabled={pagination.page === pagination.totalPages}
+                        onClick={() => navigate(buildUrl({ ...searchParams, page: pagination.totalPages }))}
                       >
-                        <a href={buildUrl({ ...searchParams, page: pagination.totalPages })}>
-                          <ChevronsRight className="h-4 w-4" />
-                        </a>
+                        <ChevronsRight className="h-4 w-4" />
                       </Button>
                     </div>
                   </div>

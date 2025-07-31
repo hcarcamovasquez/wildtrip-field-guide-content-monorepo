@@ -1,5 +1,5 @@
 import { IsString, IsOptional, IsEnum, IsArray, IsObject } from 'class-validator';
-import { Type } from 'class-transformer';
+import { Type, Transform } from 'class-transformer';
 
 export class CreateSpeciesDto {
   @IsString()
@@ -33,6 +33,7 @@ export class CreateSpeciesDto {
   kingdom?: string;
 
   @IsOptional()
+  @Transform(({ value }) => value === '' ? undefined : value)
   @IsEnum([
     'mammal',
     'bird',
@@ -63,6 +64,7 @@ export class CreateSpeciesDto {
   habitat?: string;
 
   @IsOptional()
+  @Transform(({ value }) => value === '' ? undefined : value)
   @IsEnum([
     'extinct',
     'extinct_in_wild',
@@ -73,7 +75,7 @@ export class CreateSpeciesDto {
     'least_concern',
     'data_deficient',
     'not_evaluated',
-  ])
+  ], { message: 'conservationStatus must be a valid conservation status or omitted' })
   conservationStatus?: string;
 
   @IsOptional()
@@ -99,4 +101,20 @@ export class CreateSpeciesDto {
   @IsOptional()
   @IsString()
   seoKeywords?: string;
+
+  @IsOptional()
+  @IsObject()
+  mainImage?: {
+    id: string;
+    url: string;
+    galleryId: number;
+  };
+
+  @IsOptional()
+  @IsArray()
+  galleryImages?: Array<{
+    id: string;
+    url: string;
+    galleryId: number;
+  }>;
 }

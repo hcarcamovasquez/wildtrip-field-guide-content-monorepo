@@ -59,12 +59,9 @@ export class NewsService {
 
   async publish(id: number) {
     const article = await this.findOne(id);
-    
-    if (article.hasDraft && article.draftData) {
-      // Apply draft changes before publishing
-      await this.newsRepository.update(id, article.draftData);
+    if (!article.draftData) {
+      throw new NotFoundException('No draft content to publish');
     }
-    
     return this.newsRepository.publish(id);
   }
 
@@ -74,7 +71,10 @@ export class NewsService {
   }
 
   async discardDraft(id: number) {
-    await this.findOne(id);
+    const article = await this.findOne(id);
+    if (!article.draftData) {
+      throw new NotFoundException('No draft content to discard');
+    }
     return this.newsRepository.discardDraft(id);
   }
 }

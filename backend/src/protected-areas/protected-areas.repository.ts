@@ -74,6 +74,18 @@ export class ProtectedAreasRepository {
   async findById(id: number) {
     const db = this.dbService.getDb();
     const [result] = await db.select().from(protectedAreas).where(eq(protectedAreas.id, id));
+    
+    // Log draft data for debugging
+    if (result && result.draftData) {
+      console.log('Protected Areas findById - Draft data:', {
+        id,
+        hasDraft: result.hasDraft,
+        draftData: result.draftData,
+        mainImage: result.draftData.mainImage,
+        galleryImages: result.draftData.galleryImages
+      });
+    }
+    
     return result;
   }
 
@@ -106,32 +118,65 @@ export class ProtectedAreasRepository {
 
   async publish(id: number) {
     const db = this.dbService.getDb();
+    const [current] = await db.select().from(protectedAreas).where(eq(protectedAreas.id, id));
+    
+    if (!current || !current.draftData) {
+      throw new Error('No draft content to publish');
+    }
+
     const [result] = await db
       .update(protectedAreas)
       .set({
-        status: 'published',
-        publishedAt: new Date(),
-        hasDraft: false,
+        ...current.draftData,
         draftData: null,
+        hasDraft: false,
+        draftCreatedAt: null,
+        status: 'published' as const,
+        publishedAt: new Date(),
         updatedAt: new Date(),
       })
       .where(eq(protectedAreas.id, id))
       .returning();
+    
     return result;
   }
 
   async createDraft(id: number, draftData: any) {
     const db = this.dbService.getDb();
+    const [current] = await db.select().from(protectedAreas).where(eq(protectedAreas.id, id));
+    
+    if (!current) {
+      throw new Error('Protected area not found');
+    }
+
+    // Merge with existing draft data (if any) instead of current data
+    const existingDraft = current.draftData || {};
+    const updatedDraft = {
+      ...existingDraft,
+      ...draftData,
+    };
+
+    // Log what we're saving for debugging
+    console.log('Creating/updating protected area draft with data:', {
+      id,
+      draftData,
+      existingDraft,
+      updatedDraft,
+      mainImage: updatedDraft.mainImage,
+      galleryImages: updatedDraft.galleryImages
+    });
+
     const [result] = await db
       .update(protectedAreas)
       .set({
+        draftData: updatedDraft,
         hasDraft: true,
-        draftData,
-        draftCreatedAt: new Date(),
+        draftCreatedAt: current.draftCreatedAt || new Date(),
         updatedAt: new Date(),
       })
       .where(eq(protectedAreas.id, id))
       .returning();
+    
     return result;
   }
 
@@ -140,13 +185,14 @@ export class ProtectedAreasRepository {
     const [result] = await db
       .update(protectedAreas)
       .set({
-        hasDraft: false,
         draftData: null,
+        hasDraft: false,
         draftCreatedAt: null,
         updatedAt: new Date(),
       })
       .where(eq(protectedAreas.id, id))
       .returning();
+    
     return result;
   }
 }

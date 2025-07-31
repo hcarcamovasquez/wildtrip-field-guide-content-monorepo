@@ -1,4 +1,6 @@
 import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { useToast } from '@/hooks/use-toast'
 import TiptapEditor from './TiptapEditor'
 import { richContentToHtml, htmlToRichContent } from '@/lib/utils/tiptap-converter'
 import MediaPickerModal from './MediaPickerModal'
@@ -25,6 +27,7 @@ import LockBanner from './LockBanner'
 import GallerySection from './GallerySection'
 import type { RichContent, ContentBlock, ImageBlock } from '@wildtrip/shared/types'
 import { PROTECTED_AREA_TYPES, CHILE_REGIONS } from '@wildtrip/shared'
+import { apiClient } from '@/lib/api/client'
 
 interface ProtectedAreaFormProps {
   initialData: {
@@ -105,6 +108,9 @@ interface ProtectedAreaFormProps {
 }
 
 export default function ProtectedAreaForm({ initialData, isEditing, areaId, currentUserId }: ProtectedAreaFormProps) {
+  const navigate = useNavigate()
+  const { toast } = useToast()
+  
   // Mezclar datos del draft si existe
   const effectiveData =
     initialData?.hasDraft && initialData?.draftData ? { ...initialData, ...initialData.draftData } : initialData
@@ -206,10 +212,23 @@ export default function ProtectedAreaForm({ initialData, isEditing, areaId, curr
   }
 
   const handleExitEditMode = async () => {
-    await releaseLock()
-    setIsEditMode(false)
-    setShowExitConfirm(false)
-    window.location.href = '/protected-areas'
+    try {
+      await releaseLock()
+      setIsEditMode(false)
+      setShowExitConfirm(false)
+      
+      toast({
+        title: "Modo edición finalizado",
+        description: "Has salido del modo de edición correctamente.",
+      })
+    } catch (error) {
+      console.error('Error releasing lock:', error)
+      toast({
+        title: "Error",
+        description: "No se pudo salir del modo de edición",
+        variant: "destructive",
+      })
+    }
   }
 
   const releaseLock = async () => {
@@ -288,36 +307,27 @@ export default function ProtectedAreaForm({ initialData, isEditing, areaId, curr
     setUpdating(field)
 
     try {
-      const response = await fetch(`/api/manage/protected-areas/${areaId}`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ [field]: value }),
-      })
-
-      if (!response.ok) {
-        throw new Error('Error al guardar')
+      let data
+      
+      // If it's published content, create/update draft
+      if (formData.status === 'published') {
+        data = await apiClient.protectedAreas.createDraft(areaId, { [field]: value })
+      } else {
+        // If it's already a draft, just update it
+        data = await apiClient.protectedAreas.update(areaId, { [field]: value })
       }
-
-      const updatedArea = await response.json()
-      setFormData((prev) => ({
-        ...prev,
-        hasDraft: updatedArea.hasDraft || false,
-        draftData: updatedArea.draftData,
-        draftCreatedAt: updatedArea.draftCreatedAt,
-      }))
 
       setFieldSuccess(field)
       setTimeout(() => setFieldSuccess(null), 3000)
 
-      // Mark that we have local changes if this is a published item
+      // Update hasDraft based on server response
       if (formData.status === 'published') {
-        setHasLocalChanges(true)
-        // If this is the first change on a published item, it creates a draft
-        if (!hasDraft) {
-          setHasDraft(true)
+        if (data.hasDraft !== undefined) {
+          setHasDraft(data.hasDraft)
+          setHasLocalChanges(false)
         }
+        // The form state already has the updated value from local changes
+        // We don't need to update it again from the server response
       }
     } catch (error) {
       console.error(`Error saving ${field}:`, error)
@@ -348,34 +358,17 @@ export default function ProtectedAreaForm({ initialData, isEditing, areaId, curr
 
     try {
       if (formData.status === 'draft') {
-        // Publicar borrador
-        const response = await fetch(`/api/manage/protected-areas/${areaId}`, {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ status: 'published' }),
+        // First time publish
+        await apiClient.protectedAreas.update(areaId, { 
+          status: 'published',
+          publishedAt: new Date().toISOString()
         })
-
-        if (!response.ok) {
-          throw new Error('Error al publicar')
-        }
-
-        window.location.href = '/protected-areas'
+        navigate('/protected-areas')
       } else if (formData.status === 'published' && hasDraft) {
-        // Publicar cambios del borrador
-        const response = await fetch(`/api/manage/protected-areas/${areaId}/publish-draft`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        })
+        // Publish draft changes
+        await apiClient.protectedAreas.publish(areaId)
 
-        if (!response.ok) {
-          throw new Error('Error al publicar cambios')
-        }
-
-        window.location.href = '/protected-areas'
+        navigate('/protected-areas')
       }
 
       // Release lock after publishing
@@ -395,25 +388,45 @@ export default function ProtectedAreaForm({ initialData, isEditing, areaId, curr
     setSaving(true)
 
     try {
-      const response = await fetch(`/api/manage/protected-areas/${areaId}/discard-draft`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+      const updatedProtectedArea = await apiClient.protectedAreas.discardDraft(areaId)
+      
+      // Update the form with published data (no draft)
+      setFormData({
+        ...updatedProtectedArea,
+        mainImage: updatedProtectedArea.mainImage,
+        galleryImages: updatedProtectedArea.galleryImages,
       })
-
-      if (!response.ok) {
-        throw new Error('Error al descartar cambios')
-      }
-
-      // Actualizar el estado local
       setHasDraft(false)
       setHasLocalChanges(false)
-      // Recargar la página para mostrar la versión publicada
-      window.location.reload()
+      
+      // Update editor content with published version
+      const publishedContent = updatedProtectedArea?.richContent?.blocks ? richContentToHtml(updatedProtectedArea.richContent) : ''
+      setEditorContent(publishedContent)
+      
+      // Update gallery images if they exist
+      if (updatedProtectedArea.galleryImages) {
+        const transformedImages = updatedProtectedArea.galleryImages.map(
+          (img: any, index: number) => ({
+            id: img.galleryId || `temp-${index}`,
+            url: img.url,
+            filename: img.url.split('/').pop() || 'image.jpg',
+            _key: img.id || `gallery-${Date.now()}-${index}`,
+          }),
+        )
+        setGalleryImages(transformedImages)
+      }
+      
+      toast({
+        title: "Cambios descartados",
+        description: "Los cambios del borrador han sido descartados correctamente.",
+      })
     } catch (error) {
       console.error('Error discarding draft:', error)
-      alert('Error al descartar los cambios')
+      toast({
+        title: "Error",
+        description: "No se pudieron descartar los cambios",
+        variant: "destructive",
+      })
     } finally {
       setSaving(false)
     }
@@ -441,7 +454,7 @@ export default function ProtectedAreaForm({ initialData, isEditing, areaId, curr
       {lockInfo.isLocked && lockInfo.lockedByUser && (
         <LockBanner
           lockedBy={lockInfo.lockedByUser.name}
-          onClose={() => (window.location.href = '/protected-areas')}
+          onClose={() => navigate('/protected-areas')}
         />
       )}
 

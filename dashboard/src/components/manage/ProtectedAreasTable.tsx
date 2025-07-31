@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import {
   Edit,
   Eye,
@@ -77,6 +78,7 @@ export default function ProtectedAreasTable({
   isLoading,
   error,
 }: ProtectedAreasTableProps) {
+  const navigate = useNavigate()
   const [deleteDialog, setDeleteDialog] = useState<{ open: boolean; areaId: number | null }>({
     open: false,
     areaId: null,
@@ -152,7 +154,7 @@ export default function ProtectedAreasTable({
                     try {
                       const response = await apiClient.protectedAreas.create(data)
                       if (response && response.id) {
-                        window.location.href = `/protected-areas/${response.id}/edit?new=true`
+                        navigate(`/protected-areas/${response.id}/edit?new=true`)
                       } else {
                         onRefresh()
                       }
@@ -249,7 +251,7 @@ export default function ProtectedAreasTable({
                       <tr 
                         key={area.id} 
                         className="border-b hover:bg-muted/50 cursor-pointer"
-                        onClick={() => window.location.href = `/protected-areas/${area.id}/edit`}
+                        onClick={() => navigate(`/protected-areas/${area.id}/edit`)}
                       >
                         <td className="px-6 py-3 pr-4">
                           <div className="flex items-center gap-3">
@@ -307,11 +309,9 @@ export default function ProtectedAreasTable({
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
-                              <DropdownMenuItem asChild>
-                                <a href={`/protected-areas/${area.id}/edit`}>
-                                  <Edit className="mr-2 h-4 w-4" />
-                                  Editar
-                                </a>
+                              <DropdownMenuItem onClick={() => navigate(`/protected-areas/${area.id}/edit`)}>
+                                <Edit className="mr-2 h-4 w-4" />
+                                Editar
                               </DropdownMenuItem>
                               {onPreview && (
                                 <DropdownMenuItem

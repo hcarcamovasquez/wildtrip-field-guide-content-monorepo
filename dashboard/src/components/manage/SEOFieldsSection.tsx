@@ -4,7 +4,7 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Sparkles, Loader2 } from 'lucide-react'
+import { Sparkles, Loader2, AlertCircle } from 'lucide-react'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { apiClient } from '@/lib/api/client'
 
@@ -106,6 +106,13 @@ export default function SEOFieldsSection({
             <AlertDescription>{error}</AlertDescription>
           </Alert>
         )}
+
+        <Alert>
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>
+            Las respuestas generadas por IA pueden no ser precisas. Por favor, revisa y verifica el contenido antes de publicar.
+          </AlertDescription>
+        </Alert>
 
         <div className="space-y-2">
           <Label htmlFor="seo-title">

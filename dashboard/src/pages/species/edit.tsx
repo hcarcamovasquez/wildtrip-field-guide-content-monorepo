@@ -17,7 +17,17 @@ export function SpeciesEditPage() {
 
   const { data: species, isLoading, error } = useQuery({
     queryKey: ['species', id],
-    queryFn: () => apiClient.species.findById(Number(id)),
+    queryFn: async () => {
+      const data = await apiClient.species.findById(Number(id))
+      console.log('Species data received from API:', {
+        id: data.id,
+        hasDraft: data.hasDraft,
+        draftData: data.draftData,
+        mainImage: data.mainImage,
+        draftMainImage: data.draftData?.mainImage
+      })
+      return data
+    },
     enabled: !!id,
   })
 

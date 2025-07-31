@@ -71,6 +71,17 @@ export class NewsRepository {
   async findById(id: number) {
     const db = this.dbService.getDb();
     const [result] = await db.select().from(news).where(eq(news.id, id));
+    
+    // Log draft data for debugging
+    if (result && result.draftData) {
+      console.log('News findById - Draft data:', {
+        id,
+        hasDraft: result.hasDraft,
+        draftData: result.draftData,
+        mainImage: result.draftData.mainImage
+      });
+    }
+    
     return result;
   }
 
@@ -103,32 +114,64 @@ export class NewsRepository {
 
   async publish(id: number) {
     const db = this.dbService.getDb();
+    const [current] = await db.select().from(news).where(eq(news.id, id));
+    
+    if (!current || !current.draftData) {
+      throw new Error('No draft content to publish');
+    }
+
     const [result] = await db
       .update(news)
       .set({
-        status: 'published',
-        publishedAt: new Date(),
-        hasDraft: false,
+        ...current.draftData,
         draftData: null,
+        hasDraft: false,
+        draftCreatedAt: null,
+        status: 'published' as const,
+        publishedAt: new Date(),
         updatedAt: new Date(),
       })
       .where(eq(news.id, id))
       .returning();
+    
     return result;
   }
 
   async createDraft(id: number, draftData: any) {
     const db = this.dbService.getDb();
+    const [current] = await db.select().from(news).where(eq(news.id, id));
+    
+    if (!current) {
+      throw new Error('News not found');
+    }
+
+    // Merge with existing draft data (if any) instead of current data
+    const existingDraft = current.draftData || {};
+    const updatedDraft = {
+      ...existingDraft,
+      ...draftData,
+    };
+
+    // Log what we're saving for debugging
+    console.log('Creating/updating news draft with data:', {
+      id,
+      draftData,
+      existingDraft,
+      updatedDraft,
+      mainImage: updatedDraft.mainImage
+    });
+
     const [result] = await db
       .update(news)
       .set({
+        draftData: updatedDraft,
         hasDraft: true,
-        draftData,
-        draftCreatedAt: new Date(),
+        draftCreatedAt: current.draftCreatedAt || new Date(),
         updatedAt: new Date(),
       })
       .where(eq(news.id, id))
       .returning();
+    
     return result;
   }
 
@@ -137,13 +180,14 @@ export class NewsRepository {
     const [result] = await db
       .update(news)
       .set({
-        hasDraft: false,
         draftData: null,
+        hasDraft: false,
         draftCreatedAt: null,
         updatedAt: new Date(),
       })
       .where(eq(news.id, id))
       .returning();
+    
     return result;
   }
 }

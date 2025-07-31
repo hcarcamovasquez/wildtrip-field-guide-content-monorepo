@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import {
   Edit,
   Eye,
@@ -81,6 +82,7 @@ const getConservationVariant = (status: string): 'default' | 'secondary' | 'outl
 }
 
 export default function SpeciesTable({ canDelete = false }: SpeciesTableProps) {
+  const navigate = useNavigate()
   const [species, setSpecies] = useState<SpeciesWithBase[]>([])
   const [pagination, setPagination] = useState({
     page: 1,
@@ -260,7 +262,7 @@ export default function SpeciesTable({ canDelete = false }: SpeciesTableProps) {
                       <tr 
                         key={item.id} 
                         className="border-b hover:bg-muted/50 cursor-pointer"
-                        onClick={() => window.location.href = `/species/${item.id}/edit`}
+                        onClick={() => navigate(`/species/${item.id}/edit`)}
                       >
                         <td className="px-6 py-3 pr-4">
                           <div className="flex items-center gap-3">
@@ -417,7 +419,7 @@ export default function SpeciesTable({ canDelete = false }: SpeciesTableProps) {
           onClose={() => setShowCreateModal(false)}
           onSuccess={(speciesId) => {
             setShowCreateModal(false)
-            window.location.href = `/species/${speciesId}/edit?new=true`
+            navigate(`/species/${speciesId}/edit?new=true`)
           }}
         />
       )}

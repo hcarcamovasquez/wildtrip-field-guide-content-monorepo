@@ -59,12 +59,9 @@ export class ProtectedAreasService {
 
   async publish(id: number) {
     const area = await this.findOne(id);
-    
-    if (area.hasDraft && area.draftData) {
-      // Apply draft changes before publishing
-      await this.protectedAreasRepository.update(id, area.draftData);
+    if (!area.draftData) {
+      throw new NotFoundException('No draft content to publish');
     }
-    
     return this.protectedAreasRepository.publish(id);
   }
 
@@ -74,7 +71,10 @@ export class ProtectedAreasService {
   }
 
   async discardDraft(id: number) {
-    await this.findOne(id);
+    const area = await this.findOne(id);
+    if (!area.draftData) {
+      throw new NotFoundException('No draft content to discard');
+    }
     return this.protectedAreasRepository.discardDraft(id);
   }
 }
