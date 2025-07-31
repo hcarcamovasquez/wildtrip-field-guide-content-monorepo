@@ -161,8 +161,8 @@ export default function FileDetails({ file, onClose, onUpdate }: FileDetailsProp
   // Desktop: Sidebar within layout, Mobile: Sheet drawer
   if (isDesktop) {
     return (
-      <div className="w-96 border-l bg-background flex-shrink-0">
-        <div className="flex h-full flex-col">
+      <div className="w-96 border-l bg-background flex-shrink-0 h-full overflow-hidden">
+        <div className="flex h-full flex-col overflow-hidden">
           {/* Header */}
           <div className="flex-shrink-0 border-b px-6 py-4">
             <div className="flex items-center justify-between">

@@ -72,8 +72,6 @@ export function GalleryPage() {
   }
 
   return (
-    <div className="h-full">
-      <GalleryExplorer initialData={initialData} />
-    </div>
+    <GalleryExplorer initialData={initialData} />
   )
 }

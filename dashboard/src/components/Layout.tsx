@@ -36,8 +36,8 @@ export function Layout({ children }: LayoutProps) {
   const logo = import.meta.env.VITE_R2_PUBLIC_URL + '/colored_logo.svg'
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <header className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 sticky top-0 z-50">
+    <div className="h-full flex flex-col">
+      <header className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 sticky top-0 z-50 flex-shrink-0">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <Link to="/" className="flex items-center">
@@ -84,10 +84,16 @@ export function Layout({ children }: LayoutProps) {
           </div>
         </div>
       </header>
-      <main className="flex-1 bg-gray-50 dark:bg-gray-950">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          {children}
-        </div>
+      <main className="flex-1 bg-gray-50 dark:bg-gray-950 flex flex-col overflow-hidden">
+        {location.pathname === '/gallery' ? (
+          <div className="flex-1 overflow-hidden">
+            {children}
+          </div>
+        ) : (
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            {children}
+          </div>
+        )}
       </main>
     </div>
   )

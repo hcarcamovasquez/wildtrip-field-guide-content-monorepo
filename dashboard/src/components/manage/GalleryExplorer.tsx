@@ -405,9 +405,9 @@ export default function GalleryExplorer({ initialData }: GalleryExplorerProps) {
   })
 
   return (
-    <div className="flex h-full">
+    <div className="flex h-full overflow-hidden">
       {/* Main content area */}
-      <div className="flex flex-1 flex-col">
+      <div className="flex flex-1 flex-col h-full overflow-hidden">
         {/* Fixed Header Container */}
         <div className="flex-shrink-0 border-b bg-background">
           {/* Header */}
@@ -520,9 +520,9 @@ export default function GalleryExplorer({ initialData }: GalleryExplorerProps) {
         </div>
 
         {/* File list/grid */}
-        <div className="relative flex-1 overflow-auto">
+        <div className="flex-1 overflow-y-auto">
           {viewMode === 'list' ? (
-            <div className="h-full">
+            <div>
               <table className="w-full">
                 <thead className="sticky top-0 z-10 bg-background shadow-sm">
                   <tr className="border-b text-left">
