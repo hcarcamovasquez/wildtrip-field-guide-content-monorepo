@@ -15,7 +15,7 @@ export function ProtectedAreaEditPage() {
   const isNew = searchParams.get('new') === 'true'
   const currentUserId = user?.publicMetadata?.userId?.toString() || ''
 
-  const { data: area, isLoading, error, refetch } = useQuery({
+  const { data: area, isLoading, error } = useQuery({
     queryKey: ['protected-area', id],
     queryFn: async () => {
       const result = await apiClient.protectedAreas.findById(Number(id))

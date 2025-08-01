@@ -4,7 +4,6 @@ import { useQuery } from '@tanstack/react-query'
 import { apiClient } from '@/lib/api/client'
 import ProtectedAreaManagement from '@/components/manage/ProtectedAreaManagement'
 import { ProtectedAreaEditPage } from './edit'
-import { Loader2 } from 'lucide-react'
 
 function ProtectedAreasListPage() {
   const { user } = useUser()

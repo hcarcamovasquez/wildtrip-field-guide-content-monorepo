@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import {
   AlertCircle,
@@ -235,7 +235,7 @@ export default function SpeciesForm({ species, currentUserId, isEditing }: Speci
       console.log('Lock status response:', data)
 
       if (data && data.lockedBy !== null) {
-        if (String(data.lockedBy) === currentUserId) {
+        if (String(data.lockedBy) === String(currentUserId)) {
           // User already has the lock, restore edit mode
           console.log('User has lock, restoring edit mode')
           setIsEditMode(true)
@@ -448,7 +448,7 @@ export default function SpeciesForm({ species, currentUserId, isEditing }: Speci
       toast({
         title: "Error",
         description: "No se pudo publicar el contenido",
-        variant: "destructive",
+        type: "destructive",
       })
     } finally {
       setIsSaving(false)
@@ -495,7 +495,7 @@ export default function SpeciesForm({ species, currentUserId, isEditing }: Speci
       toast({
         title: "Error",
         description: "No se pudieron descartar los cambios",
-        variant: "destructive",
+        type: "destructive",
       })
     } finally {
       setIsSaving(false)
@@ -1131,7 +1131,7 @@ export default function SpeciesForm({ species, currentUserId, isEditing }: Speci
                   toast({
                     title: "Error",
                     description: "No se pudo salir del modo de edición",
-                    variant: "destructive",
+                    type: "destructive",
                   })
                 }
               }}

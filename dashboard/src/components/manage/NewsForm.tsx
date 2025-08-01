@@ -187,7 +187,7 @@ export default function NewsForm({ initialData, isEditing = false, newsId, curre
           // Someone else has the lock
           setLockInfo({
             isLocked: true,
-            lockedByUser: { name: 'otro usuario' },
+            lockedByUser: { id: 0, name: 'otro usuario' },
           })
           setLockError(`Este contenido está siendo editado por otro usuario`)
         }
@@ -243,7 +243,7 @@ export default function NewsForm({ initialData, isEditing = false, newsId, curre
       toast({
         title: "Error",
         description: "No se pudo salir del modo de edición",
-        variant: "destructive",
+        type: "destructive",
       })
     }
   }
@@ -329,13 +329,13 @@ export default function NewsForm({ initialData, isEditing = false, newsId, curre
         navigate('/news')
       } else if (formData.status === 'draft') {
         // First time publish
-        updatedNews = await apiClient.news.update(newsId, { 
+        updatedNews = await apiClient.news.update(newsId!, { 
           status: 'published', 
           publishedAt: new Date().toISOString() 
         })
       } else if (formData.status === 'published' && hasDraft) {
         // Publish draft changes
-        updatedNews = await apiClient.news.publish(newsId)
+        updatedNews = await apiClient.news.publish(newsId!)
       }
 
       if (updatedNews && isEditing) {
@@ -358,7 +358,7 @@ export default function NewsForm({ initialData, isEditing = false, newsId, curre
       toast({
         title: "Error",
         description: "No se pudo publicar el contenido",
-        variant: "destructive",
+        type: "destructive",
       })
     } finally {
       setSaving(false)
@@ -370,7 +370,7 @@ export default function NewsForm({ initialData, isEditing = false, newsId, curre
     setSaving(true)
 
     try {
-      const updatedNews = await apiClient.news.discardDraft(newsId)
+      const updatedNews = await apiClient.news.discardDraft(newsId!)
       console.log('Draft discarded successfully', updatedNews)
       
       // Clean the data to avoid null/empty values that cause validation errors
@@ -394,7 +394,7 @@ export default function NewsForm({ initialData, isEditing = false, newsId, curre
       toast({
         title: "Error",
         description: "No se pudieron descartar los cambios",
-        variant: "destructive",
+        type: "destructive",
       })
     } finally {
       setSaving(false)

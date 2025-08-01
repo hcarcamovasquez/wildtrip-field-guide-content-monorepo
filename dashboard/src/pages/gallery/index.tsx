@@ -1,7 +1,6 @@
 import { useUser } from '@clerk/clerk-react'
 import { useQuery } from '@tanstack/react-query'
 import { useSearchParams } from 'react-router-dom'
-import { Loader2 } from 'lucide-react'
 import GalleryExplorer from '@/components/manage/GalleryExplorer'
 import { apiClient } from '@/lib/api/client'
 

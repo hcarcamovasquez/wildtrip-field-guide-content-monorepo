@@ -223,7 +223,7 @@ export default function ProtectedAreaForm({ initialData, isEditing, areaId, curr
           // Someone else has the lock
           setLockInfo({
             isLocked: true,
-            lockedByUser: { name: 'otro usuario' },
+            lockedByUser: { id: '0', name: 'otro usuario' },
           })
           setLockError(`Este contenido está siendo editado por otro usuario`)
         }
@@ -295,7 +295,7 @@ export default function ProtectedAreaForm({ initialData, isEditing, areaId, curr
       toast({
         title: "Error",
         description: "No se pudo salir del modo de edición",
-        variant: "destructive",
+        type: "destructive",
       })
     }
   }
@@ -464,7 +464,7 @@ export default function ProtectedAreaForm({ initialData, isEditing, areaId, curr
       toast({
         title: "Error",
         description: "No se pudo publicar el contenido",
-        variant: "destructive",
+        type: "destructive",
       })
     } finally {
       setSaving(false)
@@ -513,7 +513,7 @@ export default function ProtectedAreaForm({ initialData, isEditing, areaId, curr
       toast({
         title: "Error",
         description: "No se pudieron descartar los cambios",
-        variant: "destructive",
+        type: "destructive",
       })
     } finally {
       setSaving(false)

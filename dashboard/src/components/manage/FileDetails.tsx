@@ -375,7 +375,7 @@ export default function FileDetails({ file, onClose, onUpdate, onDelete }: FileD
                         <div className="flex items-center gap-2">
                           <FileText className="h-4 w-4 text-muted-foreground" />
                           <dt className="text-muted-foreground">Tamaño:</dt>
-                          <dd>{formatFileSize(file.size)}</dd>
+                          <dd>{file.size ? formatFileSize(file.size) : 'N/A'}</dd>
                         </div>
                         {file.width && file.height && (
                           <div className="flex items-center gap-2">
@@ -642,13 +642,13 @@ export default function FileDetails({ file, onClose, onUpdate, onDelete }: FileD
               <div className="flex justify-between">
                 <span>Creado</span>
                 <span className="font-medium text-foreground">
-                  {formatDate(file.createdAt)}
+                  {formatDate(typeof file.createdAt === 'string' ? file.createdAt : file.createdAt.toISOString())}
                 </span>
               </div>
               <div className="flex justify-between">
                 <span>Modificado</span>
                 <span className="font-medium text-foreground">
-                  {formatDate(file.updatedAt)}
+                  {formatDate(typeof file.updatedAt === 'string' ? file.updatedAt : file.updatedAt.toISOString())}
                 </span>
               </div>
             </div>

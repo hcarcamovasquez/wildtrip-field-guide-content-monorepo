@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Check, Upload, Search, Grid, List, Image as ImageIcon, CheckCircle2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import {
@@ -16,7 +16,7 @@ import { ScrollArea } from '@/components/ui/scroll-area'
 import { validateImageFile, convertToWebP } from '@/lib/utils/image-upload'
 import { getOptimizedImageUrl } from '@/lib/utils/cloudflare-images'
 import { apiClient } from '@/lib/api/client'
-import { uploadFileInChunks, shouldUseChunkedUpload, formatUploadProgress } from '@/lib/utils/chunked-upload'
+import { uploadFileInChunks, shouldUseChunkedUpload } from '@/lib/utils/chunked-upload'
 
 interface MediaItem {
   id: number
@@ -54,7 +54,6 @@ export default function MediaPickerModal({ open, onOpenChange, onSelect, multiSe
   const [isDragOver, setIsDragOver] = useState(false)
   const [showSuccess, setShowSuccess] = useState(false)
   const [uploadStats, setUploadStats] = useState({ total: 0, completed: 0 })
-  const scrollAreaRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     if (open) {

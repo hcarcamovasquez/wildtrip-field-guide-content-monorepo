@@ -3,7 +3,6 @@ import { useUser } from '@clerk/clerk-react'
 import { useSearchParams } from 'react-router-dom'
 import UsersTable from '@/components/manage/UsersTable'
 import { apiClient } from '@/lib/api/client'
-import { Loader2 } from 'lucide-react'
 
 export function UsersPage() {
   const { user } = useUser()

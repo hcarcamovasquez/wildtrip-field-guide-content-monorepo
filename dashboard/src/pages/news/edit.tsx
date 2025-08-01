@@ -15,7 +15,7 @@ export function NewsEditPage() {
   const isNew = searchParams.get('new') === 'true'
   const currentUserId = Number(user?.publicMetadata?.userId) || 0
 
-  const { data: news, isLoading, error, refetch } = useQuery({
+  const { data: news, isLoading, error } = useQuery({
     queryKey: ['news', id],
     queryFn: () => apiClient.news.findById(Number(id)),
     enabled: !!id,

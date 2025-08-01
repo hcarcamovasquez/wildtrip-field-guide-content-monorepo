@@ -41,7 +41,7 @@ export async function uploadFileInChunks(options: ChunkedUploadOptions): Promise
       const media = await apiClient.gallery.upload(file, { folderId, title, description, altText, tags })
       return { success: true, media }
     } catch (error) {
-      return { success: false, error: error.message || 'Upload failed' }
+      return { success: false, error: error instanceof Error ? error.message : 'Upload failed' }
     }
   }
 
@@ -95,7 +95,7 @@ export async function uploadFileInChunks(options: ChunkedUploadOptions): Promise
 
   } catch (error) {
     console.error('Chunked upload failed:', error)
-    return { success: false, error: error.message || 'Chunked upload failed' }
+    return { success: false, error: error instanceof Error ? error.message : 'Chunked upload failed' }
   }
 }
 
