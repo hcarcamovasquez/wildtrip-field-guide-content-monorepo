@@ -2,15 +2,10 @@
   "$schema": "https://railway.app/railway.schema.json",
   "build": {
     "builder": "NIXPACKS",
-    "nixpacksConfigPath": "backend/nixpacks.toml",
-    "buildCommand": "cd .. && pnpm install --frozen-lockfile && pnpm --filter=shared build && cd backend && pnpm build",
-    "watchPatterns": [
-      "/backend/**",
-      "/shared/**"
-    ]
+    "buildCommand": "cd .. && npm install -g pnpm && pnpm install --frozen-lockfile && pnpm --filter=shared build && pnpm --filter=backend build"
   },
   "deploy": {
-    "startCommand": "cd backend && pnpm start:prod",
+    "startCommand": "cd .. && pnpm --filter=backend start:prod",
     "healthcheckPath": "/health",
     "healthcheckTimeout": 300,
     "restartPolicyType": "ON_FAILURE",
