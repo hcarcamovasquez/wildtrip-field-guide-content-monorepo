@@ -17,7 +17,7 @@
     "start": "pnpm run --parallel start",
     "start:web": "pnpm run --filter web start",
     "start:backend": "pnpm run --filter backend start:prod",
-    "start:dashboard": "pnpm run --filter dashboard preview",
+    "start:dashboard": "pnpm run --filter dashboard start",
     "lint": "pnpm run --parallel lint",
     "format": "pnpm run --parallel format",
     "type-check": "pnpm run --parallel type-check",
