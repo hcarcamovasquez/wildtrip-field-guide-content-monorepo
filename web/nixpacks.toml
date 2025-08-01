@@ -1,0 +1,14 @@
+[phases.setup]
+nixPkgs = ['nodejs_22', 'pnpm-10_x']
+
+[phases.install]
+cmds = ['cd .. && pnpm install --frozen-lockfile']
+
+[phases.build]
+cmds = ['cd .. && pnpm --filter=shared build && cd web && pnpm build']
+
+[start]
+cmd = 'cd web && node ./dist/server/entry.mjs'
+
+[variables]
+NODE_ENV = 'production'

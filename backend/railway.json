@@ -2,6 +2,7 @@
   "$schema": "https://railway.app/railway.schema.json",
   "build": {
     "builder": "NIXPACKS",
+    "nixpacksConfigPath": "backend/nixpacks.toml",
     "buildCommand": "cd .. && pnpm install --frozen-lockfile && pnpm --filter=shared build && cd backend && pnpm build",
     "watchPatterns": [
       "/backend/**",
