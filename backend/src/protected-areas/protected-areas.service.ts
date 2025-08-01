@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { ProtectedAreasRepository } from './protected-areas.repository';
 import { CreateProtectedAreaDto } from './dto/create-protected-area.dto';
 import { UpdateProtectedAreaDto } from './dto/update-protected-area.dto';
@@ -58,11 +58,17 @@ export class ProtectedAreasService {
   }
 
   async publish(id: number) {
-    const area = await this.findOne(id);
-    if (!area.draftData) {
-      throw new NotFoundException('No draft content to publish');
+    try {
+      return await this.protectedAreasRepository.publish(id);
+    } catch (error) {
+      if (error.message === 'Protected area not found') {
+        throw new NotFoundException('Protected area not found');
+      }
+      if (error.message === 'Nothing to publish') {
+        throw new BadRequestException('Protected area is already published and has no pending changes');
+      }
+      throw error;
     }
-    return this.protectedAreasRepository.publish(id);
   }
 
   async createDraft(id: number, draftData: UpdateProtectedAreaDto) {

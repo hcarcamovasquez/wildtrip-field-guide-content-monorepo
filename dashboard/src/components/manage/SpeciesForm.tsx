@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import {
   AlertCircle,
   Check,
@@ -123,6 +124,7 @@ const cleanSpeciesData = (data: any): any => {
 
 export default function SpeciesForm({ species, currentUserId, isEditing }: SpeciesFormProps) {
   const { toast } = useToast()
+  const queryClient = useQueryClient()
   
   // Determine if we're editing a draft of published content
   const isEditingDraft = species.status === 'published' && species.hasDraft
@@ -410,18 +412,24 @@ export default function SpeciesForm({ species, currentUserId, isEditing }: Speci
   const handlePublish = async () => {
     setShowPublishDialog(false)
     setIsSaving(true)
+    console.log('Starting publish process for species:', species.id, {
+      status: species.status,
+      hasDraft: hasDraft
+    });
+    
     try {
       let updatedSpecies
-      if (species.status === 'published' && hasDraft) {
-        // Publish draft changes
+      if (species.status === 'draft') {
+        // First time publish - use publish endpoint
+        console.log('First time publish - calling publish endpoint');
         updatedSpecies = await apiClient.species.publish(species.id)
-      } else {
-        // First time publish - update status
-        updatedSpecies = await apiClient.species.update(species.id, { 
-          status: 'published', 
-          publishedAt: new Date().toISOString() 
-        })
+      } else if (species.status === 'published' && hasDraft) {
+        // Publish draft changes
+        console.log('Publishing draft changes');
+        updatedSpecies = await apiClient.species.publish(species.id)
       }
+
+      console.log('Publish response:', updatedSpecies);
 
       // Clean and update form data
       const cleanedData = cleanSpeciesData(updatedSpecies)
@@ -432,6 +440,9 @@ export default function SpeciesForm({ species, currentUserId, isEditing }: Speci
         title: "Contenido publicado",
         description: "Los cambios han sido publicados correctamente.",
       })
+      
+      // Invalidar el caché de la lista para reflejar el cambio de estado
+      queryClient.invalidateQueries({ queryKey: ['species'] })
     } catch (error) {
       console.error('Error publishing species:', error)
       toast({

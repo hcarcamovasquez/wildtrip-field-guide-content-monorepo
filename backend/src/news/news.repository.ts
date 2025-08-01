@@ -116,25 +116,45 @@ export class NewsRepository {
     const db = this.dbService.getDb();
     const [current] = await db.select().from(news).where(eq(news.id, id));
     
-    if (!current || !current.draftData) {
-      throw new Error('No draft content to publish');
+    if (!current) {
+      throw new Error('News not found');
     }
 
-    const [result] = await db
-      .update(news)
-      .set({
-        ...current.draftData,
-        draftData: null,
-        hasDraft: false,
-        draftCreatedAt: null,
-        status: 'published' as const,
-        publishedAt: new Date(),
-        updatedAt: new Date(),
-      })
-      .where(eq(news.id, id))
-      .returning();
+    // Si hay draft data, publicar el draft
+    if (current.draftData) {
+      const [result] = await db
+        .update(news)
+        .set({
+          ...current.draftData,
+          draftData: null,
+          hasDraft: false,
+          draftCreatedAt: null,
+          status: 'published' as const,
+          publishedAt: new Date(),
+          updatedAt: new Date(),
+        })
+        .where(eq(news.id, id))
+        .returning();
+      
+      return result;
+    } 
+    // Si no hay draft pero está en borrador, simplemente publicar
+    else if (current.status === 'draft') {
+      const [result] = await db
+        .update(news)
+        .set({
+          status: 'published' as const,
+          publishedAt: new Date(),
+          updatedAt: new Date(),
+        })
+        .where(eq(news.id, id))
+        .returning();
+      
+      return result;
+    }
     
-    return result;
+    // Si ya está publicado y no hay draft, no hay nada que publicar
+    throw new Error('Nothing to publish');
   }
 
   async createDraft(id: number, draftData: any) {

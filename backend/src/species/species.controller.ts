@@ -68,6 +68,7 @@ export class SpeciesController {
   @UseGuards(ClerkAuthGuard, RolesGuard)
   @Roles('admin', 'content_editor', 'species_editor')
   publish(@Param('id') id: string) {
+    console.log('Species publish endpoint called for id:', id);
     return this.speciesService.publish(+id);
   }
 

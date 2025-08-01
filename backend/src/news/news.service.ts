@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { NewsRepository } from './news.repository';
 import { CreateNewsDto } from './dto/create-news.dto';
 import { UpdateNewsDto } from './dto/update-news.dto';
@@ -58,11 +58,17 @@ export class NewsService {
   }
 
   async publish(id: number) {
-    const article = await this.findOne(id);
-    if (!article.draftData) {
-      throw new NotFoundException('No draft content to publish');
+    try {
+      return await this.newsRepository.publish(id);
+    } catch (error) {
+      if (error.message === 'News not found') {
+        throw new NotFoundException('News article not found');
+      }
+      if (error.message === 'Nothing to publish') {
+        throw new BadRequestException('News article is already published and has no pending changes');
+      }
+      throw error;
     }
-    return this.newsRepository.publish(id);
   }
 
   async createDraft(id: number, draftData: UpdateNewsDto) {

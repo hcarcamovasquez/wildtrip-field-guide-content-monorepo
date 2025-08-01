@@ -115,28 +115,61 @@ export class SpeciesRepository {
   }
 
   async publish(id: number) {
+    console.log('Species repository publish called for id:', id);
     const db = this.dbService.getDb();
     const [current] = await db.select().from(species).where(eq(species.id, id));
     
-    if (!current || !current.draftData) {
-      throw new Error('No draft content to publish');
+    console.log('Current species data:', {
+      id: current?.id,
+      status: current?.status,
+      hasDraft: current?.hasDraft,
+      draftData: current?.draftData ? 'Has draft data' : 'No draft data'
+    });
+    
+    if (!current) {
+      throw new Error('Species not found');
     }
 
-    const [result] = await db
-      .update(species)
-      .set({
-        ...current.draftData,
-        draftData: null,
-        hasDraft: false,
-        draftCreatedAt: null,
-        status: 'published' as const,
-        publishedAt: new Date(),
-        updatedAt: new Date(),
-      })
-      .where(eq(species.id, id))
-      .returning();
+    // Si hay draft data, publicar el draft
+    if (current.draftData) {
+      console.log('Publishing with draft data');
+      const [result] = await db
+        .update(species)
+        .set({
+          ...current.draftData,
+          draftData: null,
+          hasDraft: false,
+          draftCreatedAt: null,
+          status: 'published' as const,
+          publishedAt: new Date(),
+          updatedAt: new Date(),
+        })
+        .where(eq(species.id, id))
+        .returning();
+      
+      console.log('Published with draft data, result status:', result.status);
+      return result;
+    } 
+    // Si no hay draft pero está en borrador, simplemente publicar
+    else if (current.status === 'draft') {
+      console.log('Publishing draft without draft data');
+      const [result] = await db
+        .update(species)
+        .set({
+          status: 'published' as const,
+          publishedAt: new Date(),
+          updatedAt: new Date(),
+        })
+        .where(eq(species.id, id))
+        .returning();
+      
+      console.log('Published draft, result status:', result.status);
+      return result;
+    }
     
-    return result;
+    // Si ya está publicado y no hay draft, no hay nada que publicar
+    console.log('Nothing to publish - already published without draft');
+    throw new Error('Nothing to publish');
   }
 
   async createDraft(id: number, draftData: any) {

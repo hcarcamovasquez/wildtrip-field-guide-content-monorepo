@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useToast } from '@/hooks/use-toast'
+import { useQueryClient } from '@tanstack/react-query'
 import TiptapEditor from './TiptapEditor'
 import { richContentToHtml, htmlToRichContent } from '@/lib/utils/tiptap-converter'
 import MediaPickerModal from './MediaPickerModal'
@@ -136,6 +137,7 @@ const cleanProtectedAreaData = (data: any): any => {
 export default function ProtectedAreaForm({ initialData, isEditing, areaId, currentUserId }: ProtectedAreaFormProps) {
   const navigate = useNavigate()
   const { toast } = useToast()
+  const queryClient = useQueryClient()
   
   // Mezclar datos del draft si existe
   const effectiveData =
@@ -453,6 +455,9 @@ export default function ProtectedAreaForm({ initialData, isEditing, areaId, curr
           title: "Contenido publicado",
           description: "Los cambios han sido publicados correctamente.",
         })
+        
+        // Invalidar el caché de la lista para reflejar el cambio de estado
+        queryClient.invalidateQueries({ queryKey: ['protected-areas'] })
       }
     } catch (error) {
       console.error('Error publishing:', error)

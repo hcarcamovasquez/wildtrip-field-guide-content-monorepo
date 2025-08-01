@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { SpeciesRepository } from './species.repository';
 import { CreateSpeciesDto } from './dto/create-species.dto';
 import { UpdateSpeciesDto } from './dto/update-species.dto';
@@ -55,11 +55,21 @@ export class SpeciesService {
   }
 
   async publish(id: number) {
-    const species = await this.findOne(id);
-    if (!species.draftData) {
-      throw new NotFoundException('No draft content to publish');
+    console.log('Species service publish called for id:', id);
+    try {
+      const result = await this.speciesRepository.publish(id);
+      console.log('Species service publish result:', result);
+      return result;
+    } catch (error) {
+      console.error('Species service publish error:', error);
+      if (error.message === 'Species not found') {
+        throw new NotFoundException('Species not found');
+      }
+      if (error.message === 'Nothing to publish') {
+        throw new BadRequestException('Species is already published and has no pending changes');
+      }
+      throw error;
     }
-    return this.speciesRepository.publish(id);
   }
 
   async createDraft(id: number, draftData: UpdateSpeciesDto) {

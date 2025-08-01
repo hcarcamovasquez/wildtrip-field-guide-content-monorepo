@@ -240,9 +240,10 @@ export class APIClient {
 }
 
 // Create singleton instance
-// Always use the full API URL from environment variable
+// In development, use empty string to leverage Vite proxy
+// In production, use the full API URL from environment variable
 export const apiClient = new APIClient(
-  import.meta.env.VITE_API_URL || 'http://localhost:3000'
+  import.meta.env.DEV ? '' : (import.meta.env.VITE_API_URL || 'http://localhost:3000')
 )
 
 // Hook to use API client with auth

@@ -1,3 +1,4 @@
+import { useQueryClient } from '@tanstack/react-query'
 import TiptapEditor from './TiptapEditor'
 import { richContentToHtml, htmlToRichContent } from '@/lib/utils/tiptap-converter'
 import MediaPickerModal from './MediaPickerModal'
@@ -105,6 +106,7 @@ const cleanNewsData = (data: any): any => {
 export default function NewsForm({ initialData, isEditing = false, newsId, currentUserId }: NewsFormProps) {
   const navigate = useNavigate()
   const { toast } = useToast()
+  const queryClient = useQueryClient()
   const [saving, setSaving] = useState(false)
   const [showDiscardDialog, setShowDiscardDialog] = useState(false)
   const [isEditMode, setIsEditMode] = useState(false)
@@ -347,6 +349,9 @@ export default function NewsForm({ initialData, isEditing = false, newsId, curre
           title: "Contenido publicado",
           description: "Los cambios han sido publicados correctamente.",
         })
+        
+        // Invalidar el caché de la lista para reflejar el cambio de estado
+        queryClient.invalidateQueries({ queryKey: ['news'] })
       }
     } catch (error) {
       console.error('Error publishing:', error)
