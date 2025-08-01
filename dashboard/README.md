@@ -9,6 +9,7 @@ Panel de administración para la gestión de contenido de la Guía de Campo de W
 - **Estilos**: Tailwind CSS v4
 - **Editor**: TipTap (texto enriquecido)
 - **Autenticación**: Clerk
+- **Estado**: TanStack Query (React Query)
 - **Gestión**: CRUD completo para todas las entidades
 
 ## 📋 Requisitos
@@ -62,19 +63,26 @@ dashboard/
 ├── src/
 │   ├── pages/              # Páginas de React Router
 │   │   ├── species/        # Gestión de especies
+│   │   │   ├── index.tsx   # Lista de especies
+│   │   │   └── edit.tsx    # Editar especie
 │   │   ├── protected-areas/ # Gestión de áreas protegidas
 │   │   ├── news/           # Gestión de noticias
 │   │   ├── gallery/        # Gestión de galería
 │   │   └── users/          # Gestión de usuarios
 │   ├── components/         
 │   │   ├── manage/         # Componentes de gestión
-│   │   ├── editor/         # Editor TipTap
+│   │   │   ├── SpeciesForm.tsx
+│   │   │   ├── SpeciesTable.tsx
+│   │   │   ├── TiptapEditor.tsx
+│   │   │   ├── MediaPickerModal.tsx
+│   │   │   └── ...
 │   │   └── ui/             # Componentes shadcn/ui
 │   ├── hooks/              # Custom React hooks
 │   ├── lib/
 │   │   ├── api/            # Cliente API
 │   │   └── utils/          # Utilidades
 │   ├── contexts/           # React contexts
+│   │   └── AuthContext.tsx # Contexto de autenticación
 │   └── App.tsx             # Aplicación principal
 ├── public/                 # Assets estáticos
 └── vite.config.ts         # Configuración de Vite
@@ -82,27 +90,39 @@ dashboard/
 
 ## 🎨 Componentes Principales
 
-### Editor de Contenido Enriquecido
+### Editor de Contenido Enriquecido (TipTap)
 
 ```tsx
-import { RichContentEditor } from '@/components/editor/RichContentEditor'
+import { TiptapEditor } from '@/components/manage/TiptapEditor'
 
-<RichContentEditor
+<TiptapEditor
   content={content}
   onChange={setContent}
   placeholder="Escribe aquí..."
 />
 ```
 
+Extensiones incluidas:
+- Formato básico (negrita, cursiva, subrayado)
+- Encabezados (H1-H6)
+- Listas (ordenadas/desordenadas)
+- Imágenes con resize y estilos
+- Tablas
+- Enlaces
+- Código y bloques de código
+- Citas
+- Separadores horizontales
+
 ### Gestión de Imágenes
 
 ```tsx
-import { ImageGalleryManager } from '@/components/manage/ImageGalleryManager'
+import { MediaPickerModal } from '@/components/manage/MediaPickerModal'
 
-<ImageGalleryManager
-  images={images}
-  onImagesChange={setImages}
-  maxImages={10}
+<MediaPickerModal
+  isOpen={isOpen}
+  onClose={onClose}
+  onSelectImages={handleSelectImages}
+  multiple={true}
 />
 ```
 
@@ -113,6 +133,7 @@ Todas las entidades soportan borradores:
 - Previsualizar borradores
 - Publicar cuando esté listo
 - Descartar cambios
+- Sistema de bloqueos para edición concurrente
 
 ## 🔒 Autenticación
 
@@ -121,6 +142,7 @@ El dashboard verifica la autenticación al cargar:
 1. Si no está autenticado → Redirige a `/sign-in` del sitio público
 2. Si está autenticado → Carga el dashboard
 3. Mantiene sesión con cookies HTTP-only
+4. Permisos basados en roles (admin, editor)
 
 ## 📦 Build
 
@@ -149,6 +171,19 @@ location / {
 }
 ```
 
+### Ejemplo Vercel:
+
+```json
+{
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
+}
+```
+
 ## 🧪 Testing
 
 ```bash
@@ -164,44 +199,43 @@ pnpm format
 
 ## 📝 Características Específicas
 
-### Editor TipTap
-
-Extensiones incluidas:
-- Formato básico (negrita, cursiva, etc.)
-- Encabezados (H1-H6)
-- Listas (ordenadas/desordenadas)
-- Imágenes con resize
-- Tablas
-- Enlaces
-- Código
-- Citas
-
 ### Gestión de Especies
 
 - Información taxonómica completa
 - Estado de conservación
 - Distribución geográfica
-- Galería de imágenes
-- Referencias
+- Galería de imágenes con orden personalizable
+- Referencias bibliográficas
 - Contenido enriquecido
+- Campos SEO personalizados
 
 ### Gestión de Áreas Protegidas
 
 - Información básica
-- Ubicación geográfica
+- Ubicación geográfica con mapa
 - Ecosistemas
 - Información para visitantes
-- Galería
+- Galería multimedia
 - Contenido enriquecido
 
 ### Gestión de Noticias
 
 - Título y resumen
-- Categorías
-- Tags
+- Categorías múltiples
+- Tags personalizables
 - Imagen destacada
-- Autor
+- Autor automático
 - Contenido enriquecido
+- Programación de publicación
+
+### Galería Multimedia
+
+- Organización por carpetas
+- Carga múltiple de archivos
+- Conversión automática a WebP
+- Optimización de imágenes
+- Búsqueda y filtrado
+- Batch download con JSZip
 
 ## 🐛 Solución de Problemas
 
@@ -213,16 +247,45 @@ Extensiones incluidas:
 ### Imágenes no se cargan
 - Verificar `VITE_R2_PUBLIC_URL`
 - Comprobar permisos en el bucket R2
+- Las imágenes vienen con URLs completas del API
 
 ### Error de autenticación
 - Verificar `VITE_CLERK_PUBLISHABLE_KEY`
 - Limpiar cookies y volver a iniciar sesión
+- Verificar que el backend tenga la misma clave de Clerk
+
+### Editor TipTap no funciona
+- Verificar instalación de dependencias
+- Limpiar caché de node_modules
+- Reinstalar con `pnpm install`
+
+## 📊 Estado Actual (Agosto 2025)
+
+### ✅ Completado
+- Migración completa desde el proyecto web
+- Todos los componentes de gestión funcionando
+- Editor TipTap con todas las extensiones
+- Sistema de permisos por roles
+- Gestión de galería multimedia
+- Tablas con ordenamiento y filtrado
+- Sistema de borradores y publicación
+- Previsualización de contenido
+- Exportación de datos
+
+### 🚧 Pendiente
+- Validación avanzada con React Hook Form + Zod
+- WebSockets para actualizaciones en tiempo real
+- Tests unitarios con Vitest
+- Tests E2E con Playwright
+- Mejoras de accesibilidad
+- Modo oscuro completo
 
 ## 🔗 Enlaces Útiles
 
 - [shadcn/ui](https://ui.shadcn.com/)
 - [TipTap](https://tiptap.dev/)
 - [React Router](https://reactrouter.com/)
+- [TanStack Query](https://tanstack.com/query)
 - [Clerk Docs](https://clerk.com/docs)
 
 ## 📄 Licencia

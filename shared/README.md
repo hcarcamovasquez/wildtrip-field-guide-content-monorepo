@@ -217,14 +217,33 @@ pnpm build
 3. **Evitar `any`**: Ser explícito con los tipos
 4. **Exportar guards**: Incluir type guards cuando sea útil
 5. **Versionado**: Actualizar versión en cambios breaking
+6. **Importaciones**: Siempre usar `@wildtrip/shared`, nunca paths relativos
+
+## 📊 Estado Actual (Agosto 2025)
+
+### ✅ Completado
+- Tipos de contenido rico (RichContent, ContentBlock)
+- Constantes con funciones helper
+- Build dual (CommonJS + ESM)
+- Múltiples entry points
+- Utilidades básicas (formatDate, slugify)
+- Documentación completa
+
+### 🚧 Pendiente
+- Tests unitarios
+- Esquemas de validación (Zod)
+- Más funciones utilitarias
+- Soporte i18n para labels
+- Generación automática de documentación
 
 ## 🔮 Futuras Mejoras
 
-- [ ] Agregar tests unitarios
+- [ ] Agregar tests unitarios con Vitest
 - [ ] Incluir esquemas de validación (Zod)
-- [ ] Agregar más funciones utilitarias
-- [ ] Soporte i18n para labels
-- [ ] Generación automática de documentación
+- [ ] Agregar más funciones utilitarias según necesidad
+- [ ] Soporte i18n para labels de constantes
+- [ ] Generación automática de documentación desde JSDoc
+- [ ] CI/CD para publicación automática
 
 ## 📄 Licencia
 

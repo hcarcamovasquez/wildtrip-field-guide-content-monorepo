@@ -11,15 +11,14 @@ wildtrip-field-guide-content-monorepo/
 ├── web/          # Sitio público (Astro)
 ├── dashboard/    # Panel de administración (React)
 ├── backend/      # API REST (NestJS)
-├── shared/       # Tipos y utilidades compartidas
-└── scripts/      # Scripts de utilidad
+└── shared/       # Tipos y utilidades compartidas
 ```
 
 ### Servicios
 
-1. **web** - Sitio público con SSG/SSR (Astro + Tailwind)
-2. **dashboard** - SPA para gestión de contenido (React + Vite + shadcn/ui)
-3. **backend** - API REST con autenticación JWT (NestJS + Drizzle)
+1. **web** - Sitio público con SSG/SSR (Astro v5 + Tailwind CSS v4)
+2. **dashboard** - SPA para gestión de contenido (React 19 + Vite + shadcn/ui)
+3. **backend** - API REST con autenticación JWT (NestJS + Drizzle ORM)
 4. **shared** - Paquete compartido con tipos TypeScript y constantes
 
 ## 🚀 Inicio Rápido
@@ -125,6 +124,7 @@ CLERK_SECRET_KEY=sk_test_...
 PUBLIC_API_URL=http://localhost:3000
 PUBLIC_ADMIN_URL=http://localhost:5173
 PUBLIC_R2_PUBLIC_URL=https://dev.cdn.wildtrip.cl
+PUBLIC_SITE_URL=http://localhost:4321
 ```
 
 #### dashboard/.env
@@ -150,7 +150,7 @@ CLOUDFLARE_IA_API_TOKEN=...
 JWT_SECRET=...
 ```
 
-## 📊 Estado del Proyecto (Enero 2025)
+## 📊 Estado del Proyecto (Agosto 2025)
 
 ### ✅ Completado
 
@@ -159,10 +159,16 @@ JWT_SECRET=...
 - CRUD completo para todas las entidades
 - Sistema de borradores y publicación
 - Procesamiento y optimización de imágenes
-- Editor de contenido enriquecido
+- Editor de contenido enriquecido (TipTap)
 - Sistema de bloqueos para edición concurrente
-- Generación de SEO con IA
+- Generación de SEO con IA (Cloudflare AI)
 - Paquete compartido de tipos
+- Migración completa de componentes de gestión al dashboard
+- Optimización de imágenes con ResponsiveImage
+- Sistema de permisos basado en roles
+- Generación automática de usernames
+- Preview de drafts
+- Gestión de galerías multimedia
 
 ### 🚧 Pendiente
 
@@ -172,6 +178,7 @@ JWT_SECRET=...
 - Caché con Redis
 - Webhooks de Clerk
 - Métricas y monitoreo
+- Algunos endpoints faltantes en backend (locks, drafts, field updates)
 
 ## 🛠️ Scripts Útiles
 
@@ -190,6 +197,10 @@ pnpm build
 pnpm --filter=backend db:generate  # Generar migraciones
 pnpm --filter=backend db:migrate   # Ejecutar migraciones
 pnpm --filter=backend db:studio    # Drizzle Studio
+pnpm --filter=backend db:push      # Push schema (desarrollo)
+
+# Seed de datos
+pnpm --filter=backend seed         # Ejecutar seed
 ```
 
 ## 🚀 Despliegue

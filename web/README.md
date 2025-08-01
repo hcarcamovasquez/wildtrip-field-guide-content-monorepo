@@ -9,6 +9,7 @@ Sitio web público de la Guía de Campo de Wildtrip, optimizado para rendimiento
 - **Autenticación**: Clerk (UI solamente)
 - **Optimización**: Imágenes con Cloudflare CDN
 - **SEO**: Meta tags, sitemap automático, structured data
+- **Despliegue**: Railway con adaptador Node.js
 
 ## 📋 Requisitos
 
@@ -39,6 +40,7 @@ CLERK_SECRET_KEY=sk_test_...
 # URLs de servicios
 PUBLIC_API_URL=http://localhost:3000
 PUBLIC_ADMIN_URL=http://localhost:5173
+PUBLIC_SITE_URL=http://localhost:4321
 
 # CDN para imágenes
 PUBLIC_R2_PUBLIC_URL=https://dev.cdn.wildtrip.cl
@@ -65,18 +67,24 @@ web/
 │   ├── pages/              # Rutas basadas en archivos
 │   │   ├── content/        # Páginas de contenido público
 │   │   │   ├── species/    # Catálogo de especies
+│   │   │   │   ├── index.astro
+│   │   │   │   ├── [slug].astro
+│   │   │   │   └── preview/[id].astro
 │   │   │   ├── protected-areas/ # Áreas protegidas
 │   │   │   └── news/       # Noticias
 │   │   ├── sign-in/        # Página de login (Clerk)
 │   │   ├── sign-up/        # Página de registro (Clerk)
 │   │   └── index.astro     # Homepage
 │   ├── components/         
-│   │   ├── public/         # Componentes UI públicos
+│   │   ├── icons/          # Componentes de iconos
+│   │   ├── news/           # Componentes de noticias
+│   │   ├── protected-area/ # Componentes de áreas protegidas
+│   │   ├── species/        # Componentes de especies
 │   │   └── ui/             # Componentes shadcn/ui
 │   ├── layouts/            # Layouts de página
 │   └── lib/
 │       ├── api/            # Cliente API
-│       ├── public/         # Repositorios públicos
+│       ├── repositories/   # Repositorios de datos
 │       └── utils/          # Utilidades
 ├── public/                 # Assets estáticos
 └── astro.config.mjs       # Configuración de Astro
@@ -106,7 +114,7 @@ const species = await apiClient.species.findBySlug('condor-andino')
 
 ```astro
 ---
-import ResponsiveImage from '@/components/public/ResponsiveImage.astro'
+import ResponsiveImage from '@/components/ResponsiveImage.astro'
 ---
 
 <ResponsiveImage
@@ -168,6 +176,7 @@ pnpm format
 3. **Autenticación**: Solo UI de Clerk, la validación real está en el backend
 4. **SEO**: Todas las páginas de contenido tienen meta tags apropiados
 5. **Performance**: Priorizar SSG cuando sea posible
+6. **Código limpio**: Todo el código de gestión se ha movido al dashboard
 
 ## 🐛 Solución de Problemas
 
@@ -183,6 +192,28 @@ pnpm format
 ### Puerto 4321 en uso
 - El servidor intentará usar el siguiente puerto disponible
 - O especificar otro puerto: `PORT=4322 pnpm dev`
+
+### Error de autenticación
+- Verificar las claves de Clerk
+- Asegurar que el backend esté corriendo
+- Revisar CORS en el backend
+
+## 📊 Estado Actual (Agosto 2025)
+
+### ✅ Completado
+- Migración completa del código de gestión al dashboard
+- Limpieza de dependencias no utilizadas
+- Componente ResponsiveImage para todas las imágenes
+- API client completamente funcional
+- Páginas públicas optimizadas
+- Sistema de preview para drafts
+- SEO y structured data
+
+### 🚧 Pendiente
+- Tests E2E con Playwright
+- Mejoras de accesibilidad
+- Internacionalización (i18n)
+- Progressive Web App (PWA)
 
 ## 📄 Licencia
 

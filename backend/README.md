@@ -10,7 +10,8 @@ API REST para el sistema de gestión de contenido de la Guía de Campo de Wildtr
 - **Autenticación**: JWT + Clerk
 - **Almacenamiento**: Cloudflare R2
 - **IA**: Cloudflare AI para SEO
-- **Caché**: Redis (opcional)
+- **Procesamiento de imágenes**: Sharp (conversión automática a WebP)
+- **Sistema de bloqueos**: Para prevenir edición concurrente
 
 ## 📋 Requisitos
 
@@ -87,8 +88,9 @@ pnpm db:studio
 ### Seed inicial
 
 ```bash
-# Cargar datos de ejemplo
-pnpm db:seed
+# Cargar datos de ejemplo (solo desarrollo)
+curl -X POST http://localhost:3000/api/dev/seed \
+  -H "Cookie: __session=YOUR_ADMIN_SESSION"
 ```
 
 ## 🏃‍♂️ Desarrollo
@@ -119,83 +121,113 @@ backend/
 │   ├── seed/               # Seeds de BD
 │   ├── config/             # Configuración
 │   └── main.ts             # Bootstrap de NestJS
-├── drizzle/                # Migraciones
+├── migrations/             # Migraciones de BD
 └── drizzle.config.ts      # Config de Drizzle
 ```
 
 ## 🔌 API Endpoints
 
-### Autenticación
+### Endpoints Públicos (Sin autenticación)
+
 ```
-POST   /api/auth/validate     # Validar token de Clerk
-GET    /api/auth/me          # Usuario actual
+GET  /api/species
+GET  /api/species/:id
+GET  /api/species/slug/:slug
+GET  /api/protected-areas
+GET  /api/protected-areas/:id
+GET  /api/protected-areas/slug/:slug
+GET  /api/news
+GET  /api/news/:id
+GET  /api/news/slug/:slug
 ```
 
-### Especies
+### Endpoints Protegidos (Requieren autenticación)
+
+#### Especies
 ```
-GET    /api/species          # Listar especies
-GET    /api/species/:id      # Obtener especie
-GET    /api/species/slug/:slug # Obtener por slug
-POST   /api/species          # Crear especie
-PUT    /api/species/:id      # Actualizar especie
-DELETE /api/species/:id      # Eliminar especie
-POST   /api/species/:id/draft # Guardar borrador
-POST   /api/species/:id/publish # Publicar
-POST   /api/species/:id/lock # Bloquear para edición
-DELETE /api/species/:id/lock # Desbloquear
+POST   /api/species                    # Crear especie
+PATCH  /api/species/:id                # Actualizar especie
+DELETE /api/species/:id                # Eliminar especie (admin)
+POST   /api/species/:id/publish        # Publicar borrador
+POST   /api/species/:id/draft          # Guardar borrador
+POST   /api/species/:id/discard-draft  # Descartar borrador
+POST   /api/species/:id/lock           # Bloquear para edición
+DELETE /api/species/:id/lock           # Desbloquear
+GET    /api/species/:id/lock           # Estado del bloqueo
 ```
 
-### Áreas Protegidas
+#### Áreas Protegidas
 ```
-GET    /api/protected-areas
-GET    /api/protected-areas/:id
-GET    /api/protected-areas/slug/:slug
 POST   /api/protected-areas
-PUT    /api/protected-areas/:id
+PATCH  /api/protected-areas/:id
 DELETE /api/protected-areas/:id
-POST   /api/protected-areas/:id/draft
 POST   /api/protected-areas/:id/publish
+POST   /api/protected-areas/:id/draft
+POST   /api/protected-areas/:id/discard-draft
+POST   /api/protected-areas/:id/lock
+DELETE /api/protected-areas/:id/lock
+GET    /api/protected-areas/:id/lock
 ```
 
-### Noticias
+#### Noticias
 ```
-GET    /api/news
-GET    /api/news/:id
-GET    /api/news/slug/:slug
 POST   /api/news
-PUT    /api/news/:id
+PATCH  /api/news/:id
 DELETE /api/news/:id
-POST   /api/news/:id/draft
 POST   /api/news/:id/publish
+POST   /api/news/:id/draft
+POST   /api/news/:id/discard-draft
+POST   /api/news/:id/lock
+DELETE /api/news/:id/lock
+GET    /api/news/:id/lock
 ```
 
-### Galería
+#### Galería
 ```
-POST   /api/gallery/upload   # Subir imágenes
-GET    /api/gallery          # Listar imágenes
-DELETE /api/gallery/:id      # Eliminar imagen
-```
-
-### Usuarios
-```
-GET    /api/users           # Listar usuarios
-GET    /api/users/:id       # Obtener usuario
-PUT    /api/users/:id       # Actualizar usuario
+GET    /api/gallery/browse             # Explorar galería
+GET    /api/gallery/by-ids             # Obtener por IDs
+GET    /api/gallery/media/:id          # Obtener archivo
+POST   /api/gallery/upload             # Subir archivos
+PATCH  /api/gallery/media/:id          # Actualizar archivo
+DELETE /api/gallery/media/:id          # Eliminar archivo
+POST   /api/gallery/media/batch-delete # Eliminar múltiples
+POST   /api/gallery/media/move         # Mover archivos
 ```
 
-### IA
+#### Carpetas
 ```
-POST   /api/ai/generate-seo # Generar meta tags SEO
+GET    /api/gallery/folders            # Listar carpetas
+GET    /api/gallery/folders/:id        # Obtener carpeta
+POST   /api/gallery/folders            # Crear carpeta
+PATCH  /api/gallery/folders/:id        # Actualizar carpeta
+DELETE /api/gallery/folders/:id        # Eliminar carpeta
+```
+
+#### Usuarios
+```
+GET    /api/users                      # Listar usuarios
+GET    /api/users/me                   # Usuario actual
+GET    /api/users/stats                # Estadísticas
+GET    /api/users/:id                  # Obtener usuario
+PATCH  /api/users/:id                  # Actualizar usuario (admin)
+```
+
+#### IA
+```
+POST   /api/ai/generate-seo/news       # SEO para noticias
+POST   /api/ai/generate-seo/species    # SEO para especies
+POST   /api/ai/generate-seo/protected-areas # SEO para áreas
 ```
 
 ## 🖼️ Procesamiento de Imágenes
 
 El backend procesa automáticamente las imágenes:
 
-1. **Conversión a WebP**: Todas las imágenes se convierten
-2. **Optimización**: Compresión automática
+1. **Conversión a WebP**: Todas las imágenes se convierten automáticamente
+2. **Optimización**: Compresión automática manteniendo calidad
 3. **Metadatos**: Se eliminan por seguridad
 4. **Almacenamiento**: En Cloudflare R2
+5. **URLs completas**: Siempre se devuelven URLs completas del CDN
 
 ```typescript
 // Ejemplo de respuesta de upload
@@ -218,8 +250,8 @@ El backend procesa automáticamente las imágenes:
 ### Autorización
 
 - Guards de NestJS para proteger rutas
-- Roles: admin, editor, viewer
-- Permisos por recurso
+- Roles: admin, content_editor, species_editor, areas_editor, news_editor
+- Permisos granulares por recurso
 
 ### Sistema de Bloqueos
 
@@ -227,6 +259,7 @@ Previene edición concurrente:
 - Bloqueo automático al editar
 - Timeout de 30 minutos
 - Liberación manual disponible
+- Información del usuario que tiene el bloqueo
 
 ## 📦 Build
 
@@ -279,9 +312,21 @@ pnpm test:cov
 GET /health
 ```
 
-### Métricas (próximamente)
-- Prometheus metrics
-- OpenTelemetry traces
+### Formato de Respuesta
+
+Todas las respuestas siguen este formato:
+
+```json
+{
+  "data": [...],
+  "pagination": {
+    "page": 1,
+    "limit": 20,
+    "total": 100,
+    "totalPages": 5
+  }
+}
+```
 
 ## 🐛 Solución de Problemas
 
@@ -298,7 +343,7 @@ GET /health
 ### Error de autenticación
 - Verificar `CLERK_SECRET_KEY`
 - Comprobar que el token sea válido
-- Verificar CORS
+- Verificar CORS en `ALLOWED_ORIGINS`
 
 ### Imágenes no se procesan
 - Verificar Sharp instalado correctamente
@@ -312,6 +357,31 @@ GET /health
 3. **Errores**: Usar excepciones de NestJS
 4. **Logs**: Logger integrado de NestJS
 5. **Performance**: Índices en campos de búsqueda
+6. **Imágenes**: Siempre devolver URLs completas del CDN
+
+## 📊 Estado Actual (Agosto 2025)
+
+### ✅ Completado
+- API REST completa con NestJS
+- Autenticación con Clerk y cookies
+- CRUD para todas las entidades
+- Sistema de borradores y publicación
+- Procesamiento de imágenes con Sharp
+- Almacenamiento en Cloudflare R2
+- Sistema de bloqueos para edición concurrente
+- Generación de SEO con IA
+- Gestión de usuarios con roles
+- Organización de galería por carpetas
+- Generación automática de usernames
+- Seed de datos para desarrollo
+
+### 🚧 Pendiente
+- Caché con Redis (opcional)
+- Webhooks de Clerk (opcional)
+- Tests unitarios completos
+- Documentación OpenAPI/Swagger
+- Métricas con Prometheus
+- Logs estructurados
 
 ## 🔗 Enlaces Útiles
 

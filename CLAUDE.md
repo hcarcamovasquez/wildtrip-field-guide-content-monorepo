@@ -441,26 +441,79 @@ JWT_SECRET=...
 
 5. **Development Order**: shared → backend → web/dashboard
 
-# Important Updates (Enero 2025)
+# Important Updates (Agosto 2025)
 
-## Últimos Cambios Realizados
+## Estado Actual del Proyecto
 
-### 1. Corrección de Importaciones de @wildtrip/shared
-- Todas las importaciones desde rutas relativas (`../../../lib/utils/...`) han sido actualizadas para usar `@wildtrip/shared`
-- Se agregó `@wildtrip/shared` como dependencia en todos los proyectos que lo necesitan
+### ✅ Funcionalidades Completadas
 
-### 2. Optimización de Imágenes
-- **IMPORTANTE**: Todas las imágenes DEBEN usar el componente `ResponsiveImage` o las funciones de optimización
-- Nunca se debe usar la URL original de las imágenes directamente
-- Componentes actualizados:
-  - `SpeciesGallery.astro` - Ahora usa ResponsiveImage
-  - `ProtectedAreaGallery.astro` - Ahora usa ResponsiveImage
-  - `content-blocks.ts` - Ahora usa getOptimizedImageUrl
+1. **Arquitectura de Microservicios**: 
+   - Separación completa entre web pública, dashboard admin y API backend
+   - Cada servicio puede desplegarse independientemente
+   - Paquete shared para tipos y constantes compartidos
 
-### 3. Mapeo de Respuestas de API
-- Los repositorios ahora mapean correctamente `mainImage.url` a `mainImageUrl`
-- Se corrigió el acceso a `response.pagination` en lugar de propiedades directas
-- ProtectedArea ahora usa `mainImageUrl` en lugar de `featuredImageUrl`
+2. **Sistema de Gestión de Contenido**:
+   - CRUD completo para Especies, Noticias y Áreas Protegidas
+   - Sistema de borradores y publicación
+   - Editor de texto enriquecido con TipTap
+   - Sistema de bloqueos para evitar edición concurrente
+   - Previsualización de drafts
+
+3. **Gestión de Imágenes**:
+   - Conversión automática a WebP
+   - Almacenamiento en Cloudflare R2
+   - Optimización con ResponsiveImage
+   - Galería multimedia con organización por carpetas
+   - URLs completas del CDN (no se construyen URLs)
+
+4. **Autenticación y Seguridad**:
+   - Integración con Clerk para autenticación
+   - Sistema de roles y permisos
+   - Guards de NestJS para protección de rutas
+   - Cookies HTTP-only para sesiones
+
+5. **Optimizaciones**:
+   - SEO automático con Cloudflare AI
+   - Imágenes optimizadas con Cloudflare CDN
+   - SSG/SSR híbrido en Astro
+   - Lazy loading de componentes React
+
+6. **Developer Experience**:
+   - TypeScript estricto en todos los proyectos
+   - Hot reload en desarrollo
+   - Comandos unificados con pnpm
+   - Documentación actualizada
+
+### 🚧 Funcionalidades Pendientes (No Críticas)
+
+1. **Backend**:
+   - Caché con Redis (opcional)
+   - Webhooks de Clerk para sincronización de usuarios
+   - Documentación OpenAPI/Swagger
+   - Métricas con Prometheus
+
+2. **Testing**:
+   - Tests unitarios completos
+   - Tests E2E con Playwright
+   - Coverage reports
+
+3. **CI/CD**:
+   - Pipeline automatizado
+   - Deploy automático a producción
+   - Health checks
+
+4. **Mejoras UX**:
+   - Modo oscuro completo
+   - Internacionalización (i18n)
+   - PWA para el sitio público
+
+### 🔧 Configuración Requerida para Producción
+
+1. **PostgreSQL**: Base de datos principal
+2. **Cloudflare**: R2 para storage, AI para SEO, CDN para imágenes
+3. **Clerk**: Autenticación y gestión de usuarios
+4. **Dominios**: Configurar URLs de producción
+5. **SSL**: Certificados para HTTPS
 
 ## Important Instruction Reminders
 
@@ -468,6 +521,32 @@ Do what has been asked; nothing more, nothing less.
 NEVER create files unless they're absolutely necessary for achieving your goal.
 ALWAYS prefer editing an existing file to creating a new one.
 NEVER proactively create documentation files (*.md) or README files. Only create documentation files if explicitly requested by the User.
+
+## Comandos Esenciales
+
+```bash
+# Instalar dependencias de todo el monorepo
+pnpm install
+
+# Construir paquete shared (requerido antes de iniciar otros servicios)
+pnpm --filter=shared build
+
+# Iniciar todos los servicios en desarrollo
+pnpm dev
+
+# Iniciar servicios individuales
+pnpm --filter=web dev        # Puerto 4321
+pnpm --filter=dashboard dev  # Puerto 5173
+pnpm --filter=backend dev    # Puerto 3000
+
+# Base de datos
+pnpm --filter=backend db:push     # Push schema (desarrollo)
+pnpm --filter=backend db:migrate  # Ejecutar migraciones
+pnpm --filter=backend db:studio   # Drizzle Studio
+
+# Build para producción
+pnpm build
+```
 
       
       IMPORTANT: this context may or may not be relevant to your tasks. You should not respond to this context unless it is highly relevant to your task.
