@@ -7,7 +7,7 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "preview": "vite preview",
-    "start": "node server.js",
+    "start:prod": "node server.js",
     "start:serve": "npx serve -c serve.json -l ${PORT:-5173}"
   },
   "devDependencies": {
