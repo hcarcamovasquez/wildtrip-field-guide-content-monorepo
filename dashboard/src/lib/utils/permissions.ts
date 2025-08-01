@@ -9,7 +9,6 @@ export type Permission =
   | 'manage_species'
   | 'manage_areas'
   | 'manage_gallery'
-  | 'manage_content'
 
 // Define permissions for each role
 const rolePermissions: Record<Role, Permission[]> = {
@@ -20,9 +19,8 @@ const rolePermissions: Record<Role, Permission[]> = {
     'manage_species',
     'manage_areas',
     'manage_gallery',
-    'manage_content',
   ],
-  content_editor: ['view_dashboard', 'manage_news', 'manage_species', 'manage_areas', 'manage_content'],
+  content_editor: ['view_dashboard', 'manage_news', 'manage_species', 'manage_areas'],
   news_editor: ['view_dashboard', 'manage_news'],
   areas_editor: ['view_dashboard', 'manage_areas'],
   species_editor: ['view_dashboard', 'manage_species'],
@@ -41,7 +39,7 @@ export function canAccessRoute(role: Role, path: string): boolean {
     return hasPermission(role, 'view_dashboard')
   }
 
-  // Gallery is accessible to all editors
+  // Gallery is only accessible to admin
   if (path.startsWith('/gallery')) {
     return hasPermission(role, 'manage_gallery')
   }
@@ -82,16 +80,8 @@ export function canDelete(role: Role): boolean {
   return role === 'admin'
 }
 
-// Check if user can manage content (for management UI access)
-export function canManageContent(role: Role): boolean {
-  return hasPermission(role, 'manage_content')
-}
 
 // Specific permission checks (for consistency across the app)
-export function canViewDashboard(role: Role): boolean {
-  return hasPermission(role, 'view_dashboard')
-}
-
 export function canManageUsers(role: Role): boolean {
   return hasPermission(role, 'manage_users')
 }
