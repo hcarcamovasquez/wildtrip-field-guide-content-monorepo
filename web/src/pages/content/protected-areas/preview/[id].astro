@@ -31,40 +31,39 @@ if (!protectedAreaData) {
 }
 
 // For preview, we need to show draft data if available
-const previewData = protectedAreaData.hasDraft && protectedAreaData.draftData 
-  ? { 
-      ...protectedAreaData, 
-      ...protectedAreaData.draftData,
-      // Convert mainImage object to mainImageUrl string
-      mainImageUrl: protectedAreaData.draftData.mainImage?.url || protectedAreaData.mainImage?.url || protectedAreaData.mainImageUrl,
-      // Convert galleryImages to images array
-      images: protectedAreaData.draftData.galleryImages 
-        ? protectedAreaData.draftData.galleryImages.map((img: any) => img.url)
-        : protectedAreaData.galleryImages?.map((img: any) => img.url) || protectedAreaData.images || []
-    }
-  : {
-      ...protectedAreaData,
-      // Ensure mainImageUrl is set even for non-draft
-      mainImageUrl: protectedAreaData.mainImage?.url || protectedAreaData.mainImageUrl,
-      // Convert galleryImages to images array
-      images: protectedAreaData.galleryImages?.map((img: any) => img.url) || protectedAreaData.images || []
-    }
+const previewData =
+  protectedAreaData.hasDraft && protectedAreaData.draftData
+    ? {
+        ...protectedAreaData,
+        ...protectedAreaData.draftData,
+        // Convert mainImage object to mainImageUrl string
+        mainImageUrl:
+          protectedAreaData.draftData.mainImage?.url ||
+          protectedAreaData.mainImage?.url ||
+          protectedAreaData.mainImageUrl,
+        // Convert galleryImages to images array
+        images: protectedAreaData.draftData.galleryImages
+          ? protectedAreaData.draftData.galleryImages.map((img: any) => img.url)
+          : protectedAreaData.galleryImages?.map((img: any) => img.url) || protectedAreaData.images || [],
+      }
+    : {
+        ...protectedAreaData,
+        // Ensure mainImageUrl is set even for non-draft
+        mainImageUrl: protectedAreaData.mainImage?.url || protectedAreaData.mainImageUrl,
+        // Convert galleryImages to images array
+        images: protectedAreaData.galleryImages?.map((img: any) => img.url) || protectedAreaData.images || [],
+      }
 
 // Debug log
 console.log('Preview data for protected area', protectedAreaId, {
   hasDraft: protectedAreaData.hasDraft,
   mainImageUrl: previewData.mainImageUrl,
   draftMainImage: protectedAreaData.draftData?.mainImage,
-  images: previewData.images
+  images: previewData.images,
 })
 ---
 
-<Layout
-  title={`${previewData.name} - Vista previa`}
-  description={previewData.description}
->
-
-  
+<Layout title={`${previewData.name} - Vista previa`} description={previewData.description}>
   <!-- Preview notice banner -->
   <div class="sticky top-0 z-50 bg-orange-500 text-white">
     <div class="mx-auto max-w-4xl px-4 py-2 sm:px-6 lg:px-8">
@@ -86,7 +85,11 @@ console.log('Preview data for protected area', protectedAreaId, {
   <article class="mx-auto max-w-4xl bg-white px-4 py-8 sm:px-6 lg:px-8 dark:bg-gray-900">
     <ProtectedAreaHeader title={previewData.name} type={previewData.type} region={previewData.region} />
 
-    <ProtectedAreaHero images={previewData.images || undefined} mainImageUrl={previewData.mainImageUrl} title={previewData.name} />
+    <ProtectedAreaHero
+      images={previewData.images || undefined}
+      mainImageUrl={previewData.mainImageUrl}
+      title={previewData.name}
+    />
 
     {
       previewData.description && (

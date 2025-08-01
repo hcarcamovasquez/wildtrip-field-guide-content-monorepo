@@ -15,7 +15,10 @@ import { UpdateProtectedAreaDto } from './dto/update-protected-area.dto';
 import { ClerkAuthGuard } from '../auth/guards/clerk-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
-import { CurrentUser, ICurrentUser } from '../auth/decorators/current-user.decorator';
+import {
+  CurrentUser,
+  ICurrentUser,
+} from '../auth/decorators/current-user.decorator';
 import { LocksService } from '../locks/locks.service';
 
 @Controller('api/protected-areas')
@@ -52,7 +55,10 @@ export class ProtectedAreasController {
   @Patch(':id')
   @UseGuards(ClerkAuthGuard, RolesGuard)
   @Roles('admin', 'content_editor', 'areas_editor')
-  update(@Param('id') id: string, @Body() updateProtectedAreaDto: UpdateProtectedAreaDto) {
+  update(
+    @Param('id') id: string,
+    @Body() updateProtectedAreaDto: UpdateProtectedAreaDto,
+  ) {
     return this.protectedAreasService.update(+id, updateProtectedAreaDto);
   }
 
@@ -74,7 +80,10 @@ export class ProtectedAreasController {
   @Post(':id/draft')
   @UseGuards(ClerkAuthGuard, RolesGuard)
   @Roles('admin', 'content_editor', 'areas_editor')
-  createDraft(@Param('id') id: string, @Body() draftData: UpdateProtectedAreaDto) {
+  createDraft(
+    @Param('id') id: string,
+    @Body() draftData: UpdateProtectedAreaDto,
+  ) {
     return this.protectedAreasService.createDraft(+id, draftData);
   }
 
@@ -89,7 +98,10 @@ export class ProtectedAreasController {
   @Post(':id/lock')
   @UseGuards(ClerkAuthGuard, RolesGuard)
   @Roles('admin', 'content_editor', 'areas_editor')
-  async acquireLock(@Param('id') id: string, @CurrentUser() user: ICurrentUser) {
+  async acquireLock(
+    @Param('id') id: string,
+    @CurrentUser() user: ICurrentUser,
+  ) {
     const userId = Number((user as any).dbUserId);
     await this.locksService.acquireLock('protectedAreas', +id, userId);
     return { locked: true };
@@ -98,7 +110,10 @@ export class ProtectedAreasController {
   @Delete(':id/lock')
   @UseGuards(ClerkAuthGuard, RolesGuard)
   @Roles('admin', 'content_editor', 'areas_editor')
-  async releaseLock(@Param('id') id: string, @CurrentUser() user: ICurrentUser) {
+  async releaseLock(
+    @Param('id') id: string,
+    @CurrentUser() user: ICurrentUser,
+  ) {
     const userId = Number((user as any).dbUserId);
     await this.locksService.releaseLock('protectedAreas', +id, userId);
     return { locked: false };

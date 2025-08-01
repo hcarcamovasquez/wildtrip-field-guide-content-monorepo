@@ -1,5 +1,12 @@
-import { relations } from 'drizzle-orm'
-import { boolean, pgTable, serial, text, timestamp, varchar } from 'drizzle-orm/pg-core'
+import { relations } from 'drizzle-orm';
+import {
+  boolean,
+  pgTable,
+  serial,
+  text,
+  timestamp,
+  varchar,
+} from 'drizzle-orm/pg-core';
 
 export const users = pgTable('users', {
   id: serial('id').primaryKey(),
@@ -28,10 +35,10 @@ export const users = pgTable('users', {
     .defaultNow()
     .notNull()
     .$onUpdate(() => new Date()),
-})
+});
 
-export type User = typeof users.$inferSelect
-export type NewUser = typeof users.$inferInsert
+export type User = typeof users.$inferSelect;
+export type NewUser = typeof users.$inferInsert;
 
 // Users relations
-export const usersRelations = relations(users, ({}) => ({}))
+export const usersRelations = relations(users, ({}) => ({}));

@@ -21,13 +21,32 @@ export class ProtectedAreasRepository {
 
     // Build where conditions
     const conditions: any[] = [];
-    
+
     if (status && ['draft', 'published', 'archived'].includes(status)) {
-      conditions.push(eq(protectedAreas.status, status as 'draft' | 'published' | 'archived'));
+      conditions.push(
+        eq(protectedAreas.status, status as 'draft' | 'published' | 'archived'),
+      );
     }
 
-    if (type && ['national_park', 'national_reserve', 'natural_monument', 'nature_sanctuary'].includes(type)) {
-      conditions.push(eq(protectedAreas.type, type as 'national_park' | 'national_reserve' | 'natural_monument' | 'nature_sanctuary'));
+    if (
+      type &&
+      [
+        'national_park',
+        'national_reserve',
+        'natural_monument',
+        'nature_sanctuary',
+      ].includes(type)
+    ) {
+      conditions.push(
+        eq(
+          protectedAreas.type,
+          type as
+            | 'national_park'
+            | 'national_reserve'
+            | 'natural_monument'
+            | 'nature_sanctuary',
+        ),
+      );
     }
 
     if (region) {
@@ -38,8 +57,8 @@ export class ProtectedAreasRepository {
       conditions.push(
         or(
           ilike(protectedAreas.name, `%${search}%`),
-          ilike(protectedAreas.description, `%${search}%`)
-        )
+          ilike(protectedAreas.description, `%${search}%`),
+        ),
       );
     }
 
@@ -73,8 +92,11 @@ export class ProtectedAreasRepository {
 
   async findById(id: number) {
     const db = this.dbService.getDb();
-    const [result] = await db.select().from(protectedAreas).where(eq(protectedAreas.id, id));
-    
+    const [result] = await db
+      .select()
+      .from(protectedAreas)
+      .where(eq(protectedAreas.id, id));
+
     // Log draft data for debugging
     if (result && result.draftData) {
       console.log('Protected Areas findById - Draft data:', {
@@ -82,16 +104,19 @@ export class ProtectedAreasRepository {
         hasDraft: result.hasDraft,
         draftData: result.draftData,
         mainImage: result.draftData.mainImage,
-        galleryImages: result.draftData.galleryImages
+        galleryImages: result.draftData.galleryImages,
       });
     }
-    
+
     return result;
   }
 
   async findBySlug(slug: string) {
     const db = this.dbService.getDb();
-    const [result] = await db.select().from(protectedAreas).where(eq(protectedAreas.slug, slug));
+    const [result] = await db
+      .select()
+      .from(protectedAreas)
+      .where(eq(protectedAreas.slug, slug));
     return result;
   }
 
@@ -118,8 +143,11 @@ export class ProtectedAreasRepository {
 
   async publish(id: number) {
     const db = this.dbService.getDb();
-    const [current] = await db.select().from(protectedAreas).where(eq(protectedAreas.id, id));
-    
+    const [current] = await db
+      .select()
+      .from(protectedAreas)
+      .where(eq(protectedAreas.id, id));
+
     if (!current) {
       throw new Error('Protected area not found');
     }
@@ -139,9 +167,9 @@ export class ProtectedAreasRepository {
         })
         .where(eq(protectedAreas.id, id))
         .returning();
-      
+
       return result;
-    } 
+    }
     // Si no hay draft pero está en borrador, simplemente publicar
     else if (current.status === 'draft') {
       const [result] = await db
@@ -153,18 +181,21 @@ export class ProtectedAreasRepository {
         })
         .where(eq(protectedAreas.id, id))
         .returning();
-      
+
       return result;
     }
-    
+
     // Si ya está publicado y no hay draft, no hay nada que publicar
     throw new Error('Nothing to publish');
   }
 
   async createDraft(id: number, draftData: any) {
     const db = this.dbService.getDb();
-    const [current] = await db.select().from(protectedAreas).where(eq(protectedAreas.id, id));
-    
+    const [current] = await db
+      .select()
+      .from(protectedAreas)
+      .where(eq(protectedAreas.id, id));
+
     if (!current) {
       throw new Error('Protected area not found');
     }
@@ -183,7 +214,7 @@ export class ProtectedAreasRepository {
       existingDraft,
       updatedDraft,
       mainImage: updatedDraft.mainImage,
-      galleryImages: updatedDraft.galleryImages
+      galleryImages: updatedDraft.galleryImages,
     });
 
     const [result] = await db
@@ -196,7 +227,7 @@ export class ProtectedAreasRepository {
       })
       .where(eq(protectedAreas.id, id))
       .returning();
-    
+
     return result;
   }
 
@@ -212,7 +243,7 @@ export class ProtectedAreasRepository {
       })
       .where(eq(protectedAreas.id, id))
       .returning();
-    
+
     return result;
   }
 }

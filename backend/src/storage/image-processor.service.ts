@@ -11,17 +11,20 @@ export interface ProcessedImage {
 
 @Injectable()
 export class ImageProcessorService {
-  async processImage(buffer: Buffer, options?: {
-    maxWidth?: number;
-    maxHeight?: number;
-    quality?: number;
-    format?: keyof sharp.FormatEnum;
-  }): Promise<ProcessedImage> {
+  async processImage(
+    buffer: Buffer,
+    options?: {
+      maxWidth?: number;
+      maxHeight?: number;
+      quality?: number;
+      format?: keyof sharp.FormatEnum;
+    },
+  ): Promise<ProcessedImage> {
     const {
       maxWidth = 2048,
       maxHeight = 2048,
       quality = 85,
-      format = 'webp'
+      format = 'webp',
     } = options || {};
 
     let pipeline = sharp(buffer);
@@ -43,7 +46,9 @@ export class ImageProcessorService {
     pipeline = pipeline[format]({ quality });
 
     // Process the image
-    const processedBuffer = await pipeline.toBuffer({ resolveWithObject: true });
+    const processedBuffer = await pipeline.toBuffer({
+      resolveWithObject: true,
+    });
 
     return {
       buffer: processedBuffer.data,

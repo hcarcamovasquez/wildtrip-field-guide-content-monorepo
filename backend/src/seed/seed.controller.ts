@@ -1,4 +1,10 @@
-import { Controller, Post, Delete, UseGuards, ForbiddenException } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Delete,
+  UseGuards,
+  ForbiddenException,
+} from '@nestjs/common';
 import { ClerkAuthGuard } from '../auth/guards/clerk-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
@@ -26,7 +32,9 @@ export class SeedController {
   async clear(@CurrentUser() user: any) {
     // Only allow in development environment
     if (process.env.NODE_ENV === 'production') {
-      throw new ForbiddenException('Clearing database is not allowed in production');
+      throw new ForbiddenException(
+        'Clearing database is not allowed in production',
+      );
     }
 
     return this.seedService.clearDatabase();

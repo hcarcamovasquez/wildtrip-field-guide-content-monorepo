@@ -1,4 +1,12 @@
-import { IsString, IsOptional, IsEnum, IsArray, IsObject, IsNotEmpty, IsNumber } from 'class-validator';
+import {
+  IsString,
+  IsOptional,
+  IsEnum,
+  IsArray,
+  IsObject,
+  IsNotEmpty,
+  IsNumber,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 import type { RichContent } from '@wildtrip/shared';
 
@@ -12,7 +20,12 @@ export class CreateProtectedAreaDto {
   slug?: string;
 
   @IsOptional()
-  @IsEnum(['national_park', 'national_reserve', 'natural_monument', 'nature_sanctuary'])
+  @IsEnum([
+    'national_park',
+    'national_reserve',
+    'natural_monument',
+    'nature_sanctuary',
+  ])
   type?: string;
 
   @IsOptional()

@@ -3,7 +3,7 @@ export default () => ({
   cors: {
     origins: process.env.ALLOWED_ORIGINS?.split(',') || [
       'http://localhost:4321',
-      'http://localhost:5173'
+      'http://localhost:5173',
     ],
   },
   database: {

@@ -9,7 +9,6 @@ interface DynamicUrl {
  * Get all dynamic URLs for the sitemap
  */
 export async function getDynamicSitemapUrls(): Promise<DynamicUrl[]> {
-
   // Generate dynamic URLs
   const urls: DynamicUrl[] = []
 
@@ -17,14 +16,14 @@ export async function getDynamicSitemapUrls(): Promise<DynamicUrl[]> {
     // Fetch all published species (get all pages)
     let page = 1
     let hasMore = true
-    
+
     while (hasMore) {
       const speciesResponse = await apiClient.species.findAll({
         page,
         limit: 100,
-        status: 'published'
+        status: 'published',
       })
-      
+
       if (speciesResponse.data) {
         speciesResponse.data.forEach((item: any) => {
           urls.push({
@@ -33,7 +32,7 @@ export async function getDynamicSitemapUrls(): Promise<DynamicUrl[]> {
           })
         })
       }
-      
+
       hasMore = page < (speciesResponse.totalPages || 0)
       page++
     }
@@ -41,14 +40,14 @@ export async function getDynamicSitemapUrls(): Promise<DynamicUrl[]> {
     // Fetch all published news
     page = 1
     hasMore = true
-    
+
     while (hasMore) {
       const newsResponse = await apiClient.news.findAll({
         page,
         limit: 100,
-        status: 'published'
+        status: 'published',
       })
-      
+
       if (newsResponse.data) {
         newsResponse.data.forEach((item: any) => {
           urls.push({
@@ -57,7 +56,7 @@ export async function getDynamicSitemapUrls(): Promise<DynamicUrl[]> {
           })
         })
       }
-      
+
       hasMore = page < (newsResponse.totalPages || 0)
       page++
     }
@@ -65,14 +64,14 @@ export async function getDynamicSitemapUrls(): Promise<DynamicUrl[]> {
     // Fetch all published protected areas
     page = 1
     hasMore = true
-    
+
     while (hasMore) {
       const areasResponse = await apiClient.protectedAreas.findAll({
         page,
         limit: 100,
-        status: 'published'
+        status: 'published',
       })
-      
+
       if (areasResponse.data) {
         areasResponse.data.forEach((item: any) => {
           urls.push({
@@ -81,7 +80,7 @@ export async function getDynamicSitemapUrls(): Promise<DynamicUrl[]> {
           })
         })
       }
-      
+
       hasMore = page < (areasResponse.totalPages || 0)
       page++
     }

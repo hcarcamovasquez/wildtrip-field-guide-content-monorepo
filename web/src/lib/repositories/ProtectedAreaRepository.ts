@@ -58,19 +58,19 @@ export interface ProtectedAreaPaginateResult {
 class ProtectedAreaRepository {
   async findPublished(params: ProtectedAreaPaginateParams): Promise<ProtectedAreaPaginateResult> {
     const { page = 1, limit = 20, ...filters } = params
-    
+
     const response = await apiClient.protectedAreas.findAll({
       page,
       limit,
       status: 'published',
-      ...filters
+      ...filters,
     })
 
     // Map the API response to match our types
     const mappedData = (response.data || []).map((item: any) => ({
       ...item,
       mainImageUrl: item.mainImage?.url || item.mainImageUrl || null,
-      surface: item.area?.toString() || null
+      surface: item.area?.toString() || null,
     }))
 
     return {
@@ -79,8 +79,8 @@ class ProtectedAreaRepository {
         page: response.pagination?.page || page,
         pageSize: response.pagination?.limit || limit,
         total: response.pagination?.total || 0,
-        totalPages: response.pagination?.totalPages || 0
-      }
+        totalPages: response.pagination?.totalPages || 0,
+      },
     }
   }
 
@@ -103,7 +103,7 @@ class ProtectedAreaRepository {
         visitorInfo: response.visitorInformation || null,
         visitorInformation: response.visitorInformation || null,
         ecosystems: response.ecosystems || null,
-        howToGet: null // This field doesn't exist in the API response
+        howToGet: null, // This field doesn't exist in the API response
       }
     } catch (error) {
       console.error('Error fetching protected area by slug:', error)
@@ -130,7 +130,7 @@ class ProtectedAreaRepository {
         visitorInfo: response.visitorInformation || null,
         visitorInformation: response.visitorInformation || null,
         ecosystems: response.ecosystems || null,
-        howToGet: null
+        howToGet: null,
       }
     } catch (error) {
       console.error('Error fetching protected area by id:', error)
@@ -144,13 +144,13 @@ class ProtectedAreaRepository {
       limit,
       status: 'published',
       sortBy: 'publishedAt',
-      sortOrder: 'desc'
+      sortOrder: 'desc',
     })
     // Map the API response to match our types
     return (response.data || []).map((item: any) => ({
       ...item,
       mainImageUrl: item.mainImage?.url || item.mainImageUrl || null,
-      surface: item.area?.toString() || null
+      surface: item.area?.toString() || null,
     }))
   }
 
@@ -158,7 +158,7 @@ class ProtectedAreaRepository {
     const response = await apiClient.protectedAreas.findAll({
       page: 1,
       limit: 1,
-      status: 'published'
+      status: 'published',
     })
     return response.pagination?.total || 0
   }

@@ -15,7 +15,10 @@ import { UpdateNewsDto } from './dto/update-news.dto';
 import { ClerkAuthGuard } from '../auth/guards/clerk-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
-import { CurrentUser, ICurrentUser } from '../auth/decorators/current-user.decorator';
+import {
+  CurrentUser,
+  ICurrentUser,
+} from '../auth/decorators/current-user.decorator';
 import { LocksService } from '../locks/locks.service';
 
 @Controller('api/news')
@@ -45,7 +48,10 @@ export class NewsController {
   @Post()
   @UseGuards(ClerkAuthGuard, RolesGuard)
   @Roles('admin', 'content_editor', 'news_editor')
-  create(@Body() createNewsDto: CreateNewsDto, @CurrentUser() user: ICurrentUser) {
+  create(
+    @Body() createNewsDto: CreateNewsDto,
+    @CurrentUser() user: ICurrentUser,
+  ) {
     return this.newsService.create(createNewsDto, user.id);
   }
 
@@ -89,7 +95,10 @@ export class NewsController {
   @Post(':id/lock')
   @UseGuards(ClerkAuthGuard, RolesGuard)
   @Roles('admin', 'content_editor', 'news_editor')
-  async acquireLock(@Param('id') id: string, @CurrentUser() user: ICurrentUser) {
+  async acquireLock(
+    @Param('id') id: string,
+    @CurrentUser() user: ICurrentUser,
+  ) {
     const userId = Number((user as any).dbUserId);
     await this.locksService.acquireLock('news', +id, userId);
     return { locked: true };
@@ -98,7 +107,10 @@ export class NewsController {
   @Delete(':id/lock')
   @UseGuards(ClerkAuthGuard, RolesGuard)
   @Roles('admin', 'content_editor', 'news_editor')
-  async releaseLock(@Param('id') id: string, @CurrentUser() user: ICurrentUser) {
+  async releaseLock(
+    @Param('id') id: string,
+    @CurrentUser() user: ICurrentUser,
+  ) {
     const userId = Number((user as any).dbUserId);
     await this.locksService.releaseLock('news', +id, userId);
     return { locked: false };

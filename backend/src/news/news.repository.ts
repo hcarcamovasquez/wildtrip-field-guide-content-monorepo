@@ -21,13 +21,29 @@ export class NewsRepository {
 
     // Build where conditions
     const conditions: any[] = [];
-    
+
     if (status && ['draft', 'published', 'archived'].includes(status)) {
-      conditions.push(eq(news.status, status as 'draft' | 'published' | 'archived'));
+      conditions.push(
+        eq(news.status, status as 'draft' | 'published' | 'archived'),
+      );
     }
 
-    if (category && ['education', 'current_events', 'conservation', 'research'].includes(category)) {
-      conditions.push(eq(news.category, category as 'education' | 'current_events' | 'conservation' | 'research'));
+    if (
+      category &&
+      ['education', 'current_events', 'conservation', 'research'].includes(
+        category,
+      )
+    ) {
+      conditions.push(
+        eq(
+          news.category,
+          category as
+            | 'education'
+            | 'current_events'
+            | 'conservation'
+            | 'research',
+        ),
+      );
     }
 
     if (search) {
@@ -35,8 +51,8 @@ export class NewsRepository {
         or(
           ilike(news.title, `%${search}%`),
           ilike(news.summary, `%${search}%`),
-          ilike(news.author, `%${search}%`)
-        )
+          ilike(news.author, `%${search}%`),
+        ),
       );
     }
 
@@ -71,17 +87,17 @@ export class NewsRepository {
   async findById(id: number) {
     const db = this.dbService.getDb();
     const [result] = await db.select().from(news).where(eq(news.id, id));
-    
+
     // Log draft data for debugging
     if (result && result.draftData) {
       console.log('News findById - Draft data:', {
         id,
         hasDraft: result.hasDraft,
         draftData: result.draftData,
-        mainImage: result.draftData.mainImage
+        mainImage: result.draftData.mainImage,
       });
     }
-    
+
     return result;
   }
 
@@ -115,7 +131,7 @@ export class NewsRepository {
   async publish(id: number) {
     const db = this.dbService.getDb();
     const [current] = await db.select().from(news).where(eq(news.id, id));
-    
+
     if (!current) {
       throw new Error('News not found');
     }
@@ -135,9 +151,9 @@ export class NewsRepository {
         })
         .where(eq(news.id, id))
         .returning();
-      
+
       return result;
-    } 
+    }
     // Si no hay draft pero está en borrador, simplemente publicar
     else if (current.status === 'draft') {
       const [result] = await db
@@ -149,10 +165,10 @@ export class NewsRepository {
         })
         .where(eq(news.id, id))
         .returning();
-      
+
       return result;
     }
-    
+
     // Si ya está publicado y no hay draft, no hay nada que publicar
     throw new Error('Nothing to publish');
   }
@@ -160,7 +176,7 @@ export class NewsRepository {
   async createDraft(id: number, draftData: any) {
     const db = this.dbService.getDb();
     const [current] = await db.select().from(news).where(eq(news.id, id));
-    
+
     if (!current) {
       throw new Error('News not found');
     }
@@ -178,7 +194,7 @@ export class NewsRepository {
       draftData,
       existingDraft,
       updatedDraft,
-      mainImage: updatedDraft.mainImage
+      mainImage: updatedDraft.mainImage,
     });
 
     const [result] = await db
@@ -191,7 +207,7 @@ export class NewsRepository {
       })
       .where(eq(news.id, id))
       .returning();
-    
+
     return result;
   }
 
@@ -207,7 +223,7 @@ export class NewsRepository {
       })
       .where(eq(news.id, id))
       .returning();
-    
+
     return result;
   }
 }

@@ -3,9 +3,9 @@ import node from '@astrojs/node'
 import react from '@astrojs/react'
 import sitemap from '@astrojs/sitemap'
 import clerk from '@clerk/astro'
-import {esMX} from '@clerk/localizations'
+import { esMX } from '@clerk/localizations'
 import tailwindcss from '@tailwindcss/vite'
-import {defineConfig} from 'astro/config'
+import { defineConfig } from 'astro/config'
 
 // https://astro.build/config
 export default defineConfig({
@@ -30,8 +30,8 @@ export default defineConfig({
     server: {
       host: true,
       hmr: {
-        host: 'localhost'
-      }
+        host: 'localhost',
+      },
     },
     ssr: {
       external: ['node:buffer', 'node:stream', 'node:events'],

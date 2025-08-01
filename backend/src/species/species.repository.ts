@@ -20,13 +20,29 @@ export class SpeciesRepository {
 
     // Build where conditions
     const conditions: any[] = [];
-    
+
     if (status && ['draft', 'published', 'archived'].includes(status)) {
-      conditions.push(eq(species.status, status as 'draft' | 'published' | 'archived'));
+      conditions.push(
+        eq(species.status, status as 'draft' | 'published' | 'archived'),
+      );
     }
 
     if (mainGroup) {
-      const validGroups = ['mammal', 'bird', 'reptile', 'amphibian', 'fish', 'insect', 'arachnid', 'crustacean', 'mollusk', 'plant', 'fungus', 'algae', 'other'];
+      const validGroups = [
+        'mammal',
+        'bird',
+        'reptile',
+        'amphibian',
+        'fish',
+        'insect',
+        'arachnid',
+        'crustacean',
+        'mollusk',
+        'plant',
+        'fungus',
+        'algae',
+        'other',
+      ];
       if (validGroups.includes(mainGroup)) {
         conditions.push(eq(species.mainGroup, mainGroup as any));
       }
@@ -36,8 +52,8 @@ export class SpeciesRepository {
       conditions.push(
         or(
           ilike(species.commonName, `%${search}%`),
-          ilike(species.scientificName, `%${search}%`)
-        )
+          ilike(species.scientificName, `%${search}%`),
+        ),
       );
     }
 
@@ -72,7 +88,7 @@ export class SpeciesRepository {
   async findById(id: number) {
     const db = this.dbService.getDb();
     const [result] = await db.select().from(species).where(eq(species.id, id));
-    
+
     // Log draft data for debugging
     if (result && result.draftData) {
       console.log('Species findById - Draft data:', {
@@ -80,16 +96,19 @@ export class SpeciesRepository {
         hasDraft: result.hasDraft,
         draftData: result.draftData,
         mainImage: result.draftData.mainImage,
-        galleryImages: result.draftData.galleryImages
+        galleryImages: result.draftData.galleryImages,
       });
     }
-    
+
     return result;
   }
 
   async findBySlug(slug: string) {
     const db = this.dbService.getDb();
-    const [result] = await db.select().from(species).where(eq(species.slug, slug));
+    const [result] = await db
+      .select()
+      .from(species)
+      .where(eq(species.slug, slug));
     return result;
   }
 
@@ -118,14 +137,14 @@ export class SpeciesRepository {
     console.log('Species repository publish called for id:', id);
     const db = this.dbService.getDb();
     const [current] = await db.select().from(species).where(eq(species.id, id));
-    
+
     console.log('Current species data:', {
       id: current?.id,
       status: current?.status,
       hasDraft: current?.hasDraft,
-      draftData: current?.draftData ? 'Has draft data' : 'No draft data'
+      draftData: current?.draftData ? 'Has draft data' : 'No draft data',
     });
-    
+
     if (!current) {
       throw new Error('Species not found');
     }
@@ -146,10 +165,10 @@ export class SpeciesRepository {
         })
         .where(eq(species.id, id))
         .returning();
-      
+
       console.log('Published with draft data, result status:', result.status);
       return result;
-    } 
+    }
     // Si no hay draft pero está en borrador, simplemente publicar
     else if (current.status === 'draft') {
       console.log('Publishing draft without draft data');
@@ -162,11 +181,11 @@ export class SpeciesRepository {
         })
         .where(eq(species.id, id))
         .returning();
-      
+
       console.log('Published draft, result status:', result.status);
       return result;
     }
-    
+
     // Si ya está publicado y no hay draft, no hay nada que publicar
     console.log('Nothing to publish - already published without draft');
     throw new Error('Nothing to publish');
@@ -175,7 +194,7 @@ export class SpeciesRepository {
   async createDraft(id: number, draftData: any) {
     const db = this.dbService.getDb();
     const [current] = await db.select().from(species).where(eq(species.id, id));
-    
+
     if (!current) {
       throw new Error('Species not found');
     }
@@ -194,7 +213,7 @@ export class SpeciesRepository {
       existingDraft,
       updatedDraft,
       mainImage: updatedDraft.mainImage,
-      galleryImages: updatedDraft.galleryImages
+      galleryImages: updatedDraft.galleryImages,
     });
 
     const [result] = await db
@@ -207,7 +226,7 @@ export class SpeciesRepository {
       })
       .where(eq(species.id, id))
       .returning();
-    
+
     return result;
   }
 
@@ -223,7 +242,7 @@ export class SpeciesRepository {
       })
       .where(eq(species.id, id))
       .returning();
-    
+
     return result;
   }
 }

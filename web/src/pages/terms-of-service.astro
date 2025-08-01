@@ -1,43 +1,54 @@
 ---
-import Layout from '../layouts/Layout.astro';
+import Layout from '../layouts/Layout.astro'
 ---
 
-<Layout 
-  title="Términos y Condiciones - Wildtrip Field Guide" 
+<Layout
+  title="Términos y Condiciones - Wildtrip Field Guide"
   description="Términos y condiciones de uso de la plataforma Wildtrip Field Guide"
 >
-  <div class="container mx-auto px-4 py-12 max-w-4xl">
+  <div class="container mx-auto max-w-4xl px-4 py-12">
     <button
       onclick="history.back()"
-      class="mb-6 flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colors"
+      class="mb-6 flex items-center gap-2 text-gray-600 transition-colors hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100"
     >
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <svg
+        width="20"
+        height="20"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
         <line x1="19" y1="12" x2="5" y2="12"></line>
         <polyline points="12 19 5 12 12 5"></polyline>
       </svg>
       Volver
     </button>
-    <h1 class="text-4xl font-bold mb-8 text-gray-900 dark:text-gray-100">Términos y Condiciones de Uso</h1>
-    
+    <h1 class="mb-8 text-4xl font-bold text-gray-900 dark:text-gray-100">Términos y Condiciones de Uso</h1>
+
     <div class="prose prose-lg max-w-none space-y-6">
       <p class="text-gray-600 dark:text-gray-400">Última actualización: 30 de enero de 2025</p>
-      
+
       <section>
-        <h2 class="text-2xl font-semibold mt-8 mb-4">1. Aceptación de los Términos</h2>
+        <h2 class="mt-8 mb-4 text-2xl font-semibold">1. Aceptación de los Términos</h2>
         <p>
-          Al acceder y utilizar Wildtrip Field Guide ("el Servicio", "la Plataforma"), usted acepta cumplir y estar sujeto a estos Términos y Condiciones de Uso. Si no está de acuerdo con estos términos, no debe utilizar nuestros servicios.
+          Al acceder y utilizar Wildtrip Field Guide ("el Servicio", "la Plataforma"), usted acepta cumplir y estar
+          sujeto a estos Términos y Condiciones de Uso. Si no está de acuerdo con estos términos, no debe utilizar
+          nuestros servicios.
         </p>
         <p class="mt-4">
-          Estos términos constituyen un contrato vinculante entre usted y Wildtrip Field Guide, de conformidad con la legislación chilena vigente, particularmente el Código Civil de Chile y la Ley N° 19.496 sobre Protección de los Derechos de los Consumidores.
+          Estos términos constituyen un contrato vinculante entre usted y Wildtrip Field Guide, de conformidad con la
+          legislación chilena vigente, particularmente el Código Civil de Chile y la Ley N° 19.496 sobre Protección de
+          los Derechos de los Consumidores.
         </p>
       </section>
 
       <section>
-        <h2 class="text-2xl font-semibold mt-8 mb-4">2. Descripción del Servicio</h2>
-        <p>
-          Wildtrip Field Guide es una plataforma educativa digital que proporciona:
-        </p>
-        <ul class="list-disc ml-6 space-y-2">
+        <h2 class="mt-8 mb-4 text-2xl font-semibold">2. Descripción del Servicio</h2>
+        <p>Wildtrip Field Guide es una plataforma educativa digital que proporciona:</p>
+        <ul class="ml-6 list-disc space-y-2">
           <li>Información sobre especies de flora y fauna de Chile</li>
           <li>Datos sobre áreas protegidas y parques nacionales</li>
           <li>Noticias y artículos relacionados con biodiversidad y conservación</li>
@@ -45,40 +56,42 @@ import Layout from '../layouts/Layout.astro';
           <li>Recursos educativos sobre la naturaleza chilena</li>
         </ul>
         <p class="mt-4">
-          Nos reservamos el derecho de modificar, suspender o discontinuar cualquier aspecto del servicio en cualquier momento.
+          Nos reservamos el derecho de modificar, suspender o discontinuar cualquier aspecto del servicio en cualquier
+          momento.
         </p>
       </section>
 
       <section>
-        <h2 class="text-2xl font-semibold mt-8 mb-4">3. Registro y Cuenta de Usuario</h2>
-        <h3 class="text-xl font-semibold mt-6 mb-3">3.1 Requisitos de Registro</h3>
-        <ul class="list-disc ml-6 space-y-2">
+        <h2 class="mt-8 mb-4 text-2xl font-semibold">3. Registro y Cuenta de Usuario</h2>
+        <h3 class="mt-6 mb-3 text-xl font-semibold">3.1 Requisitos de Registro</h3>
+        <ul class="ml-6 list-disc space-y-2">
           <li>Debe tener al menos 14 años de edad o contar con autorización parental</li>
           <li>Proporcionar información veraz, exacta y completa</li>
           <li>Mantener la confidencialidad de sus credenciales de acceso</li>
           <li>Notificar inmediatamente cualquier uso no autorizado de su cuenta</li>
         </ul>
 
-        <h3 class="text-xl font-semibold mt-6 mb-3">3.2 Responsabilidad de la Cuenta</h3>
+        <h3 class="mt-6 mb-3 text-xl font-semibold">3.2 Responsabilidad de la Cuenta</h3>
         <p>
-          Usted es responsable de todas las actividades que ocurran bajo su cuenta. Wildtrip Field Guide no será responsable por pérdidas o daños derivados del incumplimiento de estas obligaciones.
+          Usted es responsable de todas las actividades que ocurran bajo su cuenta. Wildtrip Field Guide no será
+          responsable por pérdidas o daños derivados del incumplimiento de estas obligaciones.
         </p>
       </section>
 
       <section>
-        <h2 class="text-2xl font-semibold mt-8 mb-4">4. Uso Aceptable</h2>
-        <h3 class="text-xl font-semibold mt-6 mb-3">4.1 Usos Permitidos</h3>
+        <h2 class="mt-8 mb-4 text-2xl font-semibold">4. Uso Aceptable</h2>
+        <h3 class="mt-6 mb-3 text-xl font-semibold">4.1 Usos Permitidos</h3>
         <p>Usted puede utilizar la plataforma para:</p>
-        <ul class="list-disc ml-6 space-y-2">
+        <ul class="ml-6 list-disc space-y-2">
           <li>Acceder a información educativa sobre biodiversidad</li>
           <li>Contribuir con contenido relevante (usuarios autorizados)</li>
           <li>Descargar material para uso personal y educativo no comercial</li>
           <li>Compartir enlaces a nuestro contenido</li>
         </ul>
 
-        <h3 class="text-xl font-semibold mt-6 mb-3">4.2 Prohibiciones</h3>
+        <h3 class="mt-6 mb-3 text-xl font-semibold">4.2 Prohibiciones</h3>
         <p>Está expresamente prohibido:</p>
-        <ul class="list-disc ml-6 space-y-2">
+        <ul class="ml-6 list-disc space-y-2">
           <li>Usar el servicio para fines ilegales o no autorizados</li>
           <li>Intentar acceder sin autorización a sistemas o redes</li>
           <li>Interferir con el uso del servicio por parte de otros usuarios</li>
@@ -90,57 +103,69 @@ import Layout from '../layouts/Layout.astro';
       </section>
 
       <section>
-        <h2 class="text-2xl font-semibold mt-8 mb-4">5. Propiedad Intelectual</h2>
-        <h3 class="text-xl font-semibold mt-6 mb-3">5.1 Contenido de Wildtrip</h3>
+        <h2 class="mt-8 mb-4 text-2xl font-semibold">5. Propiedad Intelectual</h2>
+        <h3 class="mt-6 mb-3 text-xl font-semibold">5.1 Contenido de Wildtrip</h3>
         <p>
-          Todo el contenido de la plataforma, incluyendo textos, gráficos, logos, imágenes, y software, es propiedad de Wildtrip Field Guide o sus licenciantes y está protegido por las leyes chilenas e internacionales de propiedad intelectual.
+          Todo el contenido de la plataforma, incluyendo textos, gráficos, logos, imágenes, y software, es propiedad de
+          Wildtrip Field Guide o sus licenciantes y está protegido por las leyes chilenas e internacionales de propiedad
+          intelectual.
         </p>
 
-        <h3 class="text-xl font-semibold mt-6 mb-3">5.2 Licencia de Uso</h3>
+        <h3 class="mt-6 mb-3 text-xl font-semibold">5.2 Licencia de Uso</h3>
         <p>
-          Se otorga una licencia limitada, no exclusiva, intransferible y revocable para acceder y utilizar el contenido únicamente para fines personales y educativos no comerciales, siempre que se respeten estos términos y se mantengan los avisos de derechos de autor.
+          Se otorga una licencia limitada, no exclusiva, intransferible y revocable para acceder y utilizar el contenido
+          únicamente para fines personales y educativos no comerciales, siempre que se respeten estos términos y se
+          mantengan los avisos de derechos de autor.
         </p>
 
-        <h3 class="text-xl font-semibold mt-6 mb-3">5.3 Contenido Generado por Usuarios</h3>
-        <p>
-          Al publicar contenido en la plataforma, usted:
-        </p>
-        <ul class="list-disc ml-6 space-y-2">
+        <h3 class="mt-6 mb-3 text-xl font-semibold">5.3 Contenido Generado por Usuarios</h3>
+        <p>Al publicar contenido en la plataforma, usted:</p>
+        <ul class="ml-6 list-disc space-y-2">
           <li>Garantiza que tiene los derechos necesarios sobre dicho contenido</li>
-          <li>Otorga a Wildtrip una licencia mundial, no exclusiva, libre de regalías para usar, reproducir y distribuir su contenido</li>
+          <li>
+            Otorga a Wildtrip una licencia mundial, no exclusiva, libre de regalías para usar, reproducir y distribuir
+            su contenido
+          </li>
           <li>Acepta que su contenido puede ser moderado o removido si viola estos términos</li>
         </ul>
       </section>
 
       <section>
-        <h2 class="text-2xl font-semibold mt-8 mb-4">6. Privacidad y Protección de Datos</h2>
+        <h2 class="mt-8 mb-4 text-2xl font-semibold">6. Privacidad y Protección de Datos</h2>
         <p>
-          El tratamiento de sus datos personales se rige por nuestra <a href="/privacy-policy" class="text-blue-600 dark:text-blue-400 hover:underline">Política de Privacidad</a>, que forma parte integral de estos términos. Al usar nuestros servicios, acepta las prácticas descritas en dicha política.
+          El tratamiento de sus datos personales se rige por nuestra <a
+            href="/privacy-policy"
+            class="text-blue-600 hover:underline dark:text-blue-400">Política de Privacidad</a
+          >, que forma parte integral de estos términos. Al usar nuestros servicios, acepta las prácticas descritas en
+          dicha política.
         </p>
       </section>
 
       <section>
-        <h2 class="text-2xl font-semibold mt-8 mb-4">7. Limitación de Responsabilidad</h2>
-        <p>
-          En la máxima medida permitida por la ley chilena:
-        </p>
-        <ul class="list-disc ml-6 space-y-2">
+        <h2 class="mt-8 mb-4 text-2xl font-semibold">7. Limitación de Responsabilidad</h2>
+        <p>En la máxima medida permitida por la ley chilena:</p>
+        <ul class="ml-6 list-disc space-y-2">
           <li>El servicio se proporciona "tal cual" y "según disponibilidad"</li>
           <li>No garantizamos la exactitud, integridad o actualidad de toda la información</li>
           <li>No seremos responsables por daños indirectos, incidentales o consecuenciales</li>
-          <li>Nuestra responsabilidad total no excederá el monto pagado por usted (si aplica) en los últimos 12 meses</li>
+          <li>
+            Nuestra responsabilidad total no excederá el monto pagado por usted (si aplica) en los últimos 12 meses
+          </li>
         </ul>
         <p class="mt-4">
-          <strong>Nota:</strong> Algunas jurisdicciones no permiten ciertas limitaciones de responsabilidad, por lo que algunas de estas limitaciones pueden no aplicarse a usted.
+          <strong>Nota:</strong> Algunas jurisdicciones no permiten ciertas limitaciones de responsabilidad, por lo que algunas
+          de estas limitaciones pueden no aplicarse a usted.
         </p>
       </section>
 
       <section>
-        <h2 class="text-2xl font-semibold mt-8 mb-4">8. Indemnización</h2>
+        <h2 class="mt-8 mb-4 text-2xl font-semibold">8. Indemnización</h2>
         <p>
-          Usted acepta indemnizar y mantener indemne a Wildtrip Field Guide, sus directores, empleados y agentes de cualquier reclamo, daño, obligación, pérdida, responsabilidad, costo o deuda, y gastos (incluyendo honorarios de abogados) que surjan de:
+          Usted acepta indemnizar y mantener indemne a Wildtrip Field Guide, sus directores, empleados y agentes de
+          cualquier reclamo, daño, obligación, pérdida, responsabilidad, costo o deuda, y gastos (incluyendo honorarios
+          de abogados) que surjan de:
         </p>
-        <ul class="list-disc ml-6 space-y-2">
+        <ul class="ml-6 list-disc space-y-2">
           <li>Su uso del servicio</li>
           <li>Su violación de estos términos</li>
           <li>Su violación de derechos de terceros</li>
@@ -149,24 +174,26 @@ import Layout from '../layouts/Layout.astro';
       </section>
 
       <section>
-        <h2 class="text-2xl font-semibold mt-8 mb-4">9. Modificaciones a los Términos</h2>
+        <h2 class="mt-8 mb-4 text-2xl font-semibold">9. Modificaciones a los Términos</h2>
         <p>
-          Nos reservamos el derecho de modificar estos términos en cualquier momento. Los cambios entrarán en vigor al momento de su publicación en la plataforma. El uso continuado del servicio después de dichos cambios constituye su aceptación de los nuevos términos.
+          Nos reservamos el derecho de modificar estos términos en cualquier momento. Los cambios entrarán en vigor al
+          momento de su publicación en la plataforma. El uso continuado del servicio después de dichos cambios
+          constituye su aceptación de los nuevos términos.
         </p>
         <p class="mt-4">
-          Para cambios sustanciales, proporcionaremos un aviso con al menos 30 días de anticipación a través de la plataforma o por correo electrónico.
+          Para cambios sustanciales, proporcionaremos un aviso con al menos 30 días de anticipación a través de la
+          plataforma o por correo electrónico.
         </p>
       </section>
 
       <section>
-        <h2 class="text-2xl font-semibold mt-8 mb-4">10. Terminación</h2>
+        <h2 class="mt-8 mb-4 text-2xl font-semibold">10. Terminación</h2>
         <p>
-          Podemos suspender o terminar su acceso al servicio en cualquier momento, con o sin causa, y con o sin previo aviso. Usted puede terminar su cuenta en cualquier momento contactándonos.
+          Podemos suspender o terminar su acceso al servicio en cualquier momento, con o sin causa, y con o sin previo
+          aviso. Usted puede terminar su cuenta en cualquier momento contactándonos.
         </p>
-        <p class="mt-4">
-          Tras la terminación:
-        </p>
-        <ul class="list-disc ml-6 space-y-2">
+        <p class="mt-4">Tras la terminación:</p>
+        <ul class="ml-6 list-disc space-y-2">
           <li>Su derecho a usar el servicio cesará inmediatamente</li>
           <li>Podemos eliminar su cuenta y contenido asociado</li>
           <li>Las disposiciones que por su naturaleza deban sobrevivir, continuarán vigentes</li>
@@ -174,54 +201,62 @@ import Layout from '../layouts/Layout.astro';
       </section>
 
       <section>
-        <h2 class="text-2xl font-semibold mt-8 mb-4">11. Ley Aplicable y Jurisdicción</h2>
+        <h2 class="mt-8 mb-4 text-2xl font-semibold">11. Ley Aplicable y Jurisdicción</h2>
         <p>
-          Estos términos se regirán e interpretarán de acuerdo con las leyes de la República de Chile, sin consideración a sus disposiciones sobre conflictos de leyes.
+          Estos términos se regirán e interpretarán de acuerdo con las leyes de la República de Chile, sin consideración
+          a sus disposiciones sobre conflictos de leyes.
         </p>
         <p class="mt-4">
-          Cualquier disputa relacionada con estos términos será sometida a la jurisdicción exclusiva de los tribunales ordinarios de justicia de Santiago de Chile, renunciando expresamente a cualquier otro fuero que pudiera corresponder.
+          Cualquier disputa relacionada con estos términos será sometida a la jurisdicción exclusiva de los tribunales
+          ordinarios de justicia de Santiago de Chile, renunciando expresamente a cualquier otro fuero que pudiera
+          corresponder.
         </p>
       </section>
 
       <section>
-        <h2 class="text-2xl font-semibold mt-8 mb-4">12. Resolución de Disputas</h2>
+        <h2 class="mt-8 mb-4 text-2xl font-semibold">12. Resolución de Disputas</h2>
         <p>
-          Antes de iniciar cualquier acción legal, las partes acuerdan intentar resolver cualquier disputa de manera amigable durante un período de 30 días. Si no se logra una resolución, se procederá según lo establecido en la cláusula de jurisdicción.
+          Antes de iniciar cualquier acción legal, las partes acuerdan intentar resolver cualquier disputa de manera
+          amigable durante un período de 30 días. Si no se logra una resolución, se procederá según lo establecido en la
+          cláusula de jurisdicción.
         </p>
         <p class="mt-4">
-          Para usuarios consumidores, esto no afecta su derecho a acudir al SERNAC o ejercer las acciones contempladas en la Ley del Consumidor.
+          Para usuarios consumidores, esto no afecta su derecho a acudir al SERNAC o ejercer las acciones contempladas
+          en la Ley del Consumidor.
         </p>
       </section>
 
       <section>
-        <h2 class="text-2xl font-semibold mt-8 mb-4">13. Disposiciones Generales</h2>
-        <h3 class="text-xl font-semibold mt-6 mb-3">13.1 Acuerdo Completo</h3>
+        <h2 class="mt-8 mb-4 text-2xl font-semibold">13. Disposiciones Generales</h2>
+        <h3 class="mt-6 mb-3 text-xl font-semibold">13.1 Acuerdo Completo</h3>
         <p>
-          Estos términos, junto con nuestra Política de Privacidad, constituyen el acuerdo completo entre usted y Wildtrip Field Guide.
+          Estos términos, junto con nuestra Política de Privacidad, constituyen el acuerdo completo entre usted y
+          Wildtrip Field Guide.
         </p>
 
-        <h3 class="text-xl font-semibold mt-6 mb-3">13.2 Divisibilidad</h3>
+        <h3 class="mt-6 mb-3 text-xl font-semibold">13.2 Divisibilidad</h3>
         <p>
-          Si alguna disposición de estos términos es declarada inválida o inaplicable, las demás disposiciones continuarán en pleno vigor y efecto.
+          Si alguna disposición de estos términos es declarada inválida o inaplicable, las demás disposiciones
+          continuarán en pleno vigor y efecto.
         </p>
 
-        <h3 class="text-xl font-semibold mt-6 mb-3">13.3 Renuncia</h3>
+        <h3 class="mt-6 mb-3 text-xl font-semibold">13.3 Renuncia</h3>
         <p>
-          La falta de ejercicio o demora en el ejercicio de cualquier derecho no constituirá una renuncia a dicho derecho.
+          La falta de ejercicio o demora en el ejercicio de cualquier derecho no constituirá una renuncia a dicho
+          derecho.
         </p>
 
-        <h3 class="text-xl font-semibold mt-6 mb-3">13.4 Cesión</h3>
+        <h3 class="mt-6 mb-3 text-xl font-semibold">13.4 Cesión</h3>
         <p>
-          Usted no puede ceder o transferir estos términos sin nuestro consentimiento previo por escrito. Nosotros podemos ceder nuestros derechos y obligaciones sin restricción.
+          Usted no puede ceder o transferir estos términos sin nuestro consentimiento previo por escrito. Nosotros
+          podemos ceder nuestros derechos y obligaciones sin restricción.
         </p>
       </section>
 
       <section>
-        <h2 class="text-2xl font-semibold mt-8 mb-4">14. Información de Contacto</h2>
-        <p>
-          Para preguntas sobre estos Términos y Condiciones, contáctenos en:
-        </p>
-        <div class="mt-4 p-4 bg-gray-100 dark:bg-gray-800 rounded-lg">
+        <h2 class="mt-8 mb-4 text-2xl font-semibold">14. Información de Contacto</h2>
+        <p>Para preguntas sobre estos Términos y Condiciones, contáctenos en:</p>
+        <div class="mt-4 rounded-lg bg-gray-100 p-4 dark:bg-gray-800">
           <p><strong>Wildtrip Field Guide</strong></p>
           <p><strong>Email:</strong> legal@wildtrip.cl</p>
           <p><strong>Dirección:</strong> [Dirección completa en Chile]</p>
@@ -238,41 +273,41 @@ import Layout from '../layouts/Layout.astro';
   .prose ul {
     color: rgb(55 65 81);
   }
-  
+
   .prose p {
     color: rgb(55 65 81);
     line-height: 1.625;
   }
-  
+
   .prose h2 {
     color: rgb(17 24 39);
   }
-  
+
   .prose h3 {
     color: rgb(31 41 55);
   }
-  
+
   .prose strong {
     color: rgb(17 24 39);
   }
-  
+
   /* Dark mode */
   :global(.dark) .prose ul {
     color: rgb(209 213 219);
   }
-  
+
   :global(.dark) .prose p {
     color: rgb(209 213 219);
   }
-  
+
   :global(.dark) .prose h2 {
     color: rgb(243 244 246);
   }
-  
+
   :global(.dark) .prose h3 {
     color: rgb(229 231 235);
   }
-  
+
   :global(.dark) .prose strong {
     color: rgb(243 244 246);
   }

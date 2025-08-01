@@ -1,12 +1,22 @@
-import { relations } from 'drizzle-orm'
-import { pgTable, serial, integer, text, json, timestamp, boolean } from 'drizzle-orm/pg-core'
-import type { RichContent } from '@wildtrip/shared'
-import { users } from './users'
+import { relations } from 'drizzle-orm';
+import {
+  pgTable,
+  serial,
+  integer,
+  text,
+  json,
+  timestamp,
+  boolean,
+} from 'drizzle-orm/pg-core';
+import type { RichContent } from '@wildtrip/shared';
+import { users } from './users';
 
 export const news = pgTable('news', {
   id: serial('id').primaryKey(),
   title: text('title').notNull(),
-  status: text('status', { enum: ['draft', 'published', 'archived'] }).default('draft'),
+  status: text('status', { enum: ['draft', 'published', 'archived'] }).default(
+    'draft',
+  ),
   slug: text('slug').notNull().unique(),
   author: text('author'),
   category: text('category', {
@@ -18,9 +28,9 @@ export const news = pgTable('news', {
   content: json('content').$type<RichContent>().notNull(),
 
   mainImage: json('main_image').$type<{
-    id: string
-    url: string
-    galleryId: number
+    id: string;
+    url: string;
+    galleryId: number;
   }>(),
   tags: json('tags').$type<string[]>(),
 
@@ -41,13 +51,15 @@ export const news = pgTable('news', {
   draftCreatedAt: timestamp('draft_created_at'),
 
   // Locking system fields
-  lockedBy: integer('locked_by').references(() => users.id, { onDelete: 'set null' }),
+  lockedBy: integer('locked_by').references(() => users.id, {
+    onDelete: 'set null',
+  }),
   lockedAt: timestamp('locked_at'),
   lockExpiresAt: timestamp('lock_expires_at'),
-})
+});
 
-export type News = typeof news.$inferSelect
-export type NewNews = typeof news.$inferInsert
+export type News = typeof news.$inferSelect;
+export type NewNews = typeof news.$inferInsert;
 
 // News relations
 export const newsRelations = relations(news, ({ one }) => ({
@@ -55,4 +67,4 @@ export const newsRelations = relations(news, ({ one }) => ({
     fields: [news.lockedBy],
     references: [users.id],
   }),
-}))
+}));

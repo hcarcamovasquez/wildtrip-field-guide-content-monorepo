@@ -1,11 +1,21 @@
-import { relations } from 'drizzle-orm'
-import { boolean, integer, json, pgTable, serial, text, timestamp } from 'drizzle-orm/pg-core'
-import type { RichContent } from '@wildtrip/shared'
-import { users } from './users'
+import { relations } from 'drizzle-orm';
+import {
+  boolean,
+  integer,
+  json,
+  pgTable,
+  serial,
+  text,
+  timestamp,
+} from 'drizzle-orm/pg-core';
+import type { RichContent } from '@wildtrip/shared';
+import { users } from './users';
 
 export const species = pgTable('species', {
   id: serial('id').primaryKey(),
-  status: text('status', { enum: ['draft', 'published', 'archived'] }).default('draft'),
+  status: text('status', { enum: ['draft', 'published', 'archived'] }).default(
+    'draft',
+  ),
   slug: text('slug').notNull().unique(),
   scientificName: text('scientific_name').notNull().default(''),
   commonName: text('common_name').notNull().default(''),
@@ -50,15 +60,15 @@ export const species = pgTable('species', {
   }),
   images: json('images').$type<string[]>(), // Array of URLs or references to images (deprecated)
   mainImage: json('main_image').$type<{
-    id: string
-    url: string
-    galleryId: number
+    id: string;
+    url: string;
+    galleryId: number;
   }>(),
   galleryImages: json('gallery_images').$type<
     Array<{
-      id: string
-      url: string
-      galleryId: number
+      id: string;
+      url: string;
+      galleryId: number;
     }>
   >(),
   distinctiveFeatures: text('distinctive_features'),
@@ -84,13 +94,15 @@ export const species = pgTable('species', {
   draftCreatedAt: timestamp('draft_created_at'),
 
   // Locking system fields
-  lockedBy: integer('locked_by').references(() => users.id, { onDelete: 'set null' }),
+  lockedBy: integer('locked_by').references(() => users.id, {
+    onDelete: 'set null',
+  }),
   lockedAt: timestamp('locked_at'),
   lockExpiresAt: timestamp('lock_expires_at'),
-})
+});
 
-export type Species = typeof species.$inferSelect
-export type NewSpecies = typeof species.$inferInsert
+export type Species = typeof species.$inferSelect;
+export type NewSpecies = typeof species.$inferInsert;
 
 // Species relations
 export const speciesRelations = relations(species, ({ one }) => ({
@@ -98,4 +110,4 @@ export const speciesRelations = relations(species, ({ one }) => ({
     fields: [species.lockedBy],
     references: [users.id],
   }),
-}))
+}));

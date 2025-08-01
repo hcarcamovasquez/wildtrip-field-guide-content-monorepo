@@ -14,9 +14,9 @@ class APIClient {
 
   private async request<T>(endpoint: string, options: FetchOptions = {}): Promise<T> {
     const { params, ...fetchOptions } = options
-    
+
     let url = `${this.baseURL}${endpoint}`
-    
+
     if (params) {
       const searchParams = new URLSearchParams()
       Object.entries(params).forEach(([key, value]) => {
@@ -42,32 +42,23 @@ class APIClient {
 
   // Species endpoints
   species = {
-    findAll: (params?: any) => 
-      this.request<any>('/api/species', { params }),
-    findBySlug: (slug: string) => 
-      this.request<any>(`/api/species/slug/${slug}`),
-    findById: (id: number) => 
-      this.request<any>(`/api/species/${id}`),
+    findAll: (params?: any) => this.request<any>('/api/species', { params }),
+    findBySlug: (slug: string) => this.request<any>(`/api/species/slug/${slug}`),
+    findById: (id: number) => this.request<any>(`/api/species/${id}`),
   }
 
   // Protected Areas endpoints
   protectedAreas = {
-    findAll: (params?: any) => 
-      this.request<any>('/api/protected-areas', { params }),
-    findBySlug: (slug: string) => 
-      this.request<any>(`/api/protected-areas/slug/${slug}`),
-    findById: (id: number) => 
-      this.request<any>(`/api/protected-areas/${id}`),
+    findAll: (params?: any) => this.request<any>('/api/protected-areas', { params }),
+    findBySlug: (slug: string) => this.request<any>(`/api/protected-areas/slug/${slug}`),
+    findById: (id: number) => this.request<any>(`/api/protected-areas/${id}`),
   }
 
   // News endpoints
   news = {
-    findAll: (params?: any) => 
-      this.request<any>('/api/news', { params }),
-    findBySlug: (slug: string) => 
-      this.request<any>(`/api/news/slug/${slug}`),
-    findById: (id: number) => 
-      this.request<any>(`/api/news/${id}`),
+    findAll: (params?: any) => this.request<any>('/api/news', { params }),
+    findBySlug: (slug: string) => this.request<any>(`/api/news/slug/${slug}`),
+    findById: (id: number) => this.request<any>(`/api/news/${id}`),
   }
 }
 

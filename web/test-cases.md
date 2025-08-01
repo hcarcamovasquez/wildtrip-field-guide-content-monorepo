@@ -3,6 +3,7 @@
 ## 1. Public Pages Test Suite
 
 ### 1.1 Homepage Tests
+
 - **Test Case ID**: TC-HOME-001
 - **Description**: Verify homepage loads with all sections
 - **Preconditions**: Application running on localhost:4321
@@ -16,6 +17,7 @@
 - **Expected Result**: All elements load correctly with proper Spanish localization
 
 ### 1.2 Dark Mode Toggle
+
 - **Test Case ID**: TC-HOME-002
 - **Description**: Verify dark mode functionality
 - **Steps**:
@@ -27,6 +29,7 @@
 ## 2. Species Module Tests
 
 ### 2.1 Species List Page
+
 - **Test Case ID**: TC-SPECIES-001
 - **Description**: Verify species list displays correctly
 - **Steps**:
@@ -36,6 +39,7 @@
 - **Expected Result**: All species display with complete information
 
 ### 2.2 Species Search and Filters
+
 - **Test Case ID**: TC-SPECIES-002
 - **Description**: Test species search and filtering
 - **Steps**:
@@ -46,6 +50,7 @@
 - **Expected Result**: Results filtered according to criteria
 
 ### 2.3 Species Detail Page
+
 - **Test Case ID**: TC-SPECIES-003
 - **Description**: Verify species detail page
 - **Steps**:
@@ -57,6 +62,7 @@
 ## 3. Protected Areas Tests
 
 ### 3.1 Protected Areas List
+
 - **Test Case ID**: TC-AREAS-001
 - **Description**: Verify protected areas list
 - **Steps**:
@@ -66,6 +72,7 @@
 - **Expected Result**: All areas display with correct information
 
 ### 3.2 Protected Areas Filters
+
 - **Test Case ID**: TC-AREAS-002
 - **Description**: Test area filtering by type and region
 - **Steps**:
@@ -77,6 +84,7 @@
 ## 4. News Module Tests
 
 ### 4.1 News List Page
+
 - **Test Case ID**: TC-NEWS-001
 - **Description**: Verify news articles display
 - **Steps**:
@@ -86,6 +94,7 @@
 - **Expected Result**: Articles display with complete metadata
 
 ### 4.2 News Category Filter
+
 - **Test Case ID**: TC-NEWS-002
 - **Description**: Test news filtering by category
 - **Steps**:
@@ -96,6 +105,7 @@
 ## 5. Authentication Tests
 
 ### 5.1 Sign-In Page
+
 - **Test Case ID**: TC-AUTH-001
 - **Description**: Verify sign-in page loads
 - **Steps**:
@@ -106,6 +116,7 @@
 - **Expected Result**: Clerk sign-in page loads with Spanish UI
 
 ### 5.2 Protected Route Access
+
 - **Test Case ID**: TC-AUTH-002
 - **Description**: Verify protected routes require authentication
 - **Steps**:
@@ -114,6 +125,7 @@
 - **Expected Result**: Unauthenticated users redirected to sign-in
 
 ### 5.3 Authentication Flow
+
 - **Test Case ID**: TC-AUTH-003
 - **Description**: Test complete authentication flow
 - **Steps**:
@@ -128,6 +140,7 @@
 ## 6. Management Pages Tests (Requires Authentication)
 
 ### 6.1 Management Dashboard
+
 - **Test Case ID**: TC-MANAGE-001
 - **Description**: Verify management dashboard
 - **Preconditions**: Authenticated user
@@ -141,6 +154,7 @@
 - **Expected Result**: Dashboard displays accurate content counts
 
 ### 6.2 Species Management
+
 - **Test Case ID**: TC-MANAGE-002
 - **Description**: Test species management interface
 - **Steps**:
@@ -153,6 +167,7 @@
 - **Expected Result**: Complete species management interface
 
 ### 6.3 News Management
+
 - **Test Case ID**: TC-MANAGE-003
 - **Description**: Test news management interface
 - **Steps**:
@@ -165,6 +180,7 @@
 - **Expected Result**: Complete news management interface
 
 ### 6.4 Protected Areas Management
+
 - **Test Case ID**: TC-MANAGE-004
 - **Description**: Test protected areas management
 - **Steps**:
@@ -177,6 +193,7 @@
 - **Expected Result**: Complete areas management with draft status
 
 ### 6.5 Content Draft/Publish Workflow
+
 - **Test Case ID**: TC-MANAGE-005
 - **Description**: Test draft/publish system
 - **Steps**:
@@ -190,6 +207,7 @@
 ## 7. Performance Tests
 
 ### 7.1 Page Load Times
+
 - **Test Case ID**: TC-PERF-001
 - **Description**: Measure page load performance
 - **Steps**:
@@ -199,6 +217,7 @@
 - **Expected Result**: Pages load within acceptable thresholds
 
 ### 7.2 Search Performance
+
 - **Test Case ID**: TC-PERF-002
 - **Description**: Test search response times
 - **Steps**:
@@ -209,6 +228,7 @@
 ## 8. Responsive Design Tests
 
 ### 8.1 Mobile Viewport
+
 - **Test Case ID**: TC-RESP-001
 - **Description**: Test mobile responsiveness
 - **Steps**:
@@ -219,6 +239,7 @@
 - **Expected Result**: Full functionality on mobile devices
 
 ### 8.2 Tablet Viewport
+
 - **Test Case ID**: TC-RESP-002
 - **Description**: Test tablet responsiveness
 - **Steps**:
@@ -230,6 +251,7 @@
 ## 9. SEO and Metadata Tests
 
 ### 9.1 Meta Tags
+
 - **Test Case ID**: TC-SEO-001
 - **Description**: Verify SEO metadata
 - **Steps**:
@@ -241,6 +263,7 @@
 ## 10. Error Handling Tests
 
 ### 10.1 404 Pages
+
 - **Test Case ID**: TC-ERROR-001
 - **Description**: Test 404 error handling
 - **Steps**:
@@ -250,6 +273,7 @@
 - **Expected Result**: User-friendly error page
 
 ### 10.2 API Error Handling
+
 - **Test Case ID**: TC-ERROR-002
 - **Description**: Test API error responses
 - **Steps**:

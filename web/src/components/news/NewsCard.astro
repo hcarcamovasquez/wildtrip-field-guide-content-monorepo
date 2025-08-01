@@ -96,7 +96,11 @@ const { newsItem } = Astro.props
       <div>
         <h3 class="mb-3 line-clamp-2 text-xl font-bold">{newsItem.title}</h3>
         <p class="mb-2 text-sm opacity-90">
-          {newsItem.category ? `${getNewsCategory(newsItem.category)?.emoji} ${getNewsCategory(newsItem.category)?.label}` || 'General' : 'General'}
+          {
+            newsItem.category
+              ? `${getNewsCategory(newsItem.category)?.emoji} ${getNewsCategory(newsItem.category)?.label}` || 'General'
+              : 'General'
+          }
         </p>
 
         {newsItem.author && <p class="mb-3 text-sm opacity-90">Por {newsItem.author}</p>}

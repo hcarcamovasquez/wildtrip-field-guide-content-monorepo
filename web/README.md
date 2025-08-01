@@ -75,7 +75,7 @@ web/
 │   │   ├── sign-in/        # Página de login (Clerk)
 │   │   ├── sign-up/        # Página de registro (Clerk)
 │   │   └── index.astro     # Homepage
-│   ├── components/         
+│   ├── components/
 │   │   ├── icons/          # Componentes de iconos
 │   │   ├── news/           # Componentes de noticias
 │   │   ├── protected-area/ # Componentes de áreas protegidas
@@ -101,7 +101,7 @@ import { apiClient } from '@/lib/api/client'
 const species = await apiClient.species.findAll({
   page: 1,
   limit: 20,
-  mainGroup: 'mammal'
+  mainGroup: 'mammal',
 })
 
 // Obtener una especie por slug
@@ -127,6 +127,7 @@ import ResponsiveImage from '@/components/ResponsiveImage.astro'
 ```
 
 Variantes disponibles:
+
 - `thumb`: 96x96px
 - `small`: 320px ancho
 - `medium`: 640px ancho
@@ -181,19 +182,23 @@ pnpm format
 ## 🐛 Solución de Problemas
 
 ### Las imágenes no se muestran
+
 - Verificar que `PUBLIC_R2_PUBLIC_URL` esté configurado
 - Asegurar que se use `ResponsiveImage` y no `<img>` directamente
 - Verificar que la API devuelva URLs completas
 
 ### Error de importación de @wildtrip/shared
+
 - Ejecutar `pnpm --filter=shared build` desde la raíz
 - Verificar que `@wildtrip/shared` esté en dependencies
 
 ### Puerto 4321 en uso
+
 - El servidor intentará usar el siguiente puerto disponible
 - O especificar otro puerto: `PORT=4322 pnpm dev`
 
 ### Error de autenticación
+
 - Verificar las claves de Clerk
 - Asegurar que el backend esté corriendo
 - Revisar CORS en el backend
@@ -201,6 +206,7 @@ pnpm format
 ## 📊 Estado Actual (Agosto 2025)
 
 ### ✅ Completado
+
 - Migración completa del código de gestión al dashboard
 - Limpieza de dependencias no utilizadas
 - Componente ResponsiveImage para todas las imágenes
@@ -210,6 +216,7 @@ pnpm format
 - SEO y structured data
 
 ### 🚧 Pendiente
+
 - Tests E2E con Playwright
 - Mejoras de accesibilidad
 - Internacionalización (i18n)

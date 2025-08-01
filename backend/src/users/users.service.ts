@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ForbiddenException,
+} from '@nestjs/common';
 import { UsersRepository } from './users.repository';
 import { UpdateUserDto } from './dto/update-user.dto';
 
@@ -32,7 +36,12 @@ export class UsersService {
     return user;
   }
 
-  async update(id: string, updateUserDto: UpdateUserDto, currentUserId: string, currentUserRole: string) {
+  async update(
+    id: string,
+    updateUserDto: UpdateUserDto,
+    currentUserId: string,
+    currentUserRole: string,
+  ) {
     // Prevent users from updating their own role
     if (id === currentUserId && updateUserDto.role) {
       throw new ForbiddenException('You cannot change your own role');
@@ -57,7 +66,7 @@ export class UsersService {
 
   async getUserStats() {
     const allUsers = await this.usersRepository.findAll({ limit: 1000 }); // Get all users for stats
-    
+
     const stats = {
       total: allUsers.totalItems,
       byRole: {} as Record<string, number>,
@@ -71,7 +80,7 @@ export class UsersService {
     const lastWeek = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
-    allUsers.items.forEach(user => {
+    allUsers.items.forEach((user) => {
       // Count by role
       stats.byRole[user.role] = (stats.byRole[user.role] || 0) + 1;
 

@@ -15,7 +15,10 @@ import { UpdateSpeciesDto } from './dto/update-species.dto';
 import { ClerkAuthGuard } from '../auth/guards/clerk-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
-import { CurrentUser, ICurrentUser } from '../auth/decorators/current-user.decorator';
+import {
+  CurrentUser,
+  ICurrentUser,
+} from '../auth/decorators/current-user.decorator';
 import { LocksService } from '../locks/locks.service';
 
 @Controller('api/species')
@@ -91,7 +94,10 @@ export class SpeciesController {
   @Post(':id/lock')
   @UseGuards(ClerkAuthGuard, RolesGuard)
   @Roles('admin', 'content_editor', 'species_editor')
-  async acquireLock(@Param('id') id: string, @CurrentUser() user: ICurrentUser) {
+  async acquireLock(
+    @Param('id') id: string,
+    @CurrentUser() user: ICurrentUser,
+  ) {
     const userId = Number((user as any).dbUserId);
     await this.locksService.acquireLock('species', +id, userId);
     return { success: true };
@@ -100,7 +106,10 @@ export class SpeciesController {
   @Delete(':id/lock')
   @UseGuards(ClerkAuthGuard, RolesGuard)
   @Roles('admin', 'content_editor', 'species_editor')
-  async releaseLock(@Param('id') id: string, @CurrentUser() user: ICurrentUser) {
+  async releaseLock(
+    @Param('id') id: string,
+    @CurrentUser() user: ICurrentUser,
+  ) {
     console.log('Release lock endpoint called for species:', id);
     const userId = Number((user as any).dbUserId);
     await this.locksService.releaseLock('species', +id, userId);

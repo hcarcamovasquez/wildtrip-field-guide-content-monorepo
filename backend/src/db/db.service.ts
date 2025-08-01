@@ -13,7 +13,7 @@ export class DbService implements OnModuleInit, OnModuleDestroy {
 
   async onModuleInit() {
     const databaseUrl = this.configService.get<string>('database.url');
-    
+
     if (!databaseUrl) {
       throw new Error('DATABASE_URL is not defined');
     }
@@ -26,7 +26,7 @@ export class DbService implements OnModuleInit, OnModuleDestroy {
 
     // Create drizzle instance
     this.db = drizzle(this.sql, { schema });
-    
+
     console.log('Database connection established');
   }
 

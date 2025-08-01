@@ -11,6 +11,7 @@ This is the public-facing Wildtrip Guia de Campo web application - a biodiversit
 ## Current Status (Enero 2025)
 
 ✅ **Migration Complete**: All management code has been removed. The web project now only contains:
+
 - Public content pages (species, news, protected areas)
 - Authentication pages (sign-in, sign-up)
 - API client to fetch data from backend
@@ -18,9 +19,10 @@ This is the public-facing Wildtrip Guia de Campo web application - a biodiversit
 - No management/admin functionality
 
 ### Recent Updates (31 Enero 2025)
+
 - **Major Cleanup**: Removed all legacy code from when web was a fullstack app
   - Eliminated database dependencies (Drizzle, PostgreSQL)
-  - Removed Redis cache implementation 
+  - Removed Redis cache implementation
   - Deleted R2 upload utilities (handled by backend)
   - Removed TipTap editor dependencies (only used in dashboard)
   - Cleaned up data migration files and scripts
@@ -135,6 +137,7 @@ The web project provides authentication UI using Clerk:
 ### Public Content Pages
 
 #### News (`/content/news`)
+
 - List of published articles with pagination
 - Article detail pages with rich content
 - Tag filtering
@@ -142,6 +145,7 @@ The web project provides authentication UI using Clerk:
 - Share buttons
 
 #### Protected Areas (`/content/protected-areas`)
+
 - Catalog of protected areas
 - Detail pages with visitor information
 - Filtering by region and type
@@ -149,6 +153,7 @@ The web project provides authentication UI using Clerk:
 - Location information
 
 #### Species (`/content/species`)
+
 - Species catalog with filtering
 - Detailed species pages
 - Filtering by group and conservation status
@@ -239,6 +244,7 @@ The project is configured for deployment to Railway:
 **IMPORTANT**: NEVER use image URLs directly. All images MUST use either:
 
 1. **ResponsiveImage component** for Astro components:
+
 ```astro
 <ResponsiveImage
   src={imageUrl}
@@ -250,6 +256,7 @@ The project is configured for deployment to Railway:
 ```
 
 2. **Optimization functions** for dynamic content:
+
 ```typescript
 import { getOptimizedImageUrl, generateSrcSet } from './cloudflare-images'
 
@@ -258,6 +265,7 @@ const srcset = generateSrcSet(originalUrl)
 ```
 
 ### Image Galleries
+
 Both `SpeciesGallery.astro` and `ProtectedAreaGallery.astro` have been updated to use ResponsiveImage. Never use `<img>` tags directly for user-uploaded content.
 
 ## Notes

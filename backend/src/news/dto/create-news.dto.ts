@@ -1,4 +1,11 @@
-import { IsString, IsOptional, IsEnum, IsArray, IsObject, IsNotEmpty } from 'class-validator';
+import {
+  IsString,
+  IsOptional,
+  IsEnum,
+  IsArray,
+  IsObject,
+  IsNotEmpty,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 import type { RichContent } from '@wildtrip/shared';
 

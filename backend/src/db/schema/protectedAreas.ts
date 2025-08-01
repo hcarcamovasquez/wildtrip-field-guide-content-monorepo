@@ -1,16 +1,31 @@
-import { relations } from 'drizzle-orm'
-import { pgTable, serial, integer, text, json, timestamp, boolean } from 'drizzle-orm/pg-core'
-import type { RichContent } from '@wildtrip/shared'
-import { users } from './users'
+import { relations } from 'drizzle-orm';
+import {
+  pgTable,
+  serial,
+  integer,
+  text,
+  json,
+  timestamp,
+  boolean,
+} from 'drizzle-orm/pg-core';
+import type { RichContent } from '@wildtrip/shared';
+import { users } from './users';
 
 export const protectedAreas = pgTable('protected_areas', {
   id: serial('id').primaryKey(),
-  status: text('status', { enum: ['draft', 'published', 'archived'] }).default('draft'),
+  status: text('status', { enum: ['draft', 'published', 'archived'] }).default(
+    'draft',
+  ),
   slug: text('slug').notNull().unique(),
 
   name: text('name').notNull(),
   type: text('type', {
-    enum: ['national_park', 'national_reserve', 'natural_monument', 'nature_sanctuary'],
+    enum: [
+      'national_park',
+      'national_reserve',
+      'natural_monument',
+      'nature_sanctuary',
+    ],
   }),
   location: json('location'), // GeoJSON data
   area: integer('area'), // In hectares
@@ -19,21 +34,21 @@ export const protectedAreas = pgTable('protected_areas', {
   ecosystems: json('ecosystems').$type<string[]>(),
   keySpecies: json('key_species').$type<number[]>(), // References to important species
   visitorInformation: json('visitor_information').$type<{
-    schedule?: string
-    contact?: string
-    entranceFee?: string
-    facilities?: string[]
+    schedule?: string;
+    contact?: string;
+    entranceFee?: string;
+    facilities?: string[];
   }>(),
   mainImage: json('main_image').$type<{
-    id: string
-    url: string
-    galleryId: number
+    id: string;
+    url: string;
+    galleryId: number;
   }>(),
   galleryImages: json('gallery_images').$type<
     Array<{
-      id: string
-      url: string
-      galleryId: number
+      id: string;
+      url: string;
+      galleryId: number;
     }>
   >(),
   region: text('region'), // Chilean region
@@ -58,13 +73,15 @@ export const protectedAreas = pgTable('protected_areas', {
   draftCreatedAt: timestamp('draft_created_at'),
 
   // Locking system fields
-  lockedBy: integer('locked_by').references(() => users.id, { onDelete: 'set null' }),
+  lockedBy: integer('locked_by').references(() => users.id, {
+    onDelete: 'set null',
+  }),
   lockedAt: timestamp('locked_at'),
   lockExpiresAt: timestamp('lock_expires_at'),
-})
+});
 
-export type ProtectedArea = typeof protectedAreas.$inferSelect
-export type NewProtectedArea = typeof protectedAreas.$inferInsert
+export type ProtectedArea = typeof protectedAreas.$inferSelect;
+export type NewProtectedArea = typeof protectedAreas.$inferInsert;
 
 // Protected Areas relations
 export const protectedAreasRelations = relations(protectedAreas, ({ one }) => ({
@@ -72,4 +89,4 @@ export const protectedAreasRelations = relations(protectedAreas, ({ one }) => ({
     fields: [protectedAreas.lockedBy],
     references: [users.id],
   }),
-}))
+}));

@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { GalleryRepository } from './gallery.repository';
 import { R2Service } from '../storage/r2.service';
 import { ImageProcessorService } from '../storage/image-processor.service';
@@ -52,7 +56,10 @@ export class GalleryService {
     userName: string,
   ) {
     // Validate file type
-    if (!file.mimetype.startsWith('image/') && !file.mimetype.startsWith('video/')) {
+    if (
+      !file.mimetype.startsWith('image/') &&
+      !file.mimetype.startsWith('video/')
+    ) {
       throw new BadRequestException('Only image and video files are allowed');
     }
 
@@ -73,7 +80,9 @@ export class GalleryService {
     // Get folder info if provided
     let folderPath: string | null = null;
     if (uploadDto.folderId) {
-      const folder = await this.galleryRepository.findFolderById(uploadDto.folderId);
+      const folder = await this.galleryRepository.findFolderById(
+        uploadDto.folderId,
+      );
       if (folder) {
         folderPath = folder.path;
       }
@@ -117,26 +126,26 @@ export class GalleryService {
 
   async deleteMedia(id: number) {
     const media = await this.findMediaById(id);
-    
+
     // Delete from R2
     const key = this.r2Service.getKeyFromUrl(media.url);
     await this.r2Service.deleteFile(key);
-    
+
     // Delete from database
     await this.galleryRepository.deleteMedia(id);
   }
 
   async deleteMediaBatch(ids: number[]) {
     const mediaItems = await this.galleryRepository.findMediaByIds(ids);
-    
+
     // Delete all files from R2
     await Promise.all(
-      mediaItems.map(media => {
+      mediaItems.map((media) => {
         const key = this.r2Service.getKeyFromUrl(media.url);
         return this.r2Service.deleteFile(key);
-      })
+      }),
     );
-    
+
     // Delete from database
     await this.galleryRepository.deleteMediaBatch(ids);
   }
@@ -152,9 +161,11 @@ export class GalleryService {
     userId: string,
   ) {
     const { uploadId, chunkIndex, totalChunks, filename } = chunkData;
-    
+
     if (!uploadId || chunkIndex === undefined || !totalChunks || !filename) {
-      throw new BadRequestException('Missing chunk data: uploadId, chunkIndex, totalChunks, filename required');
+      throw new BadRequestException(
+        'Missing chunk data: uploadId, chunkIndex, totalChunks, filename required',
+      );
     }
 
     // Create uploads directory if it doesn't exist
@@ -178,10 +189,21 @@ export class GalleryService {
     userId: string,
     userName: string,
   ) {
-    const { uploadId, totalChunks, filename, folderId, title, description, altText, tags } = completeData;
-    
+    const {
+      uploadId,
+      totalChunks,
+      filename,
+      folderId,
+      title,
+      description,
+      altText,
+      tags,
+    } = completeData;
+
     if (!uploadId || !totalChunks || !filename) {
-      throw new BadRequestException('Missing completion data: uploadId, totalChunks, filename required');
+      throw new BadRequestException(
+        'Missing completion data: uploadId, totalChunks, filename required',
+      );
     }
 
     const uploadsDir = path.join(process.cwd(), 'temp-uploads');
@@ -221,7 +243,12 @@ export class GalleryService {
         tags: tags ? JSON.parse(tags) : [],
       };
 
-      const result = await this.uploadFile(combinedFile, uploadDto, userId, userName);
+      const result = await this.uploadFile(
+        combinedFile,
+        uploadDto,
+        userId,
+        userName,
+      );
 
       // Clean up temporary chunks
       for (let i = 0; i < totalChunks; i++) {
@@ -261,13 +288,17 @@ export class GalleryService {
     return folder;
   }
 
-  async createFolder(createFolderDto: CreateFolderDto, userId: string, userName: string) {
+  async createFolder(
+    createFolderDto: CreateFolderDto,
+    userId: string,
+    userName: string,
+  ) {
     const slug = createFolderDto.slug || slugify(createFolderDto.name);
-    
+
     // Build folder path
     let path = `/${slug}`;
     let depth = 0;
-    
+
     if (createFolderDto.parentId) {
       const parent = await this.findFolderById(createFolderDto.parentId);
       path = `${parent.path}/${slug}`;
@@ -288,22 +319,22 @@ export class GalleryService {
 
   async updateFolder(id: number, updateFolderDto: UpdateFolderDto) {
     await this.findFolderById(id);
-    
+
     // If name changed, update slug
     if (updateFolderDto.name && !updateFolderDto.slug) {
       updateFolderDto.slug = slugify(updateFolderDto.name);
     }
-    
+
     return this.galleryRepository.updateFolder(id, updateFolderDto);
   }
 
   async deleteFolder(id: number) {
     const folder = await this.findFolderById(id);
-    
+
     if (folder.isSystem) {
       throw new BadRequestException('System folders cannot be deleted');
     }
-    
+
     await this.galleryRepository.deleteFolder(id);
   }
 }

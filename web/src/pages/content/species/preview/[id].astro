@@ -25,24 +25,25 @@ if (!speciesData) {
 }
 
 // For preview, we need to show draft data if available
-const previewData = speciesData.hasDraft && speciesData.draftData 
-  ? { 
-      ...speciesData, 
-      ...speciesData.draftData,
-      // Convert mainImage object to mainImageUrl string
-      mainImageUrl: speciesData.draftData.mainImage?.url || speciesData.mainImage?.url || speciesData.mainImageUrl,
-      // Convert galleryImages to images array
-      images: speciesData.draftData.galleryImages 
-        ? speciesData.draftData.galleryImages.map((img: any) => img.url)
-        : speciesData.galleryImages?.map((img: any) => img.url) || speciesData.images || []
-    }
-  : {
-      ...speciesData,
-      // Ensure mainImageUrl is set even for non-draft
-      mainImageUrl: speciesData.mainImage?.url || speciesData.mainImageUrl,
-      // Convert galleryImages to images array
-      images: speciesData.galleryImages?.map((img: any) => img.url) || speciesData.images || []
-    }
+const previewData =
+  speciesData.hasDraft && speciesData.draftData
+    ? {
+        ...speciesData,
+        ...speciesData.draftData,
+        // Convert mainImage object to mainImageUrl string
+        mainImageUrl: speciesData.draftData.mainImage?.url || speciesData.mainImage?.url || speciesData.mainImageUrl,
+        // Convert galleryImages to images array
+        images: speciesData.draftData.galleryImages
+          ? speciesData.draftData.galleryImages.map((img: any) => img.url)
+          : speciesData.galleryImages?.map((img: any) => img.url) || speciesData.images || [],
+      }
+    : {
+        ...speciesData,
+        // Ensure mainImageUrl is set even for non-draft
+        mainImageUrl: speciesData.mainImage?.url || speciesData.mainImageUrl,
+        // Convert galleryImages to images array
+        images: speciesData.galleryImages?.map((img: any) => img.url) || speciesData.images || [],
+      }
 
 // Debug log
 console.log('Preview data for species', speciesId, {
@@ -50,7 +51,7 @@ console.log('Preview data for species', speciesId, {
   mainImage: previewData.mainImage,
   mainImageUrl: previewData.mainImageUrl,
   draftMainImage: speciesData.draftData?.mainImage,
-  mergedCorrectly: previewData.mainImageUrl === speciesData.draftData?.mainImage?.url
+  mergedCorrectly: previewData.mainImageUrl === speciesData.draftData?.mainImage?.url,
 })
 ---
 
@@ -58,8 +59,6 @@ console.log('Preview data for species', speciesId, {
   title={`${previewData.commonName || previewData.scientificName} - Vista previa`}
   description={previewData.scientificName}
 >
-
-  
   <!-- Preview notice banner -->
   <div class="sticky top-0 z-50 bg-orange-500 text-white">
     <div class="mx-auto max-w-4xl px-4 py-2 sm:px-6 lg:px-8">

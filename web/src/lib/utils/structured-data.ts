@@ -205,12 +205,7 @@ export function generatePlaceSchema(place: Place) {
 /**
  * Generate CollectionPage schema for list pages
  */
-export function generateCollectionPageSchema(
-  name: string,
-  description: string,
-  url: string,
-  itemCount?: number
-) {
+export function generateCollectionPageSchema(name: string, description: string, url: string, itemCount?: number) {
   return {
     '@context': 'https://schema.org',
     '@type': 'CollectionPage',

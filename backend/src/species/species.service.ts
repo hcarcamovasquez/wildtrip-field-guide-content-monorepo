@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { SpeciesRepository } from './species.repository';
 import { CreateSpeciesDto } from './dto/create-species.dto';
 import { UpdateSpeciesDto } from './dto/update-species.dto';
@@ -31,7 +35,7 @@ export class SpeciesService {
   async create(createSpeciesDto: CreateSpeciesDto) {
     // Generate slug from common name
     const slug = createSpeciesDto.slug || slugify(createSpeciesDto.commonName);
-    
+
     return this.speciesRepository.create({
       ...createSpeciesDto,
       slug,
@@ -40,12 +44,12 @@ export class SpeciesService {
 
   async update(id: number, updateSpeciesDto: UpdateSpeciesDto) {
     const species = await this.findOne(id);
-    
+
     // Update slug if common name changed
     if (updateSpeciesDto.commonName && !updateSpeciesDto.slug) {
       updateSpeciesDto.slug = slugify(updateSpeciesDto.commonName);
     }
-    
+
     return this.speciesRepository.update(id, updateSpeciesDto);
   }
 
@@ -66,7 +70,9 @@ export class SpeciesService {
         throw new NotFoundException('Species not found');
       }
       if (error.message === 'Nothing to publish') {
-        throw new BadRequestException('Species is already published and has no pending changes');
+        throw new BadRequestException(
+          'Species is already published and has no pending changes',
+        );
       }
       throw error;
     }
@@ -74,12 +80,12 @@ export class SpeciesService {
 
   async createDraft(id: number, draftData: UpdateSpeciesDto) {
     await this.findOne(id);
-    
+
     // Update slug if common name changed
     if (draftData.commonName && !draftData.slug) {
       draftData.slug = slugify(draftData.commonName);
     }
-    
+
     return this.speciesRepository.createDraft(id, draftData);
   }
 

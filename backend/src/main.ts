@@ -10,7 +10,7 @@ async function bootstrap() {
   const configService = app.get(ConfigService);
   const allowedOrigins = configService.get<string[]>('cors.origins') || [
     'http://localhost:4321',
-    'http://localhost:5173'
+    'http://localhost:5173',
   ];
 
   // Use cookie parser
@@ -32,7 +32,7 @@ async function bootstrap() {
 
   const port = configService.get<number>('port') || 3000;
   await app.listen(port);
-  
+
   console.log(`🚀 Server running on http://localhost:${port}`);
 }
 

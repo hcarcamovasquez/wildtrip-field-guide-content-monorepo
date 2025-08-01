@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { NewsRepository } from './news.repository';
 import { CreateNewsDto } from './dto/create-news.dto';
 import { UpdateNewsDto } from './dto/update-news.dto';
@@ -31,7 +35,7 @@ export class NewsService {
   async create(createNewsDto: CreateNewsDto, userId?: string) {
     // Generate slug from title
     const slug = createNewsDto.slug || slugify(createNewsDto.title);
-    
+
     return this.newsRepository.create({
       ...createNewsDto,
       slug,
@@ -42,13 +46,13 @@ export class NewsService {
 
   async update(id: number, updateNewsDto: UpdateNewsDto) {
     const article = await this.findOne(id);
-    
+
     // Update slug if title changed
     const updateData: any = { ...updateNewsDto };
     if ('title' in updateData && updateData.title && !('slug' in updateData)) {
       updateData.slug = slugify(updateData.title);
     }
-    
+
     return this.newsRepository.update(id, updateData);
   }
 
@@ -65,7 +69,9 @@ export class NewsService {
         throw new NotFoundException('News article not found');
       }
       if (error.message === 'Nothing to publish') {
-        throw new BadRequestException('News article is already published and has no pending changes');
+        throw new BadRequestException(
+          'News article is already published and has no pending changes',
+        );
       }
       throw error;
     }

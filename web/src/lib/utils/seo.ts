@@ -8,25 +8,25 @@
  */
 export function generateMetaDescription(text: string, maxLength: number = 155): string {
   if (!text) return ''
-  
+
   // Remove HTML tags if any
   const cleanText = text.replace(/<[^>]*>/g, '')
-  
+
   // Remove multiple spaces and line breaks
   const normalizedText = cleanText.replace(/\s+/g, ' ').trim()
-  
+
   if (normalizedText.length <= maxLength) {
     return normalizedText
   }
-  
+
   // Truncate at the last complete word before maxLength
   const truncated = normalizedText.substr(0, maxLength)
   const lastSpaceIndex = truncated.lastIndexOf(' ')
-  
+
   if (lastSpaceIndex > 0) {
     return truncated.substr(0, lastSpaceIndex) + '...'
   }
-  
+
   return truncated + '...'
 }
 
@@ -37,22 +37,22 @@ export function generateMetaDescription(text: string, maxLength: number = 155): 
 export function generatePageTitle(title: string, suffix: string = 'WildTrip Guia de Campo'): string {
   const separator = ' - '
   const maxLength = 60
-  
+
   if (!title) return suffix
-  
+
   const fullTitle = `${title}${separator}${suffix}`
-  
+
   if (fullTitle.length <= maxLength) {
     return fullTitle
   }
-  
+
   // If title is too long, truncate it but keep the suffix
   const availableLength = maxLength - suffix.length - separator.length - 3 // 3 for '...'
-  
+
   if (availableLength <= 0) {
     return suffix
   }
-  
+
   const truncatedTitle = title.substr(0, availableLength) + '...'
   return `${truncatedTitle}${separator}${suffix}`
 }
@@ -63,9 +63,9 @@ export function generatePageTitle(title: string, suffix: string = 'WildTrip Guia
  */
 export function extractTextFromRichContent(blocks: any[]): string {
   if (!blocks || !Array.isArray(blocks)) return ''
-  
+
   let text = ''
-  
+
   for (const block of blocks) {
     if (block.type === 'paragraph' && block.children) {
       for (const child of block.children) {
@@ -75,7 +75,7 @@ export function extractTextFromRichContent(blocks: any[]): string {
       }
     }
   }
-  
+
   return text.trim()
 }
 
@@ -85,16 +85,14 @@ export function extractTextFromRichContent(blocks: any[]): string {
 export function generateBreadcrumbs(path: string, currentTitle: string) {
   const baseUrl = 'https://guiadecampo.cl'
   const segments = path.split('/').filter(Boolean)
-  const breadcrumbs = [
-    { name: 'Inicio', url: baseUrl }
-  ]
-  
+  const breadcrumbs = [{ name: 'Inicio', url: baseUrl }]
+
   if (segments.length > 0 && segments[0] === 'content') {
     let currentPath = baseUrl
-    
+
     for (let i = 0; i < segments.length - 1; i++) {
       currentPath += `/${segments[i]}`
-      
+
       // Map segment to display name
       let name = segments[i]
       if (segments[i] === 'content') {
@@ -106,17 +104,17 @@ export function generateBreadcrumbs(path: string, currentTitle: string) {
       } else if (segments[i] === 'protected-areas') {
         name = 'Áreas Protegidas'
       }
-      
+
       breadcrumbs.push({ name, url: currentPath })
     }
-    
+
     // Add current page
-    breadcrumbs.push({ 
-      name: currentTitle, 
-      url: `${baseUrl}${path}` 
+    breadcrumbs.push({
+      name: currentTitle,
+      url: `${baseUrl}${path}`,
     })
   }
-  
+
   return breadcrumbs
 }
 
@@ -135,9 +133,9 @@ export function generateImageAlt(title: string, type: 'species' | 'news' | 'area
   const typeMap = {
     species: 'Imagen de',
     news: 'Foto de noticia:',
-    area: 'Vista de'
+    area: 'Vista de',
   }
-  
+
   return `${typeMap[type]} ${title}`
 }
 
@@ -158,27 +156,25 @@ export function generateSlug(text: string): string {
  * Check if URL should be excluded from sitemap
  */
 export function shouldExcludeFromSitemap(url: string): boolean {
-  const excludePatterns = [
-    '/manage',
-    '/api',
-    '/preview',
-    '/404',
-    '/500',
-    '/_',
-  ]
-  
-  return excludePatterns.some(pattern => url.includes(pattern))
+  const excludePatterns = ['/manage', '/api', '/preview', '/404', '/500', '/_']
+
+  return excludePatterns.some((pattern) => url.includes(pattern))
 }
 
 /**
  * Generate hreflang tags for multi-language support (future feature)
  */
-export function generateHreflangTags(currentUrl: string, languages: string[] = ['es']): Array<{lang: string, url: string}> {
+export function generateHreflangTags(
+  currentUrl: string,
+  languages: string[] = ['es'],
+): Array<{ lang: string; url: string }> {
   // For now, we only support Spanish
-  return [{
-    lang: 'es',
-    url: currentUrl
-  }]
+  return [
+    {
+      lang: 'es',
+      url: currentUrl,
+    },
+  ]
 }
 
 /**

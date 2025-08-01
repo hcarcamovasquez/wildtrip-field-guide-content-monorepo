@@ -44,19 +44,19 @@ export interface NewsPaginateResult {
 class NewsRepository {
   async findPublished(params: NewsPaginateParams): Promise<NewsPaginateResult> {
     const { page = 1, limit = 10, category, ...filters } = params
-    
+
     const response = await apiClient.news.findAll({
       page,
       limit,
       status: 'published',
       ...(category && category !== 'all' ? { category } : {}),
-      ...filters
+      ...filters,
     })
 
     // Map the API response to match our types
     const mappedData = (response.data || []).map((item: any) => ({
       ...item,
-      mainImageUrl: item.mainImage?.url || item.mainImageUrl || null
+      mainImageUrl: item.mainImage?.url || item.mainImageUrl || null,
     }))
 
     return {
@@ -65,8 +65,8 @@ class NewsRepository {
         page: response.pagination?.page || page,
         pageSize: response.pagination?.limit || limit,
         total: response.pagination?.total || 0,
-        totalPages: response.pagination?.totalPages || 0
-      }
+        totalPages: response.pagination?.totalPages || 0,
+      },
     }
   }
 
@@ -79,7 +79,7 @@ class NewsRepository {
       // Map mainImage.url to mainImageUrl
       return {
         ...response,
-        mainImageUrl: response.mainImage?.url || response.mainImageUrl || null
+        mainImageUrl: response.mainImage?.url || response.mainImageUrl || null,
       }
     } catch (error) {
       console.error('Error fetching news by slug:', error)
@@ -96,7 +96,7 @@ class NewsRepository {
       // Map mainImage.url to mainImageUrl and include draft data
       return {
         ...response,
-        mainImageUrl: response.mainImage?.url || response.mainImageUrl || null
+        mainImageUrl: response.mainImage?.url || response.mainImageUrl || null,
       }
     } catch (error) {
       console.error('Error fetching news by id:', error)
@@ -110,12 +110,12 @@ class NewsRepository {
       limit,
       status: 'published',
       sortBy: 'publishedAt',
-      sortOrder: 'desc'
+      sortOrder: 'desc',
     })
     // Map the API response to match our types
     return (response.data || []).map((item: any) => ({
       ...item,
-      mainImageUrl: item.mainImage?.url || item.mainImageUrl || null
+      mainImageUrl: item.mainImage?.url || item.mainImageUrl || null,
     }))
   }
 
@@ -123,7 +123,7 @@ class NewsRepository {
     const response = await apiClient.news.findAll({
       page: 1,
       limit: 1,
-      status: 'published'
+      status: 'published',
     })
     return response.pagination?.total || 0
   }

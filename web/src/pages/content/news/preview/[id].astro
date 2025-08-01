@@ -29,19 +29,13 @@ if (!newsData) {
 }
 
 // For preview, we need to show draft data if available
-const previewData = newsData.hasDraft && newsData.draftData 
-  ? { ...newsData, ...newsData.draftData }
-  : newsData
+const previewData = newsData.hasDraft && newsData.draftData ? { ...newsData, ...newsData.draftData } : newsData
 
 // Build preview URL for sharing
 const shareUrl = `${Astro.url.origin}/content/news/preview/${id}`
 ---
 
-<Layout
-  title={`${previewData.title} - Vista previa`}
-  description={previewData.summary}
->
-  
+<Layout title={`${previewData.title} - Vista previa`} description={previewData.summary}>
   <!-- Preview notice banner -->
   <div class="sticky top-0 z-50 bg-orange-500 text-white">
     <div class="mx-auto max-w-4xl px-4 py-2 sm:px-6 lg:px-8">

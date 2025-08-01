@@ -23,7 +23,15 @@ export class GalleryRepository {
     type?: string;
   }) {
     const db = this.dbService.getDb();
-    const { page = 1, limit = 50, search, folderId, folderPath, uploadedBy, type } = params;
+    const {
+      page = 1,
+      limit = 50,
+      search,
+      folderId,
+      folderPath,
+      uploadedBy,
+      type,
+    } = params;
     const offset = (page - 1) * limit;
 
     // Build where conditions for media
@@ -32,7 +40,11 @@ export class GalleryRepository {
     // Filter by folder - only show items in current folder (not subfolders)
     // If folderId is not provided, default to showing root items (folderId = null)
     if (folderId !== undefined) {
-      mediaConditions.push(folderId === null ? isNull(mediaGallery.folderId) : eq(mediaGallery.folderId, folderId));
+      mediaConditions.push(
+        folderId === null
+          ? isNull(mediaGallery.folderId)
+          : eq(mediaGallery.folderId, folderId),
+      );
     } else {
       // Default to root directory when no folderId is specified
       mediaConditions.push(isNull(mediaGallery.folderId));
@@ -55,27 +67,33 @@ export class GalleryRepository {
         or(
           ilike(mediaGallery.filename, `%${search}%`),
           ilike(mediaGallery.title, `%${search}%`),
-          ilike(mediaGallery.description, `%${search}%`)
-        )
+          ilike(mediaGallery.description, `%${search}%`),
+        ),
       );
     }
 
-    const mediaWhereClause = mediaConditions.length > 0 ? and(...mediaConditions) : undefined;
+    const mediaWhereClause =
+      mediaConditions.length > 0 ? and(...mediaConditions) : undefined;
 
     // Get folders in current directory
     const folderConditions: any[] = [];
     if (folderId !== undefined) {
-      folderConditions.push(folderId === null ? isNull(mediaFolders.parentId) : eq(mediaFolders.parentId, folderId));
+      folderConditions.push(
+        folderId === null
+          ? isNull(mediaFolders.parentId)
+          : eq(mediaFolders.parentId, folderId),
+      );
     } else {
       // Default to root directory when no folderId is specified
       folderConditions.push(isNull(mediaFolders.parentId));
     }
-    
+
     if (search) {
       folderConditions.push(ilike(mediaFolders.name, `%${search}%`));
     }
 
-    const folderWhereClause = folderConditions.length > 0 ? and(...folderConditions) : undefined;
+    const folderWhereClause =
+      folderConditions.length > 0 ? and(...folderConditions) : undefined;
 
     // Get total counts first
     const [{ totalFolderCount }] = await db
@@ -108,16 +126,16 @@ export class GalleryRepository {
     // Calculate pagination for mixed content
     const itemsToSkip = (page - 1) * limit;
     const foldersCount = folders.length;
-    
+
     // Determine which items to show on this page
     let pageFolders: typeof folders = [];
     let pageMedia: MediaWithFolder[] = [];
-    
+
     if (itemsToSkip < foldersCount) {
       // We're still in the folders section
       pageFolders = folders.slice(itemsToSkip, itemsToSkip + limit);
       const remainingLimit = limit - pageFolders.length;
-      
+
       if (remainingLimit > 0) {
         // Get some media items too
         pageMedia = await db
@@ -144,13 +162,13 @@ export class GalleryRepository {
 
     // Combine folders and media
     const combinedData = [
-      ...pageFolders.map(f => ({
+      ...pageFolders.map((f) => ({
         ...f.folder,
         type: 'folder' as const,
         fileCount: f.fileCount,
         folderCount: f.folderCount,
       })),
-      ...pageMedia.map(row => ({
+      ...pageMedia.map((row) => ({
         ...row.media_gallery,
         type: row.media_gallery.type as 'image' | 'video',
         folder: row.media_folders,
@@ -204,12 +222,13 @@ export class GalleryRepository {
         or(
           ilike(mediaGallery.filename, `%${search}%`),
           ilike(mediaGallery.title, `%${search}%`),
-          ilike(mediaGallery.description, `%${search}%`)
-        )
+          ilike(mediaGallery.description, `%${search}%`),
+        ),
       );
     }
 
-    const mediaWhereClause = mediaConditions.length > 0 ? and(...mediaConditions) : undefined;
+    const mediaWhereClause =
+      mediaConditions.length > 0 ? and(...mediaConditions) : undefined;
 
     // Get total count
     const [{ totalCount }] = await db
@@ -254,9 +273,9 @@ export class GalleryRepository {
       .from(mediaGallery)
       .leftJoin(mediaFolders, eq(mediaGallery.folderId, mediaFolders.id))
       .where(eq(mediaGallery.id, id));
-    
+
     if (!result) return null;
-    
+
     return {
       ...result.media_gallery,
       folder: result.media_folders,
@@ -269,7 +288,7 @@ export class GalleryRepository {
       .select()
       .from(mediaGallery)
       .where(inArray(mediaGallery.id, ids));
-    
+
     return results;
   }
 
@@ -307,13 +326,19 @@ export class GalleryRepository {
 
   async findFolderById(id: number) {
     const db = this.dbService.getDb();
-    const [result] = await db.select().from(mediaFolders).where(eq(mediaFolders.id, id));
+    const [result] = await db
+      .select()
+      .from(mediaFolders)
+      .where(eq(mediaFolders.id, id));
     return result;
   }
 
   async findFolderBySlug(slug: string) {
     const db = this.dbService.getDb();
-    const [result] = await db.select().from(mediaFolders).where(eq(mediaFolders.slug, slug));
+    const [result] = await db
+      .select()
+      .from(mediaFolders)
+      .where(eq(mediaFolders.slug, slug));
     return result;
   }
 
@@ -340,7 +365,7 @@ export class GalleryRepository {
 
   async moveMediaToFolder(mediaIds: number[], folderId: number | null) {
     const db = this.dbService.getDb();
-    
+
     // Get folder path if folderId is provided
     let folderPath: string | null = null;
     if (folderId) {

@@ -20,11 +20,20 @@ import { UploadFileDto } from './dto/upload-file.dto';
 import { ClerkAuthGuard } from '../auth/guards/clerk-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
-import { CurrentUser, ICurrentUser } from '../auth/decorators/current-user.decorator';
+import {
+  CurrentUser,
+  ICurrentUser,
+} from '../auth/decorators/current-user.decorator';
 
 @Controller('api/gallery')
 @UseGuards(ClerkAuthGuard, RolesGuard)
-@Roles('admin', 'content_editor', 'news_editor', 'areas_editor', 'species_editor')
+@Roles(
+  'admin',
+  'content_editor',
+  'news_editor',
+  'areas_editor',
+  'species_editor',
+)
 export class GalleryController {
   constructor(private readonly galleryService: GalleryService) {}
 
@@ -36,9 +45,12 @@ export class GalleryController {
       ...query,
       page: query.page ? parseInt(query.page, 10) : undefined,
       limit: query.limit ? parseInt(query.limit, 10) : undefined,
-      folderId: query.folderId !== undefined ? 
-        (query.folderId === 'null' || query.folderId === null ? null : parseInt(query.folderId, 10)) : 
-        undefined,
+      folderId:
+        query.folderId !== undefined
+          ? query.folderId === 'null' || query.folderId === null
+            ? null
+            : parseInt(query.folderId, 10)
+          : undefined,
     };
     return this.galleryService.findAllMedia(params);
   }
@@ -59,7 +71,7 @@ export class GalleryController {
     if (!ids) {
       throw new BadRequestException('ids parameter is required');
     }
-    const idArray = ids.split(',').map(id => parseInt(id, 10));
+    const idArray = ids.split(',').map((id) => parseInt(id, 10));
     return this.galleryService.findMediaByIds(idArray);
   }
 
@@ -78,7 +90,7 @@ export class GalleryController {
     if (!file) {
       throw new BadRequestException('No file provided');
     }
-    
+
     return this.galleryService.uploadFile(
       file,
       uploadDto,
@@ -97,19 +109,12 @@ export class GalleryController {
     if (!chunk) {
       throw new BadRequestException('No chunk provided');
     }
-    
-    return this.galleryService.uploadChunk(
-      chunk,
-      chunkData,
-      user.id,
-    );
+
+    return this.galleryService.uploadChunk(chunk, chunkData, user.id);
   }
 
   @Post('upload-complete')
-  completeUpload(
-    @Body() completeData: any,
-    @CurrentUser() user: ICurrentUser,
-  ) {
+  completeUpload(@Body() completeData: any, @CurrentUser() user: ICurrentUser) {
     return this.galleryService.completeChunkedUpload(
       completeData,
       user.id,

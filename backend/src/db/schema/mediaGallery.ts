@@ -1,6 +1,16 @@
-import { relations } from 'drizzle-orm'
-import { boolean, index, integer, json, pgTable, serial, text, timestamp, varchar } from 'drizzle-orm/pg-core'
-import { mediaFolders } from './mediaFolders'
+import { relations } from 'drizzle-orm';
+import {
+  boolean,
+  index,
+  integer,
+  json,
+  pgTable,
+  serial,
+  text,
+  timestamp,
+  varchar,
+} from 'drizzle-orm/pg-core';
+import { mediaFolders } from './mediaFolders';
 
 export const mediaGallery = pgTable(
   'media_gallery',
@@ -22,7 +32,9 @@ export const mediaGallery = pgTable(
       .default('image'),
 
     // Folder organization
-    folderId: integer('folder_id').references(() => mediaFolders.id, { onDelete: 'set null' }),
+    folderId: integer('folder_id').references(() => mediaFolders.id, {
+      onDelete: 'set null',
+    }),
     folderPath: text('folder_path'), // Cached folder path for quick filtering
 
     // Dimensions (for images)
@@ -54,10 +66,10 @@ export const mediaGallery = pgTable(
     index('media_gallery_folder_path_idx').on(table.folderPath),
     index('media_gallery_uploaded_by_idx').on(table.uploadedBy),
   ],
-)
+);
 
-export type MediaGallery = typeof mediaGallery.$inferSelect
-export type NewMediaGallery = typeof mediaGallery.$inferInsert
+export type MediaGallery = typeof mediaGallery.$inferSelect;
+export type NewMediaGallery = typeof mediaGallery.$inferInsert;
 
 // Relations
 export const mediaGalleryRelations = relations(mediaGallery, ({ one }) => ({
@@ -65,4 +77,4 @@ export const mediaGalleryRelations = relations(mediaGallery, ({ one }) => ({
     fields: [mediaGallery.folderId],
     references: [mediaFolders.id],
   }),
-}))
+}));

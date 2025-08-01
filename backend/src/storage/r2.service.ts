@@ -1,6 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { S3Client, PutObjectCommand, DeleteObjectCommand, GetObjectCommand } from '@aws-sdk/client-s3';
+import {
+  S3Client,
+  PutObjectCommand,
+  DeleteObjectCommand,
+  GetObjectCommand,
+} from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -13,9 +18,11 @@ export class R2Service {
   constructor(private configService: ConfigService) {
     const accountId = this.configService.get<string>('s3.accountId');
     const accessKeyId = this.configService.get<string>('s3.accessKeyId');
-    const secretAccessKey = this.configService.get<string>('s3.secretAccessKey');
-    
-    this.bucketName = this.configService.get<string>('s3.bucketName') || 'wildtrip-gallery';
+    const secretAccessKey =
+      this.configService.get<string>('s3.secretAccessKey');
+
+    this.bucketName =
+      this.configService.get<string>('s3.bucketName') || 'wildtrip-gallery';
     this.publicUrl = this.configService.get<string>('s3.publicUrl') || '';
 
     this.s3Client = new S3Client({
@@ -28,7 +35,12 @@ export class R2Service {
     });
   }
 
-  async uploadFile(buffer: Buffer, originalFilename: string, mimeType: string, folder?: string): Promise<{
+  async uploadFile(
+    buffer: Buffer,
+    originalFilename: string,
+    mimeType: string,
+    folder?: string,
+  ): Promise<{
     key: string;
     url: string;
   }> {
@@ -49,7 +61,7 @@ export class R2Service {
 
     // Return public URL
     const url = `${this.publicUrl}/${key}`;
-    
+
     return { key, url };
   }
 
@@ -62,7 +74,11 @@ export class R2Service {
     await this.s3Client.send(command);
   }
 
-  async getSignedUploadUrl(filename: string, mimeType: string, folder?: string): Promise<{
+  async getSignedUploadUrl(
+    filename: string,
+    mimeType: string,
+    folder?: string,
+  ): Promise<{
     uploadUrl: string;
     key: string;
   }> {
@@ -76,8 +92,10 @@ export class R2Service {
       ContentType: mimeType,
     });
 
-    const uploadUrl = await getSignedUrl(this.s3Client, command, { expiresIn: 3600 });
-    
+    const uploadUrl = await getSignedUrl(this.s3Client, command, {
+      expiresIn: 3600,
+    });
+
     return { uploadUrl, key };
   }
 

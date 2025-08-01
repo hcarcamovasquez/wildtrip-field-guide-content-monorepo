@@ -1,6 +1,16 @@
-import { relations } from 'drizzle-orm'
-import { boolean, foreignKey, index, integer, pgTable, serial, text, timestamp, varchar } from 'drizzle-orm/pg-core'
-import { mediaGallery } from './mediaGallery'
+import { relations } from 'drizzle-orm';
+import {
+  boolean,
+  foreignKey,
+  index,
+  integer,
+  pgTable,
+  serial,
+  text,
+  timestamp,
+  varchar,
+} from 'drizzle-orm/pg-core';
+import { mediaGallery } from './mediaGallery';
 
 export const mediaFolders = pgTable(
   'media_folders',
@@ -46,18 +56,21 @@ export const mediaFolders = pgTable(
       name: 'media_folders_parent_fk',
     }).onDelete('cascade'),
   ],
-)
+);
 
-export type MediaFolder = typeof mediaFolders.$inferSelect
-export type NewMediaFolder = typeof mediaFolders.$inferInsert
+export type MediaFolder = typeof mediaFolders.$inferSelect;
+export type NewMediaFolder = typeof mediaFolders.$inferInsert;
 
 // Relations
-export const mediaFoldersRelations = relations(mediaFolders, ({ one, many }) => ({
-  parent: one(mediaFolders, {
-    fields: [mediaFolders.parentId],
-    references: [mediaFolders.id],
-    relationName: 'parentChild',
+export const mediaFoldersRelations = relations(
+  mediaFolders,
+  ({ one, many }) => ({
+    parent: one(mediaFolders, {
+      fields: [mediaFolders.parentId],
+      references: [mediaFolders.id],
+      relationName: 'parentChild',
+    }),
+    children: many(mediaFolders, { relationName: 'parentChild' }),
+    media: many(mediaGallery),
   }),
-  children: many(mediaFolders, { relationName: 'parentChild' }),
-  media: many(mediaGallery),
-}))
+);

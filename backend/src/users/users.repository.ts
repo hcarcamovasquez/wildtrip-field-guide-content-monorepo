@@ -19,18 +19,25 @@ export class UsersRepository {
     sortBy?: string;
     sortOrder?: 'asc' | 'desc';
   }) {
-    const { limit = 20, offset = 0, search, role, sortBy = 'createdAt', sortOrder = 'desc' } = params;
+    const {
+      limit = 20,
+      offset = 0,
+      search,
+      role,
+      sortBy = 'createdAt',
+      sortOrder = 'desc',
+    } = params;
 
     // Build where conditions
     const conditions: any[] = [];
-    
+
     if (search) {
       conditions.push(
         or(
           like(users.email, `%${search}%`),
           like(users.firstName, `%${search}%`),
-          like(users.lastName, `%${search}%`)
-        )
+          like(users.lastName, `%${search}%`),
+        ),
       );
     }
 
@@ -43,7 +50,7 @@ export class UsersRepository {
     // Apply sorting
     const orderDirection = sortOrder === 'asc' ? asc : desc;
     let orderByColumn: any = users.createdAt;
-    
+
     switch (sortBy) {
       case 'email':
         orderByColumn = users.email;
@@ -138,7 +145,7 @@ export class UsersRepository {
     if (!email) return null;
 
     const existingUser = await this.findById(clerkUser.id);
-    
+
     const userData = {
       clerkId: clerkUser.id,
       email,

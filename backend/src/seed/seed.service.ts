@@ -1,20 +1,20 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { DbService } from '../db/db.service';
-import { 
-  species, 
-  protectedAreas, 
-  news, 
-  mediaGallery, 
-  mediaFolders 
+import {
+  species,
+  protectedAreas,
+  news,
+  mediaGallery,
+  mediaFolders,
 } from '../db/schema';
 import { sql } from 'drizzle-orm';
-import { 
-  speciesData, 
-  protectedAreasData, 
+import {
+  speciesData,
+  protectedAreasData,
   newsData,
   getRandomImageData,
   getRandomImageDataArray,
-  seedImages
+  seedImages,
 } from './seed-data';
 import { slugify } from '@wildtrip/shared';
 
@@ -67,7 +67,7 @@ export class SeedService {
 
       // Create a map of seed image IDs to gallery IDs
       const imageMap = new Map(
-        mediaEntries.map(entry => [entry.seedId, entry.id]),
+        mediaEntries.map((entry) => [entry.seedId, entry.id]),
       );
 
       // Seed species
@@ -180,10 +180,18 @@ export class SeedService {
 
       // Reset sequences
       await this.db.db.execute(sql`ALTER SEQUENCE news_id_seq RESTART WITH 1`);
-      await this.db.db.execute(sql`ALTER SEQUENCE protected_areas_id_seq RESTART WITH 1`);
-      await this.db.db.execute(sql`ALTER SEQUENCE species_id_seq RESTART WITH 1`);
-      await this.db.db.execute(sql`ALTER SEQUENCE media_gallery_id_seq RESTART WITH 1`);
-      await this.db.db.execute(sql`ALTER SEQUENCE media_folders_id_seq RESTART WITH 1`);
+      await this.db.db.execute(
+        sql`ALTER SEQUENCE protected_areas_id_seq RESTART WITH 1`,
+      );
+      await this.db.db.execute(
+        sql`ALTER SEQUENCE species_id_seq RESTART WITH 1`,
+      );
+      await this.db.db.execute(
+        sql`ALTER SEQUENCE media_gallery_id_seq RESTART WITH 1`,
+      );
+      await this.db.db.execute(
+        sql`ALTER SEQUENCE media_folders_id_seq RESTART WITH 1`,
+      );
 
       this.logger.log('Database cleared successfully');
 

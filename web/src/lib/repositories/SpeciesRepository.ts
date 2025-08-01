@@ -63,18 +63,18 @@ export interface PaginateResult {
 class SpeciesRepository {
   async findPublished(params: PaginateParams): Promise<PaginateResult> {
     const { page = 1, limit = 20, ...filters } = params
-    
+
     const response = await apiClient.species.findAll({
       page,
       limit,
       status: 'published',
-      ...filters
+      ...filters,
     })
 
     // Map the API response to match our types
     const mappedData = (response.data || []).map((item: any) => ({
       ...item,
-      mainImageUrl: item.mainImage?.url || item.mainImageUrl || null
+      mainImageUrl: item.mainImage?.url || item.mainImageUrl || null,
     }))
 
     return {
@@ -83,8 +83,8 @@ class SpeciesRepository {
         page: response.pagination?.page || page,
         pageSize: response.pagination?.limit || limit,
         total: response.pagination?.total || 0,
-        totalPages: response.pagination?.totalPages || 0
-      }
+        totalPages: response.pagination?.totalPages || 0,
+      },
     }
   }
 
@@ -97,7 +97,7 @@ class SpeciesRepository {
       // Map mainImage.url to mainImageUrl
       return {
         ...response,
-        mainImageUrl: response.mainImage?.url || response.mainImageUrl || null
+        mainImageUrl: response.mainImage?.url || response.mainImageUrl || null,
       }
     } catch (error) {
       console.error('Error fetching species by slug:', error)
@@ -114,7 +114,7 @@ class SpeciesRepository {
       // Map mainImage.url to mainImageUrl and include draft data
       return {
         ...response,
-        mainImageUrl: response.mainImage?.url || response.mainImageUrl || null
+        mainImageUrl: response.mainImage?.url || response.mainImageUrl || null,
       }
     } catch (error) {
       console.error('Error fetching species by id:', error)
@@ -126,7 +126,7 @@ class SpeciesRepository {
     const response = await apiClient.species.findAll({
       page: 1,
       limit: 1,
-      status: 'published'
+      status: 'published',
     })
     return response.total || 0
   }
@@ -137,12 +137,12 @@ class SpeciesRepository {
       limit,
       status: 'published',
       sortBy: 'publishedAt',
-      sortOrder: 'desc'
+      sortOrder: 'desc',
     })
     // Map the API response to match our types
     return (response.data || []).map((item: any) => ({
       ...item,
-      mainImageUrl: item.mainImage?.url || item.mainImageUrl || null
+      mainImageUrl: item.mainImage?.url || item.mainImageUrl || null,
     }))
   }
 }

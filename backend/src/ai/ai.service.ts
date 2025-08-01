@@ -23,7 +23,8 @@ export class AIService {
   private baseUrl: string;
 
   constructor(private configService: ConfigService) {
-    this.accountId = this.configService.get<string>('cloudflare.accountId') || '';
+    this.accountId =
+      this.configService.get<string>('cloudflare.accountId') || '';
     this.apiToken = this.configService.get<string>('cloudflare.apiToken') || '';
     this.baseUrl = `https://api.cloudflare.com/client/v4/accounts/${this.accountId}/ai/run`;
 
@@ -35,7 +36,11 @@ export class AIService {
   /**
    * Generate SEO content for news articles
    */
-  async generateNewsSEO(title: string, summary: string, content: string): Promise<SEOContent> {
+  async generateNewsSEO(
+    title: string,
+    summary: string,
+    content: string,
+  ): Promise<SEOContent> {
     const prompt = `Genera contenido SEO optimizado en español para un artículo de noticias sobre biodiversidad y naturaleza en Chile.
 
 Título del artículo: ${title}
@@ -133,17 +138,19 @@ SEO_KEYWORDS: [tu respuesta]`;
     }
 
     try {
-      const response = await fetch(`${this.baseUrl}/@cf/meta/llama-3.1-8b-instruct`, {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${this.apiToken}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          messages: [
-            {
-              role: 'system',
-              content: `Eres un experto en SEO y biodiversidad chilena. Tu tarea es generar contenido SEO optimizado para mejorar el posicionamiento en Google Chile. 
+      const response = await fetch(
+        `${this.baseUrl}/@cf/meta/llama-3.1-8b-instruct`,
+        {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${this.apiToken}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            messages: [
+              {
+                role: 'system',
+                content: `Eres un experto en SEO y biodiversidad chilena. Tu tarea es generar contenido SEO optimizado para mejorar el posicionamiento en Google Chile. 
               
               Directrices:
               - Usa palabras clave relevantes para Chile y Latinoamérica
@@ -153,14 +160,15 @@ SEO_KEYWORDS: [tu respuesta]`;
               - Optimiza para búsquedas en español
               - Considera la intención de búsqueda de usuarios interesados en naturaleza y conservación
               - Sigue EXACTAMENTE el formato solicitado`,
-            },
-            {
-              role: 'user',
-              content: prompt,
-            },
-          ],
-        }),
-      });
+              },
+              {
+                role: 'user',
+                content: prompt,
+              },
+            ],
+          }),
+        },
+      );
 
       if (!response.ok) {
         throw new Error(`Cloudflare AI API error: ${response.statusText}`);

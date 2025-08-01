@@ -40,7 +40,9 @@ export class LocksService {
       );
 
     if (existing) {
-      throw new ConflictException('This content is currently being edited by another user');
+      throw new ConflictException(
+        'This content is currently being edited by another user',
+      );
     }
 
     // Acquire or refresh lock
@@ -71,12 +73,7 @@ export class LocksService {
         lockedAt: null,
         lockExpiresAt: null,
       })
-      .where(
-        and(
-          eq(table.id, entityId),
-          eq(table.lockedBy, userId),
-        ),
-      );
+      .where(and(eq(table.id, entityId), eq(table.lockedBy, userId)));
   }
 
   async checkLock(
