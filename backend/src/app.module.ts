@@ -1,7 +1,5 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
 import configuration from './config/configuration';
 import { DbModule } from './db/db.module';
 import { AuthModule } from './auth/auth.module';
@@ -14,6 +12,7 @@ import { GalleryModule } from './gallery/gallery.module';
 import { UsersModule } from './users/users.module';
 import { AIModule } from './ai/ai.module';
 import { SeedModule } from './seed/seed.module';
+import { HealthModule } from './health/health.module';
 
 @Module({
   imports: [
@@ -32,8 +31,9 @@ import { SeedModule } from './seed/seed.module';
     UsersModule,
     AIModule,
     SeedModule,
+    HealthModule,
   ],
-  controllers: [AppController],
-  providers: [AppService],
+  controllers: [],
+  providers: [],
 })
 export class AppModule {}

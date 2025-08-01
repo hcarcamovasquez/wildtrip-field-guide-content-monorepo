@@ -24,7 +24,10 @@
     "clean": "pnpm run --parallel clean",
     "clean:deps": "rm -rf node_modules web/node_modules backend/node_modules dashboard/node_modules shared/node_modules",
     "install:all": "pnpm install --recursive",
-    "kill-ports": "./bin/kill-ports.sh"
+    "kill-ports": "./bin/kill-ports.sh",
+    "railway:build:backend": "pnpm install --frozen-lockfile && pnpm --filter=shared build && pnpm --filter=backend build",
+    "railway:build:dashboard": "pnpm install --frozen-lockfile && pnpm --filter=shared build && pnpm --filter=dashboard build",
+    "railway:build:web": "pnpm install --frozen-lockfile && pnpm --filter=shared build && pnpm --filter=web build"
   },
   "devDependencies": {
     "concurrently": "^9.1.2"
