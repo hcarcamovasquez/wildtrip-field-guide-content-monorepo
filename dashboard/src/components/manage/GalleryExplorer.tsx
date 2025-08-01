@@ -129,6 +129,7 @@ export default function GalleryExplorer({ initialData }: GalleryExplorerProps) {
       setItems(initialData.items)
       setPage(1)
       setSelectedItems(new Set())
+      setSelectedFile(null)
     }
     
     setHasMore(initialData.pagination.page < initialData.pagination.totalPages)
