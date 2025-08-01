@@ -170,7 +170,7 @@ export class GalleryRepository {
       })),
       ...pageMedia.map((row) => ({
         ...row.media_gallery,
-        type: row.media_gallery.type as 'image' | 'video',
+        type: row.media_gallery.type,
         folder: row.media_folders,
       })),
     ];
