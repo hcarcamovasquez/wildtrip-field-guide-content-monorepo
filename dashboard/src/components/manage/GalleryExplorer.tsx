@@ -413,9 +413,9 @@ export default function GalleryExplorer({ initialData }: GalleryExplorerProps) {
   })
 
   return (
-    <div className="flex h-full overflow-hidden">
+    <div className="h-full flex">
       {/* Main content area */}
-      <div className="flex flex-1 flex-col h-full overflow-hidden">
+      <div className="flex-1 flex flex-col overflow-hidden">
         {/* Fixed Header Container */}
         <div className="flex-shrink-0 border-b bg-background">
           {/* Header */}
