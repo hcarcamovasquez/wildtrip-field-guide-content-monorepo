@@ -45,6 +45,7 @@ interface UsersTableProps {
     totalPages: number
   }
   currentUserId: number
+  currentUserRole?: string
   searchParams: {
     search?: string
     role?: string
@@ -91,7 +92,7 @@ const getRoleIcon = (role: string) => {
   }
 }
 
-export default function UsersTable({ users, pagination, currentUserId, searchParams, baseUrl, isLoading, error }: UsersTableProps) {
+export default function UsersTable({ users, pagination, currentUserId, currentUserRole, searchParams, baseUrl, isLoading, error }: UsersTableProps) {
   const navigate = useNavigate()
   const [roleChangeModal, setRoleChangeModal] = useState<{ open: boolean; user: UserWithRole | null }>({
     open: false,
@@ -290,7 +291,7 @@ export default function UsersTable({ users, pagination, currentUserId, searchPar
                         </td>
                         <td className="px-6 py-3 pr-4 text-muted-foreground">{formatDate(user.lastSeenAt)}</td>
                         <td className="px-6 py-3">
-                          {user.id !== String(currentUserId) && (
+                          {user.id !== String(currentUserId) && currentUserRole === 'admin' && (
                             <DropdownMenu>
                               <DropdownMenuTrigger asChild>
                                 <Button variant="ghost" size="icon">

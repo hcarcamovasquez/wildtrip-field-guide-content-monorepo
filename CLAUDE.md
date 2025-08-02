@@ -554,3 +554,7 @@ pnpm build
 - Credenciales de Prueba:
   - Email: hcarcamovasquez+clerk_test@example.com
   - Password: Random12345A
+
+## Seed de Usuarios
+
+- Actualizar los nuevos usuarios del seed para que se usen para pruebas (todos los usuarios tienen la misma contraseña)

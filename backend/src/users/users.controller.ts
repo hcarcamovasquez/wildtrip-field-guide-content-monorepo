@@ -24,7 +24,7 @@ export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @Get()
-  @Roles('admin', 'content_editor')
+  @Roles('admin')
   findAll(
     @Query('page') page?: string,
     @Query('limit') limit?: string,
@@ -54,28 +54,24 @@ export class UsersController {
   }
 
   @Get('me')
+  @Roles('admin', 'content_editor', 'news_editor', 'areas_editor', 'species_editor', 'user')
   getCurrentUser(@CurrentUser() user: ICurrentUser) {
     return this.usersService.findOne(user.id);
   }
 
   @Get(':id')
-  @Roles('admin', 'content_editor')
+  @Roles('admin')
   findOne(@Param('id') id: string) {
     return this.usersService.findOne(id);
   }
 
   @Patch(':id')
-  @Roles('admin', 'content_editor')
+  @Roles('admin')
   update(
     @Param('id') id: string,
     @Body() updateUserDto: UpdateUserDto,
     @CurrentUser() user: ICurrentUser,
   ) {
-    // Only admins can update other users
-    if (user.role !== 'admin' && user.id !== id) {
-      throw new ForbiddenException('You can only update your own profile');
-    }
-
     return this.usersService.update(id, updateUserDto, user.id, user.role);
   }
 }
