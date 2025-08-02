@@ -1,0 +1,76 @@
+---
+import Layout from '@/layouts/Layout.astro'
+import { apiClient } from '@/lib/api/client'
+
+// Get the preview ID from params
+const { id } = Astro.params
+
+// Check if user is authenticated by checking cookies
+const sessionCookie = Astro.cookies.get('__session')
+
+if (!sessionCookie) {
+  // Redirect to sign-in if not authenticated
+  return Astro.redirect('/sign-in')
+}
+
+let article
+let error
+
+try {
+  // Fetch the preview data (includes drafts)
+  article = await apiClient.preview.news(Number(id))
+} catch (e) {
+  error = e instanceof Error ? e.message : 'Failed to load preview'
+}
+
+if (error || !article) {
+  return Astro.redirect('/404')
+}
+---
+
+<Layout title={`Preview: ${article.title}`}>
+  <div class="container mx-auto px-4 py-8">
+    <div class="max-w-4xl mx-auto">
+      <!-- Preview Banner -->
+      <div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-6">
+        <p class="font-bold">Preview Mode</p>
+        <p class="text-sm">
+          You are viewing a preview. 
+          {article.isDraft && <span class="font-semibold">This includes unpublished draft changes.</span>}
+        </p>
+      </div>
+
+      <!-- Article Content -->
+      <h1 class="text-4xl font-bold mb-4">{article.title}</h1>
+      
+      {article.status === 'draft' && (
+        <div class="inline-block bg-gray-200 text-gray-700 px-3 py-1 rounded mb-4">
+          Draft
+        </div>
+      )}
+
+      <p class="text-lg text-gray-600 mb-6">{article.summary}</p>
+
+      <div class="prose prose-lg max-w-none">
+        <!-- Rich content would be rendered here -->
+        <p>Article content preview...</p>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="mt-8 flex gap-4">
+        <a 
+          href={`${import.meta.env.PUBLIC_ADMIN_URL}/news/edit/${id}`}
+          class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+        >
+          Edit in Dashboard
+        </a>
+        <a 
+          href="/content/news"
+          class="bg-gray-200 text-gray-700 px-4 py-2 rounded hover:bg-gray-300"
+        >
+          Back to News List
+        </a>
+      </div>
+    </div>
+  </div>
+</Layout>

@@ -16,8 +16,8 @@ export class ProtectedAreasService {
     return this.protectedAreasRepository.findAll(query);
   }
 
-  async findOne(id: number) {
-    const area = await this.protectedAreasRepository.findById(id);
+  async findOne(id: number, includeDraft: boolean = false) {
+    const area = await this.protectedAreasRepository.findById(id, includeDraft);
     if (!area) {
       throw new NotFoundException(`Protected area with ID ${id} not found`);
     }

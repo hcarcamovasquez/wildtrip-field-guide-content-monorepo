@@ -13,18 +13,30 @@ export class ClerkAuthGuard implements CanActivate {
   private secretKey: string;
 
   constructor(private configService: ConfigService) {
-    this.secretKey = this.configService.get<string>('clerk.secretKey') || '';
-    this.clerkClient = createClerkClient({
-      secretKey: this.secretKey,
-    });
+    this.secretKey = this.configService.get<string>('clerk.secretKey') || 
+                    this.configService.get<string>('CLERK_SECRET_KEY') || 
+                    process.env.CLERK_SECRET_KEY || '';
+    if (this.secretKey) {
+      this.clerkClient = createClerkClient({
+        secretKey: this.secretKey,
+      });
+    }
   }
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
 
     try {
-      // Get session token from __session cookie
-      const sessionToken = request.cookies.__session;
+      // Get session token from __session cookie or Authorization header
+      let sessionToken = request.cookies.__session;
+
+      // If no cookie token, check Authorization header
+      if (!sessionToken) {
+        const authHeader = request.headers.authorization;
+        if (authHeader && authHeader.startsWith('Bearer ')) {
+          sessionToken = authHeader.substring(7);
+        }
+      }
 
       if (!sessionToken) {
         throw new UnauthorizedException('No session token found');

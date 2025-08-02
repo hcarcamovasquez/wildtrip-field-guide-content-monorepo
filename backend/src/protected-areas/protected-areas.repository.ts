@@ -90,7 +90,7 @@ export class ProtectedAreasRepository {
     };
   }
 
-  async findById(id: number) {
+  async findById(id: number, includeDraft: boolean = false) {
     const db = this.dbService.getDb();
     const [result] = await db
       .select()
@@ -106,6 +106,15 @@ export class ProtectedAreasRepository {
         mainImage: result.draftData.mainImage,
         galleryImages: result.draftData.galleryImages,
       });
+    }
+
+    // If includeDraft is true and there's draft data, merge it with the published data
+    if (includeDraft && result && result.hasDraft && result.draftData) {
+      return {
+        ...result,
+        ...result.draftData,
+        isDraft: true,
+      };
     }
 
     return result;

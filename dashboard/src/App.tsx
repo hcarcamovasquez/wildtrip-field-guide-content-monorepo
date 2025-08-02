@@ -18,6 +18,7 @@ import { ThemeProvider } from './components/theme-provider'
 import { PermissionGuard } from './components/PermissionGuard'
 import { AuthProvider } from './contexts/AuthContext'
 import { AuthErrorHandler } from './components/AuthErrorHandler'
+import { ApiClientProvider } from './components/ApiClientProvider'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -57,23 +58,25 @@ export default function App() {
           <AuthProvider>
             <AuthErrorHandler>
               <ProtectedRoute>
-                <PermissionGuard>
-                  <Routes>
-                  <Route path="/unauthorized" element={<UnauthorizedPage />} />
-                  <Route path="/*" element={
-                    <Layout>
-                      <Routes>
-                        <Route path="/" element={<Navigate to="/species" replace />} />
-                        <Route path="/species/*" element={<SpeciesPage />} />
-                        <Route path="/protected-areas/*" element={<ProtectedAreasPage />} />
-                        <Route path="/news/*" element={<NewsPage />} />
-                        <Route path="/gallery/*" element={<GalleryPage />} />
-                        <Route path="/users/*" element={<UsersPage />} />
-                      </Routes>
-                    </Layout>
-                  } />
-                </Routes>
-                </PermissionGuard>
+                <ApiClientProvider>
+                  <PermissionGuard>
+                    <Routes>
+                    <Route path="/unauthorized" element={<UnauthorizedPage />} />
+                    <Route path="/*" element={
+                      <Layout>
+                        <Routes>
+                          <Route path="/" element={<Navigate to="/species" replace />} />
+                          <Route path="/species/*" element={<SpeciesPage />} />
+                          <Route path="/protected-areas/*" element={<ProtectedAreasPage />} />
+                          <Route path="/news/*" element={<NewsPage />} />
+                          <Route path="/gallery/*" element={<GalleryPage />} />
+                          <Route path="/users/*" element={<UsersPage />} />
+                        </Routes>
+                      </Layout>
+                    } />
+                  </Routes>
+                  </PermissionGuard>
+                </ApiClientProvider>
               </ProtectedRoute>
             </AuthErrorHandler>
           </AuthProvider>

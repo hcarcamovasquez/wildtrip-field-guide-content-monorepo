@@ -25,12 +25,16 @@ class APIClient {
       url += `?${searchParams.toString()}`
     }
 
+    // Include credentials for preview endpoints that require authentication
+    const includeCredentials = endpoint.includes('/preview/')
+
     const response = await fetch(url, {
       ...fetchOptions,
       headers: {
         'Content-Type': 'application/json',
         ...fetchOptions.headers,
       },
+      ...(includeCredentials && { credentials: 'include' }),
     })
 
     if (!response.ok) {
@@ -40,25 +44,32 @@ class APIClient {
     return response.json()
   }
 
-  // Species endpoints
+  // Species endpoints - Public API
   species = {
-    findAll: (params?: any) => this.request<any>('/api/species', { params }),
-    findBySlug: (slug: string) => this.request<any>(`/api/species/slug/${slug}`),
-    findById: (id: number) => this.request<any>(`/api/species/${id}`),
+    findAll: (params?: any) => this.request<any>('/api/public/species', { params }),
+    findBySlug: (slug: string) => this.request<any>(`/api/public/species/slug/${slug}`),
+    findById: (id: number) => this.request<any>(`/api/public/species/${id}`),
   }
 
-  // Protected Areas endpoints
+  // Protected Areas endpoints - Public API
   protectedAreas = {
-    findAll: (params?: any) => this.request<any>('/api/protected-areas', { params }),
-    findBySlug: (slug: string) => this.request<any>(`/api/protected-areas/slug/${slug}`),
-    findById: (id: number) => this.request<any>(`/api/protected-areas/${id}`),
+    findAll: (params?: any) => this.request<any>('/api/public/protected-areas', { params }),
+    findBySlug: (slug: string) => this.request<any>(`/api/public/protected-areas/slug/${slug}`),
+    findById: (id: number) => this.request<any>(`/api/public/protected-areas/${id}`),
   }
 
-  // News endpoints
+  // News endpoints - Public API
   news = {
-    findAll: (params?: any) => this.request<any>('/api/news', { params }),
-    findBySlug: (slug: string) => this.request<any>(`/api/news/slug/${slug}`),
-    findById: (id: number) => this.request<any>(`/api/news/${id}`),
+    findAll: (params?: any) => this.request<any>('/api/public/news', { params }),
+    findBySlug: (slug: string) => this.request<any>(`/api/public/news/slug/${slug}`),
+    findById: (id: number) => this.request<any>(`/api/public/news/${id}`),
+  }
+
+  // Preview endpoints - Requires authentication
+  preview = {
+    species: (id: number) => this.request<any>(`/api/preview/species/${id}`),
+    protectedAreas: (id: number) => this.request<any>(`/api/preview/protected-areas/${id}`),
+    news: (id: number) => this.request<any>(`/api/preview/news/${id}`),
   }
 }
 

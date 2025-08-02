@@ -22,45 +22,45 @@ import {
 import { LocksService } from '../locks/locks.service';
 
 @Controller('api/species')
+@UseGuards(ClerkAuthGuard, RolesGuard)
 export class SpeciesController {
   constructor(
     private readonly speciesService: SpeciesService,
     private readonly locksService: LocksService,
   ) {}
 
-  // Public endpoints
+  // Protected endpoints - All require authentication
   @Get()
+  @Roles('admin', 'content_editor', 'species_editor', 'viewer')
   findAll(@Query() query: any) {
     return this.speciesService.findAll(query);
   }
 
   @Get('slug/:slug')
+  @Roles('admin', 'content_editor', 'species_editor', 'viewer')
   findBySlug(@Param('slug') slug: string) {
     return this.speciesService.findBySlug(slug);
   }
 
   @Get(':id')
+  @Roles('admin', 'content_editor', 'species_editor', 'viewer')
   findOne(@Param('id') id: string) {
     return this.speciesService.findOne(+id);
   }
 
-  // Protected endpoints
   @Post()
-  @UseGuards(ClerkAuthGuard, RolesGuard)
   @Roles('admin', 'content_editor', 'species_editor')
   create(@Body() createSpeciesDto: CreateSpeciesDto) {
     return this.speciesService.create(createSpeciesDto);
   }
 
   @Patch(':id')
-  @UseGuards(ClerkAuthGuard, RolesGuard)
   @Roles('admin', 'content_editor', 'species_editor')
   update(@Param('id') id: string, @Body() updateSpeciesDto: UpdateSpeciesDto) {
     return this.speciesService.update(+id, updateSpeciesDto);
   }
 
   @Delete(':id')
-  @UseGuards(ClerkAuthGuard, RolesGuard)
   @Roles('admin')
   remove(@Param('id') id: string) {
     return this.speciesService.remove(+id);
@@ -68,7 +68,6 @@ export class SpeciesController {
 
   // Draft/Publish endpoints
   @Post(':id/publish')
-  @UseGuards(ClerkAuthGuard, RolesGuard)
   @Roles('admin', 'content_editor', 'species_editor')
   publish(@Param('id') id: string) {
     console.log('Species publish endpoint called for id:', id);
@@ -76,14 +75,12 @@ export class SpeciesController {
   }
 
   @Post(':id/draft')
-  @UseGuards(ClerkAuthGuard, RolesGuard)
   @Roles('admin', 'content_editor', 'species_editor')
   createDraft(@Param('id') id: string, @Body() draftData: UpdateSpeciesDto) {
     return this.speciesService.createDraft(+id, draftData);
   }
 
   @Post(':id/discard-draft')
-  @UseGuards(ClerkAuthGuard, RolesGuard)
   @Roles('admin', 'content_editor', 'species_editor')
   discardDraft(@Param('id') id: string) {
     console.log('Discard draft endpoint called for species:', id);
@@ -92,7 +89,6 @@ export class SpeciesController {
 
   // Lock endpoints
   @Post(':id/lock')
-  @UseGuards(ClerkAuthGuard, RolesGuard)
   @Roles('admin', 'content_editor', 'species_editor')
   async acquireLock(
     @Param('id') id: string,
@@ -104,7 +100,6 @@ export class SpeciesController {
   }
 
   @Delete(':id/lock')
-  @UseGuards(ClerkAuthGuard, RolesGuard)
   @Roles('admin', 'content_editor', 'species_editor')
   async releaseLock(
     @Param('id') id: string,
@@ -117,6 +112,7 @@ export class SpeciesController {
   }
 
   @Get(':id/lock')
+  @Roles('admin', 'content_editor', 'species_editor', 'viewer')
   async checkLock(@Param('id') id: string) {
     return this.locksService.checkLock('species', +id);
   }

@@ -22,31 +22,33 @@ import {
 import { LocksService } from '../locks/locks.service';
 
 @Controller('api/news')
+@UseGuards(ClerkAuthGuard, RolesGuard)
 export class NewsController {
   constructor(
     private readonly newsService: NewsService,
     private readonly locksService: LocksService,
   ) {}
 
-  // Public endpoints
+  // Protected endpoints - All require authentication
   @Get()
+  @Roles('admin', 'content_editor', 'news_editor', 'viewer')
   findAll(@Query() query: any) {
     return this.newsService.findAll(query);
   }
 
   @Get('slug/:slug')
+  @Roles('admin', 'content_editor', 'news_editor', 'viewer')
   findBySlug(@Param('slug') slug: string) {
     return this.newsService.findBySlug(slug);
   }
 
   @Get(':id')
+  @Roles('admin', 'content_editor', 'news_editor', 'viewer')
   findOne(@Param('id') id: string) {
     return this.newsService.findOne(+id);
   }
 
-  // Protected endpoints - Management API
   @Post()
-  @UseGuards(ClerkAuthGuard, RolesGuard)
   @Roles('admin', 'content_editor', 'news_editor')
   create(
     @Body() createNewsDto: CreateNewsDto,
@@ -56,14 +58,12 @@ export class NewsController {
   }
 
   @Patch(':id')
-  @UseGuards(ClerkAuthGuard, RolesGuard)
   @Roles('admin', 'content_editor', 'news_editor')
   update(@Param('id') id: string, @Body() updateNewsDto: UpdateNewsDto) {
     return this.newsService.update(+id, updateNewsDto);
   }
 
   @Delete(':id')
-  @UseGuards(ClerkAuthGuard, RolesGuard)
   @Roles('admin')
   remove(@Param('id') id: string) {
     return this.newsService.remove(+id);
@@ -71,21 +71,18 @@ export class NewsController {
 
   // Draft/Publish endpoints
   @Post(':id/publish')
-  @UseGuards(ClerkAuthGuard, RolesGuard)
   @Roles('admin', 'content_editor', 'news_editor')
   publish(@Param('id') id: string) {
     return this.newsService.publish(+id);
   }
 
   @Post(':id/draft')
-  @UseGuards(ClerkAuthGuard, RolesGuard)
   @Roles('admin', 'content_editor', 'news_editor')
   createDraft(@Param('id') id: string, @Body() draftData: UpdateNewsDto) {
     return this.newsService.createDraft(+id, draftData);
   }
 
   @Post(':id/discard-draft')
-  @UseGuards(ClerkAuthGuard, RolesGuard)
   @Roles('admin', 'content_editor', 'news_editor')
   discardDraft(@Param('id') id: string) {
     return this.newsService.discardDraft(+id);
@@ -93,7 +90,6 @@ export class NewsController {
 
   // Lock endpoints
   @Post(':id/lock')
-  @UseGuards(ClerkAuthGuard, RolesGuard)
   @Roles('admin', 'content_editor', 'news_editor')
   async acquireLock(
     @Param('id') id: string,
@@ -101,11 +97,10 @@ export class NewsController {
   ) {
     const userId = Number((user as any).dbUserId);
     await this.locksService.acquireLock('news', +id, userId);
-    return { locked: true };
+    return { success: true };
   }
 
   @Delete(':id/lock')
-  @UseGuards(ClerkAuthGuard, RolesGuard)
   @Roles('admin', 'content_editor', 'news_editor')
   async releaseLock(
     @Param('id') id: string,
@@ -113,10 +108,11 @@ export class NewsController {
   ) {
     const userId = Number((user as any).dbUserId);
     await this.locksService.releaseLock('news', +id, userId);
-    return { locked: false };
+    return { success: true };
   }
 
   @Get(':id/lock')
+  @Roles('admin', 'content_editor', 'news_editor', 'viewer')
   async checkLock(@Param('id') id: string) {
     return this.locksService.checkLock('news', +id);
   }

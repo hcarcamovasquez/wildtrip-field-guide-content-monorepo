@@ -548,5 +548,9 @@ pnpm --filter=backend db:studio   # Drizzle Studio
 pnpm build
 ```
 
-      
-      IMPORTANT: this context may or may not be relevant to your tasks. You should not respond to this context unless it is highly relevant to your task.
+## Credenciales de Prueba
+
+- Para realizar pruebas y playwright o manuales, el usuario de prueba es: Testing
+- Credenciales de Prueba:
+  - Email: hcarcamovasquez+clerk_test@example.com
+  - Password: Random12345A

@@ -203,6 +203,44 @@ pnpm --filter=backend db:push      # Push schema (desarrollo)
 pnpm --filter=backend seed         # Ejecutar seed
 ```
 
+## 🧪 Testing
+
+### Credenciales de Prueba
+
+Para realizar pruebas en el sistema, utiliza las siguientes credenciales:
+
+```
+Email: hcarcamovasquez+clerk_test@example.com
+Password: Random12345A
+```
+
+> **Nota**: Estas credenciales funcionan tanto para el dashboard React como para el sitio Astro.
+
+### Endpoints de API
+
+#### APIs Públicas (sin autenticación)
+- `GET /api/public/species` - Lista de especies publicadas
+- `GET /api/public/news` - Lista de noticias publicadas
+- `GET /api/public/protected-areas` - Lista de áreas protegidas publicadas
+
+#### APIs Privadas (requieren JWT token)
+- `GET /api/species` - Todas las especies (incluye borradores)
+- `GET /api/news` - Todas las noticias (incluye borradores)
+- `GET /api/protected-areas` - Todas las áreas protegidas (incluye borradores)
+
+#### APIs de Preview (requieren autenticación con cookies)
+- `GET /api/preview/species/:id` - Preview de especie con drafts
+- `GET /api/preview/news/:id` - Preview de noticia con drafts
+- `GET /api/preview/protected-areas/:id` - Preview de área protegida con drafts
+
+### Resultados de Pruebas (Agosto 2025)
+
+✅ **APIs Públicas**: Funcionando correctamente, devuelven solo contenido publicado
+✅ **APIs Privadas**: Requieren autenticación JWT, rechazan peticiones sin token (401)
+✅ **Autenticación Dual**: Backend acepta cookies (Astro) y JWT headers (React)
+✅ **Dashboard React**: Configurado con ApiClientProvider para gestión automática de tokens
+
+
 ## 🚀 Despliegue
 
 ### web

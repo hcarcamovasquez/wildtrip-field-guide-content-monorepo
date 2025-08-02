@@ -4,6 +4,58 @@ import type { RichContent } from '@wildtrip/shared';
 const BASE_URL =
   process.env.PUBLIC_R2_PUBLIC_URL || 'https://dev.cdn.wildtrip.cl';
 
+// Test users with their Clerk IDs and roles
+export const seedUsers = [
+  {
+    clerkId: 'user_30kKt7OFxGFcsmnl64di3CuijnL',
+    email: 'admin+clerk_test@example.com',
+    username: 'useradmin',
+    firstName: 'Admin',
+    lastName: 'User',
+    role: 'admin',
+  },
+  {
+    clerkId: 'user_30kKx3i32q3SKZijxZvc8GQgz47',
+    email: 'content_editor+clerk_test@example.com',
+    username: 'content_editor',
+    firstName: 'Content',
+    lastName: 'Editor',
+    role: 'content_editor',
+  },
+  {
+    clerkId: 'user_30kL00iY04Ndui8QBiLXOnfNWH4',
+    email: 'news_editor+clerk_test@example.com',
+    username: 'news_editor',
+    firstName: 'News',
+    lastName: 'Editor',
+    role: 'news_editor',
+  },
+  {
+    clerkId: 'user_30kL2wrHqOQti45P1oGEJXGlgJ6',
+    email: 'areas_editor+clerk_test@example.com',
+    username: 'areas_editor',
+    firstName: 'Areas',
+    lastName: 'Editor',
+    role: 'areas_editor',
+  },
+  {
+    clerkId: 'user_30kL6T3uBsW1talcJ8WeN1MNn4e',
+    email: 'species_editor+clerk_test@example.com',
+    username: 'species_editor',
+    firstName: 'Species',
+    lastName: 'Editor',
+    role: 'species_editor',
+  },
+  {
+    clerkId: 'user_30kL90W3Md67Wsm13detlj28KmS',
+    email: 'user+clerk_test@example.com',
+    username: 'user',
+    firstName: 'Regular',
+    lastName: 'User',
+    role: 'user',
+  },
+];
+
 export interface SeedImageData {
   id: string;
   url: string;
@@ -348,6 +400,7 @@ export const newsData = [
       },
     ]),
     author: 'Equipo de Conservación Wildtrip',
+    category: 'conservation',
     tags: ['conservación', 'fauna', 'torres-del-paine', 'cóndor-andino'],
   },
   {
@@ -369,6 +422,7 @@ export const newsData = [
       },
     ]),
     author: 'Departamento de Prensa CONAF',
+    category: 'conservation',
     tags: ['conservación', 'huemul', 'patagonia', 'fauna-endémica'],
   },
   {
@@ -390,6 +444,7 @@ export const newsData = [
       },
     ]),
     author: 'Universidad de Chile',
+    category: 'research',
     tags: [
       'investigación',
       'nueva-especie',

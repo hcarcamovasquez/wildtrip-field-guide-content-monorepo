@@ -151,7 +151,7 @@ export class UsersRepository {
       email,
       firstName: clerkUser.firstName || null,
       lastName: clerkUser.lastName || null,
-      role: clerkUser.publicMetadata?.role || 'viewer',
+      role: clerkUser.publicMetadata?.role || 'user',
     };
 
     if (existingUser) {
@@ -171,5 +171,90 @@ export class UsersRepository {
         updatedAt: new Date(),
       });
     }
+  }
+
+  async createFromClerk(userData: {
+    clerkId: string;
+    email: string;
+    name: string | null;
+    username: string | null;
+    profileImageUrl: string | null;
+    role?: string;
+  }) {
+    // Extract first and last name from full name
+    const nameParts = userData.name?.split(' ') || [];
+    const firstName = nameParts[0] || null;
+    const lastName = nameParts.slice(1).join(' ') || null;
+
+    // Generate username if not provided
+    let username = userData.username;
+    if (!username) {
+      username = await this.usernameGenerator.generateUsername(
+        firstName || undefined,
+        lastName || undefined,
+        userData.email,
+      );
+    }
+
+    return this.create({
+      clerkId: userData.clerkId,
+      email: userData.email,
+      firstName,
+      lastName,
+      username,
+      role: userData.role || 'user', // Use provided role or default to user
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
+  }
+
+  async updateFromClerk(userData: {
+    clerkId: string;
+    email?: string;
+    name: string | null;
+    username: string | null;
+    profileImageUrl: string | null;
+    role?: string;
+  }) {
+    const existingUser = await this.findById(userData.clerkId);
+    if (!existingUser) {
+      // If user doesn't exist and we have email, create it
+      if (userData.email) {
+        return this.createFromClerk({
+          ...userData,
+          email: userData.email,
+        });
+      }
+      return null;
+    }
+
+    // Extract first and last name from full name
+    const nameParts = userData.name?.split(' ') || [];
+    const firstName = nameParts[0] || null;
+    const lastName = nameParts.slice(1).join(' ') || null;
+
+    const updateData: Partial<typeof users.$inferInsert> = {
+      firstName,
+      lastName,
+      updatedAt: new Date(),
+    };
+
+    if (userData.email) {
+      updateData.email = userData.email;
+    }
+
+    if (userData.username) {
+      updateData.username = userData.username;
+    }
+
+    if (userData.role) {
+      updateData.role = userData.role;
+    }
+
+    return this.update(userData.clerkId, updateData);
+  }
+
+  async deleteByClerkId(clerkId: string) {
+    await this.delete(clerkId);
   }
 }

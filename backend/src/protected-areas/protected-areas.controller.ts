@@ -22,38 +22,39 @@ import {
 import { LocksService } from '../locks/locks.service';
 
 @Controller('api/protected-areas')
+@UseGuards(ClerkAuthGuard, RolesGuard)
 export class ProtectedAreasController {
   constructor(
     private readonly protectedAreasService: ProtectedAreasService,
     private readonly locksService: LocksService,
   ) {}
 
-  // Public endpoints
+  // Protected endpoints - All require authentication
   @Get()
+  @Roles('admin', 'content_editor', 'areas_editor', 'viewer')
   findAll(@Query() query: any) {
     return this.protectedAreasService.findAll(query);
   }
 
   @Get('slug/:slug')
+  @Roles('admin', 'content_editor', 'areas_editor', 'viewer')
   findBySlug(@Param('slug') slug: string) {
     return this.protectedAreasService.findBySlug(slug);
   }
 
   @Get(':id')
+  @Roles('admin', 'content_editor', 'areas_editor', 'viewer')
   findOne(@Param('id') id: string) {
     return this.protectedAreasService.findOne(+id);
   }
 
-  // Protected endpoints - Management API
   @Post()
-  @UseGuards(ClerkAuthGuard, RolesGuard)
   @Roles('admin', 'content_editor', 'areas_editor')
   create(@Body() createProtectedAreaDto: CreateProtectedAreaDto) {
     return this.protectedAreasService.create(createProtectedAreaDto);
   }
 
   @Patch(':id')
-  @UseGuards(ClerkAuthGuard, RolesGuard)
   @Roles('admin', 'content_editor', 'areas_editor')
   update(
     @Param('id') id: string,
@@ -63,7 +64,6 @@ export class ProtectedAreasController {
   }
 
   @Delete(':id')
-  @UseGuards(ClerkAuthGuard, RolesGuard)
   @Roles('admin')
   remove(@Param('id') id: string) {
     return this.protectedAreasService.remove(+id);
@@ -71,14 +71,12 @@ export class ProtectedAreasController {
 
   // Draft/Publish endpoints
   @Post(':id/publish')
-  @UseGuards(ClerkAuthGuard, RolesGuard)
   @Roles('admin', 'content_editor', 'areas_editor')
   publish(@Param('id') id: string) {
     return this.protectedAreasService.publish(+id);
   }
 
   @Post(':id/draft')
-  @UseGuards(ClerkAuthGuard, RolesGuard)
   @Roles('admin', 'content_editor', 'areas_editor')
   createDraft(
     @Param('id') id: string,
@@ -88,7 +86,6 @@ export class ProtectedAreasController {
   }
 
   @Post(':id/discard-draft')
-  @UseGuards(ClerkAuthGuard, RolesGuard)
   @Roles('admin', 'content_editor', 'areas_editor')
   discardDraft(@Param('id') id: string) {
     return this.protectedAreasService.discardDraft(+id);
@@ -96,7 +93,6 @@ export class ProtectedAreasController {
 
   // Lock endpoints
   @Post(':id/lock')
-  @UseGuards(ClerkAuthGuard, RolesGuard)
   @Roles('admin', 'content_editor', 'areas_editor')
   async acquireLock(
     @Param('id') id: string,
@@ -104,11 +100,10 @@ export class ProtectedAreasController {
   ) {
     const userId = Number((user as any).dbUserId);
     await this.locksService.acquireLock('protectedAreas', +id, userId);
-    return { locked: true };
+    return { success: true };
   }
 
   @Delete(':id/lock')
-  @UseGuards(ClerkAuthGuard, RolesGuard)
   @Roles('admin', 'content_editor', 'areas_editor')
   async releaseLock(
     @Param('id') id: string,
@@ -116,10 +111,11 @@ export class ProtectedAreasController {
   ) {
     const userId = Number((user as any).dbUserId);
     await this.locksService.releaseLock('protectedAreas', +id, userId);
-    return { locked: false };
+    return { success: true };
   }
 
   @Get(':id/lock')
+  @Roles('admin', 'content_editor', 'areas_editor', 'viewer')
   async checkLock(@Param('id') id: string) {
     return this.locksService.checkLock('protectedAreas', +id);
   }

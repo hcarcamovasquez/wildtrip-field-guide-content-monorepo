@@ -16,8 +16,8 @@ export class NewsService {
     return this.newsRepository.findAll(query);
   }
 
-  async findOne(id: number) {
-    const article = await this.newsRepository.findById(id);
+  async findOne(id: number, includeDraft: boolean = false) {
+    const article = await this.newsRepository.findById(id, includeDraft);
     if (!article) {
       throw new NotFoundException(`News article with ID ${id} not found`);
     }

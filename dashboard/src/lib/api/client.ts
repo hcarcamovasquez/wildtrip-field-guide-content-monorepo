@@ -1,9 +1,14 @@
 import axios, {type AxiosInstance, type AxiosRequestConfig } from 'axios'
 
 let authErrorHandler: ((error: boolean) => void) | null = null
+let getTokenFunction: (() => Promise<string | null>) | null = null
 
 export function setAuthErrorHandler(handler: (error: boolean) => void) {
   authErrorHandler = handler
+}
+
+export function setGetTokenFunction(getToken: () => Promise<string | null>) {
+  getTokenFunction = getToken
 }
 
 export class APIClient {
@@ -20,7 +25,13 @@ export class APIClient {
 
     // Request interceptor to add auth token
     this.instance.interceptors.request.use(async (config) => {
-      // The auth token will be sent via cookies, so no need to add it manually
+      // Get the token from Clerk and add it to the Authorization header
+      if (getTokenFunction) {
+        const token = await getTokenFunction()
+        if (token) {
+          config.headers.Authorization = `Bearer ${token}`
+        }
+      }
       return config
     })
 
@@ -246,12 +257,7 @@ export const apiClient = new APIClient(
   import.meta.env.DEV ? '' : (import.meta.env.VITE_API_URL || 'http://localhost:3000')
 )
 
-// Hook to use API client with auth
+// Hook to use API client
 export function useAPIClient() {
-  // const { getToken } = useAuth()
-  
-  // You can add token to requests here if needed
-  // But since we're using cookies, it's not necessary
-  
   return apiClient
 }

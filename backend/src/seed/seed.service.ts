@@ -6,6 +6,7 @@ import {
   news,
   mediaGallery,
   mediaFolders,
+  users,
 } from '../db/schema';
 import { sql } from 'drizzle-orm';
 import {
@@ -15,6 +16,7 @@ import {
   getRandomImageData,
   getRandomImageDataArray,
   seedImages,
+  seedUsers,
 } from './seed-data';
 import { slugify } from '@wildtrip/shared';
 
@@ -30,6 +32,17 @@ export class SeedService {
     try {
       // Clear existing data first
       await this.clearDatabase();
+
+      // Seed users
+      let usersCount = 0;
+      for (const user of seedUsers) {
+        await this.db.db.insert(users).values({
+          ...user,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        });
+        usersCount++;
+      }
 
       // Create media folders
       const [rootFolder] = await this.db.db
@@ -146,6 +159,7 @@ export class SeedService {
       }
 
       this.logger.log(`Seed completed successfully:`);
+      this.logger.log(`- ${usersCount} users created`);
       this.logger.log(`- ${mediaEntries.length} media items created`);
       this.logger.log(`- ${speciesCount} species created`);
       this.logger.log(`- ${areasCount} protected areas created`);
@@ -155,6 +169,7 @@ export class SeedService {
         success: true,
         message: 'Database seeded successfully',
         stats: {
+          users: usersCount,
           media: mediaEntries.length,
           species: speciesCount,
           protectedAreas: areasCount,
@@ -177,6 +192,7 @@ export class SeedService {
       await this.db.db.delete(species);
       await this.db.db.delete(mediaGallery);
       await this.db.db.delete(mediaFolders);
+      await this.db.db.delete(users);
 
       // Reset sequences
       await this.db.db.execute(sql`ALTER SEQUENCE news_id_seq RESTART WITH 1`);
@@ -191,6 +207,9 @@ export class SeedService {
       );
       await this.db.db.execute(
         sql`ALTER SEQUENCE media_folders_id_seq RESTART WITH 1`,
+      );
+      await this.db.db.execute(
+        sql`ALTER SEQUENCE users_id_seq RESTART WITH 1`,
       );
 
       this.logger.log('Database cleared successfully');

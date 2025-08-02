@@ -16,8 +16,8 @@ export class SpeciesService {
     return this.speciesRepository.findAll(query);
   }
 
-  async findOne(id: number) {
-    const species = await this.speciesRepository.findById(id);
+  async findOne(id: number, includeDraft: boolean = false) {
+    const species = await this.speciesRepository.findById(id, includeDraft);
     if (!species) {
       throw new NotFoundException(`Species with ID ${id} not found`);
     }

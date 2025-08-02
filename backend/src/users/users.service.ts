@@ -36,6 +36,10 @@ export class UsersService {
     return user;
   }
 
+  async findByClerkId(clerkId: string) {
+    return this.usersRepository.findById(clerkId);
+  }
+
   async update(
     id: string,
     updateUserDto: UpdateUserDto,
@@ -62,6 +66,32 @@ export class UsersService {
 
   async syncFromClerk(clerkUser: any) {
     return this.usersRepository.syncFromClerk(clerkUser);
+  }
+
+  async createUserFromClerk(userData: {
+    clerkId: string;
+    email: string;
+    name: string | null;
+    username: string | null;
+    profileImageUrl: string | null;
+    role?: string;
+  }) {
+    return this.usersRepository.createFromClerk(userData);
+  }
+
+  async updateUserFromClerk(userData: {
+    clerkId: string;
+    email?: string;
+    name: string | null;
+    username: string | null;
+    profileImageUrl: string | null;
+    role?: string;
+  }) {
+    return this.usersRepository.updateFromClerk(userData);
+  }
+
+  async deleteUserByClerkId(clerkId: string) {
+    return this.usersRepository.deleteByClerkId(clerkId);
   }
 
   async getUserStats() {

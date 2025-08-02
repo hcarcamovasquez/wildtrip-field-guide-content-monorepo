@@ -85,13 +85,24 @@ pnpm db:push
 pnpm db:studio
 ```
 
-### Seed inicial
+### Seed inicial (Solo en desarrollo)
 
 ```bash
-# Cargar datos de ejemplo (solo desarrollo)
-curl -X POST http://localhost:3000/api/dev/seed \
-  -H "Cookie: __session=YOUR_ADMIN_SESSION"
+# Limpiar base de datos (elimina todos los datos)
+curl -X DELETE http://localhost:3000/api/dev/seed
+
+# Cargar datos de ejemplo
+curl -X POST http://localhost:3000/api/dev/seed
 ```
+
+Los datos de seed incluyen:
+- 6 usuarios de prueba con diferentes roles
+- Especies de ejemplo
+- Áreas protegidas de ejemplo
+- Noticias de ejemplo
+- Imágenes de galería
+
+**Nota**: Estos endpoints solo funcionan en desarrollo (NODE_ENV != 'production')
 
 ## 🏃‍♂️ Desarrollo
 

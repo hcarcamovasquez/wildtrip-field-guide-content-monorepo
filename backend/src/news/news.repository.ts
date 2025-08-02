@@ -84,7 +84,7 @@ export class NewsRepository {
     };
   }
 
-  async findById(id: number) {
+  async findById(id: number, includeDraft: boolean = false) {
     const db = this.dbService.getDb();
     const [result] = await db.select().from(news).where(eq(news.id, id));
 
@@ -96,6 +96,15 @@ export class NewsRepository {
         draftData: result.draftData,
         mainImage: result.draftData.mainImage,
       });
+    }
+
+    // If includeDraft is true and there's draft data, merge it with the published data
+    if (includeDraft && result && result.hasDraft && result.draftData) {
+      return {
+        ...result,
+        ...result.draftData,
+        isDraft: true,
+      };
     }
 
     return result;
