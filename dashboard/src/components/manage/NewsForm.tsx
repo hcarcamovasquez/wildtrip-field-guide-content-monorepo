@@ -833,6 +833,11 @@ export default function NewsForm({ initialData, isEditing = false, newsId, curre
                       if (isEditMode) {
                         setHasLocalChanges(true)
                       }
+
+                      // Save the content change with debounce
+                      if (isEditMode && newsId) {
+                        handleContentBlur(richContent)
+                      }
                     }}
                     placeholder="Escribe el contenido de la noticia..."
                     height="500px"

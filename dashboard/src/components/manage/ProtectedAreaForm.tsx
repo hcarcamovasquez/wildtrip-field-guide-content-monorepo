@@ -937,6 +937,11 @@ export default function ProtectedAreaForm({ initialData, isEditing, areaId, curr
                       if (isEditMode) {
                         setHasLocalChanges(true)
                       }
+
+                      // Save the content change with debounce
+                      if (isEditMode && areaId) {
+                        handleContentBlur(richContent)
+                      }
                     }}
                     placeholder="Escribe el contenido del área protegida..."
                     height="500px"
