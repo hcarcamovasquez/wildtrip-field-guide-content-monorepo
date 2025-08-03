@@ -47,15 +47,29 @@ Título del artículo: ${title}
 Resumen: ${summary}
 Contenido principal: ${content.substring(0, 500)}...
 
-Genera:
-1. SEO Title (máximo 60 caracteres, debe incluir palabras clave relevantes)
-2. SEO Description (máximo 155 caracteres, atractivo y descriptivo)
-3. SEO Keywords (5-8 palabras clave separadas por comas, relevantes para Chile)
+INSTRUCCIONES ESTRICTAS:
 
-Formato de respuesta:
-SEO_TITLE: [tu respuesta]
-SEO_DESCRIPTION: [tu respuesta]
-SEO_KEYWORDS: [tu respuesta]`;
+1. SEO Title: 
+   - DEBE tener entre 50-60 caracteres (NO MÁS DE 60)
+   - Incluir el tema principal y "Chile" si es relevante
+   - Ejemplo longitud: "Descubren nueva especie de rana en los bosques de Chile" (55 caracteres)
+
+2. SEO Description:
+   - DEBE tener entre 145-155 caracteres (NO MÁS DE 155)
+   - Comenzar con verbo de acción
+   - Incluir dato más relevante y call-to-action
+   - Ejemplo longitud: "Conoce los detalles del importante hallazgo científico que podría cambiar la comprensión de la biodiversidad en los ecosistemas chilenos. Lee más aquí." (153 caracteres)
+
+3. SEO Keywords:
+   - EXACTAMENTE 6-8 palabras clave
+   - Separadas por comas
+   - Incluir: tema principal, Chile, región específica si aplica, categoría
+   - Ejemplo: "biodiversidad chile, conservación, fauna chilena, [tema específico], naturaleza, medio ambiente"
+
+Formato de respuesta (RESPETAR EXACTAMENTE):
+SEO_TITLE: [tu respuesta de 50-60 caracteres]
+SEO_DESCRIPTION: [tu respuesta de 145-155 caracteres]
+SEO_KEYWORDS: [6-8 palabras clave separadas por comas]`;
 
     return this.generateSEO(prompt);
   }
@@ -78,15 +92,29 @@ Descripción: ${description}
 ${habitat ? `Hábitat: ${habitat}` : ''}
 ${conservationStatus ? `Estado de conservación: ${conservationStatus}` : ''}
 
-Genera:
-1. SEO Title (máximo 60 caracteres, incluye nombre común y científico)
-2. SEO Description (máximo 155 caracteres, menciona características distintivas y ubicación en Chile)
-3. SEO Keywords (5-8 palabras clave separadas por comas, incluye nombres comunes, científicos y hábitat)
+INSTRUCCIONES ESTRICTAS:
 
-Formato de respuesta:
-SEO_TITLE: [tu respuesta]
-SEO_DESCRIPTION: [tu respuesta]
-SEO_KEYWORDS: [tu respuesta]`;
+1. SEO Title:
+   - DEBE tener entre 50-60 caracteres (NO MÁS DE 60)
+   - Formato: "[Nombre común] ([Nombre científico]) en Chile" o similar
+   - Si el nombre científico es muy largo, usar solo nombre común + característica
+   - Ejemplo: "Pudú (Pudu puda): El ciervo más pequeño de Chile" (50 caracteres)
+
+2. SEO Description:
+   - DEBE tener entre 145-155 caracteres (NO MÁS DE 155)
+   - Incluir: característica distintiva + hábitat + estado conservación si aplica
+   - Usar verbos como "Descubre", "Conoce", "Aprende sobre"
+   - Ejemplo: "Descubre al pudú, el ciervo más pequeño del mundo que habita los bosques del sur de Chile. Conoce su hábitat, comportamiento y estado de conservación." (151 caracteres)
+
+3. SEO Keywords:
+   - EXACTAMENTE 6-8 palabras clave
+   - Incluir: nombre común, nombre científico (si no es muy largo), fauna/flora chile, hábitat, región
+   - Ejemplo: "pudú, pudu puda, fauna chile, mamíferos chilenos, bosque valdiviano, conservación, sur de chile"
+
+Formato de respuesta (RESPETAR EXACTAMENTE):
+SEO_TITLE: [tu respuesta de 50-60 caracteres]
+SEO_DESCRIPTION: [tu respuesta de 145-155 caracteres]
+SEO_KEYWORDS: [6-8 palabras clave separadas por comas]`;
 
     return this.generateSEO(prompt);
   }
@@ -109,15 +137,27 @@ Descripción: ${description}
 ${region ? `Región: ${region}` : ''}
 ${keyFeatures && keyFeatures.length > 0 ? `Características principales: ${keyFeatures.join(', ')}` : ''}
 
-Genera:
-1. SEO Title (máximo 60 caracteres, incluye nombre y tipo de área protegida)
-2. SEO Description (máximo 155 caracteres, destaca atractivos naturales y ubicación)
-3. SEO Keywords (5-8 palabras clave separadas por comas, incluye región, tipo de área y atractivos)
+INSTRUCCIONES ESTRICTAS:
 
-Formato de respuesta:
-SEO_TITLE: [tu respuesta]
-SEO_DESCRIPTION: [tu respuesta]
-SEO_KEYWORDS: [tu respuesta]`;
+1. SEO Title:
+   - DEBE tener entre 50-60 caracteres (NO MÁS DE 60)
+   - Formato: "[Nombre] - [Tipo] de [Región]" o "[Nombre]: [Característica principal]"
+   - Ejemplo: "Parque Nacional Torres del Paine - Patagonia Chilena" (53 caracteres)
+
+2. SEO Description:
+   - DEBE tener entre 145-155 caracteres (NO MÁS DE 155)
+   - Estructura: Invitación + atractivo principal + actividades/características + ubicación
+   - Ejemplo: "Visita el Parque Nacional Torres del Paine y maravíllate con sus imponentes montañas, glaciares y fauna silvestre. Trekking y naturaleza en Patagonia." (152 caracteres)
+
+3. SEO Keywords:
+   - EXACTAMENTE 6-8 palabras clave
+   - Incluir: nombre del área, tipo (parque nacional/reserva/etc), región, "chile", actividad principal, atractivo natural
+   - Ejemplo: "torres del paine, parque nacional chile, patagonia, trekking chile, glaciares, guanacos, turismo naturaleza"
+
+Formato de respuesta (RESPETAR EXACTAMENTE):
+SEO_TITLE: [tu respuesta de 50-60 caracteres]
+SEO_DESCRIPTION: [tu respuesta de 145-155 caracteres]
+SEO_KEYWORDS: [6-8 palabras clave separadas por comas]`;
 
     return this.generateSEO(prompt);
   }
@@ -152,14 +192,22 @@ SEO_KEYWORDS: [tu respuesta]`;
                 role: 'system',
                 content: `Eres un experto en SEO y biodiversidad chilena. Tu tarea es generar contenido SEO optimizado para mejorar el posicionamiento en Google Chile. 
               
-              Directrices:
+              REGLAS CRÍTICAS QUE DEBES SEGUIR:
+              1. RESPETAR ESTRICTAMENTE los límites de caracteres indicados
+              2. CONTAR cada carácter incluyendo espacios y puntuación
+              3. El SEO Title NUNCA debe exceder 60 caracteres
+              4. El SEO Description NUNCA debe exceder 155 caracteres
+              5. SIEMPRE incluir entre 6-8 keywords, ni más ni menos
+              
+              Directrices de contenido:
               - Usa palabras clave relevantes para Chile y Latinoamérica
               - El título debe ser atractivo y contener la palabra clave principal
               - La descripción debe incitar al clic y contener palabras clave secundarias
               - Las keywords deben incluir variaciones locales y términos científicos
               - Optimiza para búsquedas en español
               - Considera la intención de búsqueda de usuarios interesados en naturaleza y conservación
-              - Sigue EXACTAMENTE el formato solicitado`,
+              
+              IMPORTANTE: Si tu respuesta no cumple con los límites de caracteres exactos, será rechazada.`,
               },
               {
                 role: 'user',
