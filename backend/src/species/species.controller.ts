@@ -31,19 +31,40 @@ export class SpeciesController {
 
   // Protected endpoints - All require authentication
   @Get()
-  @Roles('admin', 'content_editor', 'species_editor', 'news_editor', 'areas_editor', 'user')
+  @Roles(
+    'admin',
+    'content_editor',
+    'species_editor',
+    'news_editor',
+    'areas_editor',
+    'user',
+  )
   findAll(@Query() query: any) {
     return this.speciesService.findAll(query);
   }
 
   @Get('slug/:slug')
-  @Roles('admin', 'content_editor', 'species_editor', 'news_editor', 'areas_editor', 'user')
+  @Roles(
+    'admin',
+    'content_editor',
+    'species_editor',
+    'news_editor',
+    'areas_editor',
+    'user',
+  )
   findBySlug(@Param('slug') slug: string) {
     return this.speciesService.findBySlug(slug);
   }
 
   @Get(':id')
-  @Roles('admin', 'content_editor', 'species_editor', 'news_editor', 'areas_editor', 'user')
+  @Roles(
+    'admin',
+    'content_editor',
+    'species_editor',
+    'news_editor',
+    'areas_editor',
+    'user',
+  )
   findOne(@Param('id') id: string) {
     return this.speciesService.findOne(+id);
   }

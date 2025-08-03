@@ -96,7 +96,7 @@ export class ClerkWebhookController {
       try {
         // Check if user already exists
         const existingUser = await this.usersService.findByClerkId(userData.id);
-        
+
         if (existingUser) {
           console.log('User already exists, skipping creation:', userData.id);
           return; // 204 No Content

@@ -208,9 +208,7 @@ export class SeedService {
       await this.db.db.execute(
         sql`ALTER SEQUENCE media_folders_id_seq RESTART WITH 1`,
       );
-      await this.db.db.execute(
-        sql`ALTER SEQUENCE users_id_seq RESTART WITH 1`,
-      );
+      await this.db.db.execute(sql`ALTER SEQUENCE users_id_seq RESTART WITH 1`);
 
       this.logger.log('Database cleared successfully');
 

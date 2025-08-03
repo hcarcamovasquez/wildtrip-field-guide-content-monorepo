@@ -9,7 +9,10 @@ export class ProtectedAreasPublicController {
   @Get()
   findAll(@Query() query: any) {
     // Only return published protected areas for public endpoints
-    return this.protectedAreasService.findAll({ ...query, status: 'published' });
+    return this.protectedAreasService.findAll({
+      ...query,
+      status: 'published',
+    });
   }
 
   @Get('slug/:slug')

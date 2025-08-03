@@ -31,19 +31,40 @@ export class ProtectedAreasController {
 
   // Protected endpoints - All require authentication
   @Get()
-  @Roles('admin', 'content_editor', 'areas_editor', 'news_editor', 'species_editor', 'user')
+  @Roles(
+    'admin',
+    'content_editor',
+    'areas_editor',
+    'news_editor',
+    'species_editor',
+    'user',
+  )
   findAll(@Query() query: any) {
     return this.protectedAreasService.findAll(query);
   }
 
   @Get('slug/:slug')
-  @Roles('admin', 'content_editor', 'areas_editor', 'news_editor', 'species_editor', 'user')
+  @Roles(
+    'admin',
+    'content_editor',
+    'areas_editor',
+    'news_editor',
+    'species_editor',
+    'user',
+  )
   findBySlug(@Param('slug') slug: string) {
     return this.protectedAreasService.findBySlug(slug);
   }
 
   @Get(':id')
-  @Roles('admin', 'content_editor', 'areas_editor', 'news_editor', 'species_editor', 'user')
+  @Roles(
+    'admin',
+    'content_editor',
+    'areas_editor',
+    'news_editor',
+    'species_editor',
+    'user',
+  )
   findOne(@Param('id') id: string) {
     return this.protectedAreasService.findOne(+id);
   }

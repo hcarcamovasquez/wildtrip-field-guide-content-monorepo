@@ -18,9 +18,11 @@ export class ClerkAuthGuard implements CanActivate {
     private configService: ConfigService,
     private reflector: Reflector,
   ) {
-    this.secretKey = this.configService.get<string>('clerk.secretKey') || 
-                    this.configService.get<string>('CLERK_SECRET_KEY') || 
-                    process.env.CLERK_SECRET_KEY || '';
+    this.secretKey =
+      this.configService.get<string>('clerk.secretKey') ||
+      this.configService.get<string>('CLERK_SECRET_KEY') ||
+      process.env.CLERK_SECRET_KEY ||
+      '';
     if (this.secretKey) {
       this.clerkClient = createClerkClient({
         secretKey: this.secretKey,

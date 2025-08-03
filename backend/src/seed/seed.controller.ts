@@ -1,9 +1,4 @@
-import {
-  Controller,
-  Post,
-  Delete,
-  ForbiddenException,
-} from '@nestjs/common';
+import { Controller, Post, Delete, ForbiddenException } from '@nestjs/common';
 import { SeedService } from './seed.service';
 
 @Controller('api/dev/seed')

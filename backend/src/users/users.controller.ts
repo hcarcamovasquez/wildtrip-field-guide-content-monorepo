@@ -54,7 +54,14 @@ export class UsersController {
   }
 
   @Get('me')
-  @Roles('admin', 'content_editor', 'news_editor', 'areas_editor', 'species_editor', 'user')
+  @Roles(
+    'admin',
+    'content_editor',
+    'news_editor',
+    'areas_editor',
+    'species_editor',
+    'user',
+  )
   getCurrentUser(@CurrentUser() user: ICurrentUser) {
     return this.usersService.findOne(user.id);
   }

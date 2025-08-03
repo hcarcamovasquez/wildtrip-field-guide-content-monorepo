@@ -31,19 +31,40 @@ export class NewsController {
 
   // Protected endpoints - All require authentication
   @Get()
-  @Roles('admin', 'content_editor', 'news_editor', 'species_editor', 'areas_editor', 'user')
+  @Roles(
+    'admin',
+    'content_editor',
+    'news_editor',
+    'species_editor',
+    'areas_editor',
+    'user',
+  )
   findAll(@Query() query: any) {
     return this.newsService.findAll(query);
   }
 
   @Get('slug/:slug')
-  @Roles('admin', 'content_editor', 'news_editor', 'species_editor', 'areas_editor', 'user')
+  @Roles(
+    'admin',
+    'content_editor',
+    'news_editor',
+    'species_editor',
+    'areas_editor',
+    'user',
+  )
   findBySlug(@Param('slug') slug: string) {
     return this.newsService.findBySlug(slug);
   }
 
   @Get(':id')
-  @Roles('admin', 'content_editor', 'news_editor', 'species_editor', 'areas_editor', 'user')
+  @Roles(
+    'admin',
+    'content_editor',
+    'news_editor',
+    'species_editor',
+    'areas_editor',
+    'user',
+  )
   findOne(@Param('id') id: string) {
     return this.newsService.findOne(+id);
   }
