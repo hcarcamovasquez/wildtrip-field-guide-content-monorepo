@@ -13,6 +13,7 @@ import { UsersModule } from './users/users.module';
 import { AIModule } from './ai/ai.module';
 import { SeedModule } from './seed/seed.module';
 import { HealthModule } from './health/health.module';
+import { SitemapModule } from './sitemap/sitemap.module';
 
 @Module({
   imports: [
@@ -32,6 +33,7 @@ import { HealthModule } from './health/health.module';
     AIModule,
     SeedModule,
     HealthModule,
+    SitemapModule,
   ],
   controllers: [],
   providers: [],

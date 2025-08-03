@@ -16,10 +16,8 @@
   },
   "dependencies": {
     "@astrojs/check": "^0.9.4",
-    "@wildtrip/shared": "workspace:*",
     "@astrojs/node": "^9.3.0",
     "@astrojs/react": "^4.3.0",
-    "@astrojs/sitemap": "^3.4.1",
     "@clerk/astro": "^2.10.7",
     "@clerk/localizations": "^3.17.2",
     "@radix-ui/react-alert-dialog": "^1.1.14",
@@ -37,6 +35,7 @@
     "@tailwindcss/vite": "^4.1.11",
     "@types/react": "^19.1.8",
     "@types/react-dom": "^19.1.6",
+    "@wildtrip/shared": "workspace:*",
     "astro": "^5.11.2",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",

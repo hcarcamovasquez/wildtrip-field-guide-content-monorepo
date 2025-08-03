@@ -5,14 +5,19 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { Reflector } from '@nestjs/core';
 import { createClerkClient, verifyToken } from '@clerk/backend';
+import { IS_PUBLIC_KEY } from '../decorators/public.decorator';
 
 @Injectable()
 export class ClerkAuthGuard implements CanActivate {
   private clerkClient;
   private secretKey: string;
 
-  constructor(private configService: ConfigService) {
+  constructor(
+    private configService: ConfigService,
+    private reflector: Reflector,
+  ) {
     this.secretKey = this.configService.get<string>('clerk.secretKey') || 
                     this.configService.get<string>('CLERK_SECRET_KEY') || 
                     process.env.CLERK_SECRET_KEY || '';
@@ -24,6 +29,16 @@ export class ClerkAuthGuard implements CanActivate {
   }
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
+    // Check if route is public
+    const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [
+      context.getHandler(),
+      context.getClass(),
+    ]);
+
+    if (isPublic) {
+      return true;
+    }
+
     const request = context.switchToHttp().getRequest();
 
     try {
