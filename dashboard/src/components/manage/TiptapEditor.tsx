@@ -310,6 +310,7 @@ export default function TiptapEditor({
   const [showImageOptions, setShowImageOptions] = useState(false)
   const [selectedImage, setSelectedImage] = useState<{ url: string; title?: string } | null>(null)
   const [editingImage, setEditingImage] = useState<HTMLImageElement | null>(null)
+  const [, forceUpdate] = useState(0)
 
   const extensions = enableImages
     ? [
@@ -371,6 +372,11 @@ export default function TiptapEditor({
     onUpdate: ({ editor }) => {
       onChange(editor.getHTML())
     },
+    onSelectionUpdate: () => {
+      // Force re-render of toolbar buttons when selection changes
+      // This ensures the active state of buttons is updated correctly
+      forceUpdate(prev => prev + 1)
+    },
     immediatelyRender: false,
   })
 
@@ -380,6 +386,22 @@ export default function TiptapEditor({
       editor.setEditable(!readOnly)
     }
   }, [editor, readOnly])
+
+  // Force toolbar update on cursor movement
+  useEffect(() => {
+    if (!editor) return
+
+    const updateToolbar = () => {
+      forceUpdate(prev => prev + 1)
+    }
+
+    // Listen to transactions to update toolbar state
+    editor.on('transaction', updateToolbar)
+
+    return () => {
+      editor.off('transaction', updateToolbar)
+    }
+  }, [editor])
 
   // Update content when it changes externally
   useEffect(() => {
