@@ -15,12 +15,15 @@ export function richContentToHtml(richContent: RichContent | null): string {
   return richContent.blocks
     .map((block: any) => {
       switch (block.type) {
-        case 'paragraph':
-          return `<p>${block.content || ''}</p>`
+        case 'paragraph': {
+          const textAlign = block.format?.textAlign ? ` style="text-align: ${block.format.textAlign}"` : ''
+          return `<p${textAlign}>${block.content || ''}</p>`
+        }
 
         case 'heading': {
           const level = block.level || block.data?.level || 2
-          return `<h${level}>${block.content || ''}</h${level}>`
+          const textAlign = block.format?.textAlign ? ` style="text-align: ${block.format.textAlign}"` : ''
+          return `<h${level}${textAlign}>${block.content || ''}</h${level}>`
         }
 
         case 'list': {
@@ -117,27 +120,55 @@ export function htmlToRichContent(html: string): RichContent {
     const tagName = element.tagName.toLowerCase()
 
     switch (tagName) {
-      case 'p':
-        blocks.push({
+      case 'p': {
+        const block: any = {
           id: generateBlockId(),
           type: 'paragraph',
           content: element.innerHTML,
-        })
+        }
+        
+        // Extract text alignment from style attribute
+        const styleAttr = element.getAttribute('style')
+        if (styleAttr && styleAttr.includes('text-align')) {
+          const alignMatch = styleAttr.match(/text-align:\s*(\w+)/)
+          if (alignMatch) {
+            block.format = {
+              textAlign: alignMatch[1] as 'left' | 'center' | 'right' | 'justify'
+            }
+          }
+        }
+        
+        blocks.push(block)
         break
+      }
 
       case 'h1':
       case 'h2':
       case 'h3':
       case 'h4':
       case 'h5':
-      case 'h6':
-        blocks.push({
+      case 'h6': {
+        const block: any = {
           id: generateBlockId(),
           type: 'heading',
           level: parseInt(tagName[1]),
           content: element.textContent || '',
-        })
+        }
+        
+        // Extract text alignment from style attribute
+        const styleAttr = element.getAttribute('style')
+        if (styleAttr && styleAttr.includes('text-align')) {
+          const alignMatch = styleAttr.match(/text-align:\s*(\w+)/)
+          if (alignMatch) {
+            block.format = {
+              textAlign: alignMatch[1] as 'left' | 'center' | 'right'
+            }
+          }
+        }
+        
+        blocks.push(block)
         break
+      }
 
       case 'ul':
       case 'ol': {

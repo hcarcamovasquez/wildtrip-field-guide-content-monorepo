@@ -4,8 +4,10 @@ import type { ContentBlock } from '@wildtrip/shared'
 
 export function renderContentBlock(block: ContentBlock): string {
   switch (block.type) {
-    case 'paragraph':
-      return `<p class="mb-4 text-gray-700 dark:text-gray-300 leading-relaxed">${block.content}</p>`
+    case 'paragraph': {
+      const textAlign = block.format?.textAlign ? ` style="text-align: ${block.format.textAlign}"` : ''
+      return `<p class="mb-4 text-gray-700 dark:text-gray-300 leading-relaxed"${textAlign}>${block.content}</p>`
+    }
 
     case 'heading': {
       const level = block.level || 2
@@ -17,7 +19,8 @@ export function renderContentBlock(block: ContentBlock): string {
         5: 'text-base font-semibold text-gray-900 dark:text-white mt-4 mb-2',
         6: 'text-sm font-semibold text-gray-900 dark:text-white mt-4 mb-2',
       }
-      return `<h${level} class="${classes[level] || classes[2]}">${block.content}</h${level}>`
+      const textAlign = block.format?.textAlign ? ` style="text-align: ${block.format.textAlign}"` : ''
+      return `<h${level} class="${classes[level] || classes[2]}"${textAlign}>${block.content}</h${level}>`
     }
 
     case 'blockquote':

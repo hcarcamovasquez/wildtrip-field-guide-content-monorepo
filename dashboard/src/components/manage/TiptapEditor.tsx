@@ -5,6 +5,11 @@ import StarterKit from '@tiptap/starter-kit'
 import Placeholder from '@tiptap/extension-placeholder'
 import Underline from '@tiptap/extension-underline'
 import TextAlign from '@tiptap/extension-text-align'
+import Link from '@tiptap/extension-link'
+import { Table } from '@tiptap/extension-table'
+import { TableRow } from '@tiptap/extension-table-row'
+import { TableCell } from '@tiptap/extension-table-cell'
+import { TableHeader } from '@tiptap/extension-table-header'
 import { ImageWithStyle } from './ImageWithStyleExtension'
 import { Button } from '@/components/ui/button'
 import {
@@ -317,6 +322,18 @@ export default function TiptapEditor({
         TextAlign.configure({
           types: ['heading', 'paragraph'],
         }),
+        Link.configure({
+          openOnClick: false,
+          HTMLAttributes: {
+            class: 'text-primary hover:underline',
+          },
+        }),
+        Table.configure({
+          resizable: true,
+        }),
+        TableRow,
+        TableHeader,
+        TableCell,
         ImageWithStyle.configure({
           HTMLAttributes: {
             class: 'rounded-lg',
@@ -333,6 +350,18 @@ export default function TiptapEditor({
         TextAlign.configure({
           types: ['heading', 'paragraph'],
         }),
+        Link.configure({
+          openOnClick: false,
+          HTMLAttributes: {
+            class: 'text-primary hover:underline',
+          },
+        }),
+        Table.configure({
+          resizable: true,
+        }),
+        TableRow,
+        TableHeader,
+        TableCell,
       ]
 
   const editor = useEditor({
