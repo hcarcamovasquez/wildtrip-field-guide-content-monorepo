@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { DbService } from '../db/db.service';
-import { mediaGallery, mediaFolders } from '../db/schema';
+import { DbService } from '../../db/db.service';
+import { mediaGallery, mediaFolders } from '../../db/schema';
 import { eq, desc, ilike, and, or, sql, isNull, inArray } from 'drizzle-orm';
 
 type MediaWithFolder = {

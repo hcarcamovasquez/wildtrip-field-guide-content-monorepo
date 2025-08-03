@@ -1,6 +1,6 @@
 import { Injectable, ConflictException } from '@nestjs/common';
-import { DbService } from '../db/db.service';
-import { species, news, protectedAreas } from '../db/schema';
+import { DbService } from '../../db/db.service';
+import { species, news, protectedAreas } from '../../db/schema';
 import { eq, and, gt, sql } from 'drizzle-orm';
 
 export interface LockInfo {

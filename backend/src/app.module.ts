@@ -2,18 +2,18 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import configuration from './config/configuration';
 import { DbModule } from './db/db.module';
-import { AuthModule } from './auth/auth.module';
-import { StorageModule } from './storage/storage.module';
-import { LocksModule } from './locks/locks.module';
-import { SpeciesModule } from './species/species.module';
-import { NewsModule } from './news/news.module';
-import { ProtectedAreasModule } from './protected-areas/protected-areas.module';
-import { GalleryModule } from './gallery/gallery.module';
-import { UsersModule } from './users/users.module';
-import { AIModule } from './ai/ai.module';
-import { SeedModule } from './seed/seed.module';
-import { HealthModule } from './health/health.module';
-import { SitemapModule } from './sitemap/sitemap.module';
+import { AuthModule } from './modules/auth/auth.module';
+import { StorageModule } from './modules/storage/storage.module';
+import { LocksModule } from './modules/locks/locks.module';
+import { SpeciesModule } from './modules/species/species.module';
+import { NewsModule } from './modules/news/news.module';
+import { ProtectedAreasModule } from './modules/protected-areas/protected-areas.module';
+import { GalleryModule } from './modules/gallery/gallery.module';
+import { UsersModule } from './modules/users/users.module';
+import { AIModule } from './modules/ai/ai.module';
+import { SeedModule } from './modules/seed/seed.module';
+import { HealthModule } from './modules/health/health.module';
+import { SitemapModule } from './modules/sitemap/sitemap.module';
 
 @Module({
   imports: [

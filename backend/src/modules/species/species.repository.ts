@@ -1,22 +1,21 @@
 import { Injectable } from '@nestjs/common';
-import { DbService } from '../db/db.service';
-import { news } from '../db/schema';
-import { eq, desc, ilike, and, or, sql, inArray } from 'drizzle-orm';
+import { DbService } from '../../db/db.service';
+import { species } from '../../db/schema';
+import { eq, desc, ilike, and, or, sql } from 'drizzle-orm';
 
 @Injectable()
-export class NewsRepository {
+export class SpeciesRepository {
   constructor(private dbService: DbService) {}
 
   async findAll(params: {
     page?: number;
     limit?: number;
     search?: string;
-    category?: string;
-    tags?: string[];
+    mainGroup?: string;
     status?: string;
   }) {
     const db = this.dbService.getDb();
-    const { page = 1, limit = 20, search, category, tags, status } = params;
+    const { page = 1, limit = 20, search, mainGroup, status } = params;
     const offset = (page - 1) * limit;
 
     // Build where conditions
@@ -24,54 +23,57 @@ export class NewsRepository {
 
     if (status && ['draft', 'published', 'archived'].includes(status)) {
       conditions.push(
-        eq(news.status, status as 'draft' | 'published' | 'archived'),
+        eq(species.status, status as 'draft' | 'published' | 'archived'),
       );
     }
 
-    if (
-      category &&
-      ['education', 'current_events', 'conservation', 'research'].includes(
-        category,
-      )
-    ) {
-      conditions.push(
-        eq(
-          news.category,
-          category as
-            | 'education'
-            | 'current_events'
-            | 'conservation'
-            | 'research',
-        ),
-      );
+    if (mainGroup) {
+      const validGroups = [
+        'mammal',
+        'bird',
+        'reptile',
+        'amphibian',
+        'fish',
+        'insect',
+        'arachnid',
+        'crustacean',
+        'mollusk',
+        'plant',
+        'fungus',
+        'algae',
+        'other',
+      ];
+      if (validGroups.includes(mainGroup)) {
+        conditions.push(eq(species.mainGroup, mainGroup as any));
+      }
     }
 
     if (search) {
       conditions.push(
         or(
-          ilike(news.title, `%${search}%`),
-          ilike(news.summary, `%${search}%`),
-          ilike(news.author, `%${search}%`),
+          ilike(species.commonName, `%${search}%`),
+          ilike(species.scientificName, `%${search}%`),
         ),
       );
     }
 
     const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
 
-    // Get total count
-    const [{ count }] = await db
-      .select({ count: sql<number>`count(*)::int` })
-      .from(news)
-      .where(whereClause);
-
-    // Get data
-    const data = await db
-      .select()
-      .from(news)
+    // Get data with count using window function for better performance
+    const query = db
+      .select({
+        species: species,
+        totalCount: sql<number>`count(*) OVER()`,
+      })
+      .from(species)
       .where(whereClause)
-      .orderBy(desc(news.publishedAt), desc(news.createdAt))
+      .orderBy(desc(species.createdAt))
       .limit(limit)
       .offset(offset);
+
+    const results = await query;
+    const data = results.map(row => row.species);
+    const count = results.length > 0 ? results[0].totalCount : 0;
 
     return {
       data,
@@ -86,15 +88,16 @@ export class NewsRepository {
 
   async findById(id: number, includeDraft: boolean = false) {
     const db = this.dbService.getDb();
-    const [result] = await db.select().from(news).where(eq(news.id, id));
+    const [result] = await db.select().from(species).where(eq(species.id, id));
 
     // Log draft data for debugging
     if (result && result.draftData) {
-      console.log('News findById - Draft data:', {
+      console.log('Species findById - Draft data:', {
         id,
         hasDraft: result.hasDraft,
         draftData: result.draftData,
         mainImage: result.draftData.mainImage,
+        galleryImages: result.draftData.galleryImages,
       });
     }
 
@@ -112,43 +115,55 @@ export class NewsRepository {
 
   async findBySlug(slug: string) {
     const db = this.dbService.getDb();
-    const [result] = await db.select().from(news).where(eq(news.slug, slug));
+    const [result] = await db
+      .select()
+      .from(species)
+      .where(eq(species.slug, slug));
     return result;
   }
 
   async create(data: any) {
     const db = this.dbService.getDb();
-    const [result] = await db.insert(news).values(data).returning();
+    const [result] = await db.insert(species).values(data).returning();
     return result;
   }
 
   async update(id: number, data: any) {
     const db = this.dbService.getDb();
     const [result] = await db
-      .update(news)
+      .update(species)
       .set({ ...data, updatedAt: new Date() })
-      .where(eq(news.id, id))
+      .where(eq(species.id, id))
       .returning();
     return result;
   }
 
   async delete(id: number) {
     const db = this.dbService.getDb();
-    await db.delete(news).where(eq(news.id, id));
+    await db.delete(species).where(eq(species.id, id));
   }
 
   async publish(id: number) {
+    console.log('Species repository publish called for id:', id);
     const db = this.dbService.getDb();
-    const [current] = await db.select().from(news).where(eq(news.id, id));
+    const [current] = await db.select().from(species).where(eq(species.id, id));
+
+    console.log('Current species data:', {
+      id: current?.id,
+      status: current?.status,
+      hasDraft: current?.hasDraft,
+      draftData: current?.draftData ? 'Has draft data' : 'No draft data',
+    });
 
     if (!current) {
-      throw new Error('News not found');
+      throw new Error('Species not found');
     }
 
     // Si hay draft data, publicar el draft
     if (current.draftData) {
+      console.log('Publishing with draft data');
       const [result] = await db
-        .update(news)
+        .update(species)
         .set({
           ...current.draftData,
           draftData: null,
@@ -158,36 +173,40 @@ export class NewsRepository {
           publishedAt: new Date(),
           updatedAt: new Date(),
         })
-        .where(eq(news.id, id))
+        .where(eq(species.id, id))
         .returning();
 
+      console.log('Published with draft data, result status:', result.status);
       return result;
     }
     // Si no hay draft pero está en borrador, simplemente publicar
     else if (current.status === 'draft') {
+      console.log('Publishing draft without draft data');
       const [result] = await db
-        .update(news)
+        .update(species)
         .set({
           status: 'published' as const,
           publishedAt: new Date(),
           updatedAt: new Date(),
         })
-        .where(eq(news.id, id))
+        .where(eq(species.id, id))
         .returning();
 
+      console.log('Published draft, result status:', result.status);
       return result;
     }
 
     // Si ya está publicado y no hay draft, no hay nada que publicar
+    console.log('Nothing to publish - already published without draft');
     throw new Error('Nothing to publish');
   }
 
   async createDraft(id: number, draftData: any) {
     const db = this.dbService.getDb();
-    const [current] = await db.select().from(news).where(eq(news.id, id));
+    const [current] = await db.select().from(species).where(eq(species.id, id));
 
     if (!current) {
-      throw new Error('News not found');
+      throw new Error('Species not found');
     }
 
     // Merge with existing draft data (if any) instead of current data
@@ -198,23 +217,24 @@ export class NewsRepository {
     };
 
     // Log what we're saving for debugging
-    console.log('Creating/updating news draft with data:', {
+    console.log('Creating/updating draft with data:', {
       id,
       draftData,
       existingDraft,
       updatedDraft,
       mainImage: updatedDraft.mainImage,
+      galleryImages: updatedDraft.galleryImages,
     });
 
     const [result] = await db
-      .update(news)
+      .update(species)
       .set({
         draftData: updatedDraft,
         hasDraft: true,
         draftCreatedAt: current.draftCreatedAt || new Date(),
         updatedAt: new Date(),
       })
-      .where(eq(news.id, id))
+      .where(eq(species.id, id))
       .returning();
 
     return result;
@@ -223,14 +243,14 @@ export class NewsRepository {
   async discardDraft(id: number) {
     const db = this.dbService.getDb();
     const [result] = await db
-      .update(news)
+      .update(species)
       .set({
         draftData: null,
         hasDraft: false,
         draftCreatedAt: null,
         updatedAt: new Date(),
       })
-      .where(eq(news.id, id))
+      .where(eq(species.id, id))
       .returning();
 
     return result;

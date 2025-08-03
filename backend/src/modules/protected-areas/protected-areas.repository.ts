@@ -1,21 +1,22 @@
 import { Injectable } from '@nestjs/common';
-import { DbService } from '../db/db.service';
-import { species } from '../db/schema';
+import { DbService } from '../../db/db.service';
+import { protectedAreas } from '../../db/schema';
 import { eq, desc, ilike, and, or, sql } from 'drizzle-orm';
 
 @Injectable()
-export class SpeciesRepository {
+export class ProtectedAreasRepository {
   constructor(private dbService: DbService) {}
 
   async findAll(params: {
     page?: number;
     limit?: number;
     search?: string;
-    mainGroup?: string;
+    type?: string;
+    region?: string;
     status?: string;
   }) {
     const db = this.dbService.getDb();
-    const { page = 1, limit = 20, search, mainGroup, status } = params;
+    const { page = 1, limit = 20, search, type, region, status } = params;
     const offset = (page - 1) * limit;
 
     // Build where conditions
@@ -23,57 +24,60 @@ export class SpeciesRepository {
 
     if (status && ['draft', 'published', 'archived'].includes(status)) {
       conditions.push(
-        eq(species.status, status as 'draft' | 'published' | 'archived'),
+        eq(protectedAreas.status, status as 'draft' | 'published' | 'archived'),
       );
     }
 
-    if (mainGroup) {
-      const validGroups = [
-        'mammal',
-        'bird',
-        'reptile',
-        'amphibian',
-        'fish',
-        'insect',
-        'arachnid',
-        'crustacean',
-        'mollusk',
-        'plant',
-        'fungus',
-        'algae',
-        'other',
-      ];
-      if (validGroups.includes(mainGroup)) {
-        conditions.push(eq(species.mainGroup, mainGroup as any));
-      }
+    if (
+      type &&
+      [
+        'national_park',
+        'national_reserve',
+        'natural_monument',
+        'nature_sanctuary',
+      ].includes(type)
+    ) {
+      conditions.push(
+        eq(
+          protectedAreas.type,
+          type as
+            | 'national_park'
+            | 'national_reserve'
+            | 'natural_monument'
+            | 'nature_sanctuary',
+        ),
+      );
+    }
+
+    if (region) {
+      conditions.push(eq(protectedAreas.region, region));
     }
 
     if (search) {
       conditions.push(
         or(
-          ilike(species.commonName, `%${search}%`),
-          ilike(species.scientificName, `%${search}%`),
+          ilike(protectedAreas.name, `%${search}%`),
+          ilike(protectedAreas.description, `%${search}%`),
         ),
       );
     }
 
     const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
 
-    // Get data with count using window function for better performance
-    const query = db
-      .select({
-        species: species,
-        totalCount: sql<number>`count(*) OVER()`,
-      })
-      .from(species)
+    // Get total count
+    const [{ count }] = await db
+      .select({ count: sql<number>`count(*)::int` })
+      .from(protectedAreas)
+      .where(whereClause);
+
+    // Get data
+    const data = await db
+      .select()
+      .from(protectedAreas)
       .where(whereClause)
-      .orderBy(desc(species.createdAt))
+      .orderBy(desc(protectedAreas.createdAt))
       .limit(limit)
       .offset(offset);
-
-    const results = await query;
-    const data = results.map(row => row.species);
-    const count = results.length > 0 ? results[0].totalCount : 0;
 
     return {
       data,
@@ -88,11 +92,14 @@ export class SpeciesRepository {
 
   async findById(id: number, includeDraft: boolean = false) {
     const db = this.dbService.getDb();
-    const [result] = await db.select().from(species).where(eq(species.id, id));
+    const [result] = await db
+      .select()
+      .from(protectedAreas)
+      .where(eq(protectedAreas.id, id));
 
     // Log draft data for debugging
     if (result && result.draftData) {
-      console.log('Species findById - Draft data:', {
+      console.log('Protected Areas findById - Draft data:', {
         id,
         hasDraft: result.hasDraft,
         draftData: result.draftData,
@@ -117,53 +124,47 @@ export class SpeciesRepository {
     const db = this.dbService.getDb();
     const [result] = await db
       .select()
-      .from(species)
-      .where(eq(species.slug, slug));
+      .from(protectedAreas)
+      .where(eq(protectedAreas.slug, slug));
     return result;
   }
 
   async create(data: any) {
     const db = this.dbService.getDb();
-    const [result] = await db.insert(species).values(data).returning();
+    const [result] = await db.insert(protectedAreas).values(data).returning();
     return result;
   }
 
   async update(id: number, data: any) {
     const db = this.dbService.getDb();
     const [result] = await db
-      .update(species)
+      .update(protectedAreas)
       .set({ ...data, updatedAt: new Date() })
-      .where(eq(species.id, id))
+      .where(eq(protectedAreas.id, id))
       .returning();
     return result;
   }
 
   async delete(id: number) {
     const db = this.dbService.getDb();
-    await db.delete(species).where(eq(species.id, id));
+    await db.delete(protectedAreas).where(eq(protectedAreas.id, id));
   }
 
   async publish(id: number) {
-    console.log('Species repository publish called for id:', id);
     const db = this.dbService.getDb();
-    const [current] = await db.select().from(species).where(eq(species.id, id));
-
-    console.log('Current species data:', {
-      id: current?.id,
-      status: current?.status,
-      hasDraft: current?.hasDraft,
-      draftData: current?.draftData ? 'Has draft data' : 'No draft data',
-    });
+    const [current] = await db
+      .select()
+      .from(protectedAreas)
+      .where(eq(protectedAreas.id, id));
 
     if (!current) {
-      throw new Error('Species not found');
+      throw new Error('Protected area not found');
     }
 
     // Si hay draft data, publicar el draft
     if (current.draftData) {
-      console.log('Publishing with draft data');
       const [result] = await db
-        .update(species)
+        .update(protectedAreas)
         .set({
           ...current.draftData,
           draftData: null,
@@ -173,40 +174,39 @@ export class SpeciesRepository {
           publishedAt: new Date(),
           updatedAt: new Date(),
         })
-        .where(eq(species.id, id))
+        .where(eq(protectedAreas.id, id))
         .returning();
 
-      console.log('Published with draft data, result status:', result.status);
       return result;
     }
     // Si no hay draft pero está en borrador, simplemente publicar
     else if (current.status === 'draft') {
-      console.log('Publishing draft without draft data');
       const [result] = await db
-        .update(species)
+        .update(protectedAreas)
         .set({
           status: 'published' as const,
           publishedAt: new Date(),
           updatedAt: new Date(),
         })
-        .where(eq(species.id, id))
+        .where(eq(protectedAreas.id, id))
         .returning();
 
-      console.log('Published draft, result status:', result.status);
       return result;
     }
 
     // Si ya está publicado y no hay draft, no hay nada que publicar
-    console.log('Nothing to publish - already published without draft');
     throw new Error('Nothing to publish');
   }
 
   async createDraft(id: number, draftData: any) {
     const db = this.dbService.getDb();
-    const [current] = await db.select().from(species).where(eq(species.id, id));
+    const [current] = await db
+      .select()
+      .from(protectedAreas)
+      .where(eq(protectedAreas.id, id));
 
     if (!current) {
-      throw new Error('Species not found');
+      throw new Error('Protected area not found');
     }
 
     // Merge with existing draft data (if any) instead of current data
@@ -217,7 +217,7 @@ export class SpeciesRepository {
     };
 
     // Log what we're saving for debugging
-    console.log('Creating/updating draft with data:', {
+    console.log('Creating/updating protected area draft with data:', {
       id,
       draftData,
       existingDraft,
@@ -227,14 +227,14 @@ export class SpeciesRepository {
     });
 
     const [result] = await db
-      .update(species)
+      .update(protectedAreas)
       .set({
         draftData: updatedDraft,
         hasDraft: true,
         draftCreatedAt: current.draftCreatedAt || new Date(),
         updatedAt: new Date(),
       })
-      .where(eq(species.id, id))
+      .where(eq(protectedAreas.id, id))
       .returning();
 
     return result;
@@ -243,14 +243,14 @@ export class SpeciesRepository {
   async discardDraft(id: number) {
     const db = this.dbService.getDb();
     const [result] = await db
-      .update(species)
+      .update(protectedAreas)
       .set({
         draftData: null,
         hasDraft: false,
         draftCreatedAt: null,
         updatedAt: new Date(),
       })
-      .where(eq(species.id, id))
+      .where(eq(protectedAreas.id, id))
       .returning();
 
     return result;

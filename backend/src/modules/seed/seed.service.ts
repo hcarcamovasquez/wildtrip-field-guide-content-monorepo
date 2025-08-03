@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { DbService } from '../db/db.service';
+import { DbService } from '../../db/db.service';
 import {
   species,
   protectedAreas,
@@ -7,7 +7,7 @@ import {
   mediaGallery,
   mediaFolders,
   users,
-} from '../db/schema';
+} from '../../db/schema';
 import { sql } from 'drizzle-orm';
 import {
   speciesData,

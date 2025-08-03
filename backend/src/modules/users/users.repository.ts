@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
-import { DbService } from '../db/db.service';
-import { users } from '../db/schema';
+import { DbService } from '../../db/db.service';
+import { users } from '../../db/schema';
 import { and, asc, desc, eq, like, or, sql } from 'drizzle-orm';
-import { UsernameGenerator } from '../utils/username-generator';
+import { UsernameGenerator } from '../../utils/username-generator';
 
 @Injectable()
 export class UsersRepository {
