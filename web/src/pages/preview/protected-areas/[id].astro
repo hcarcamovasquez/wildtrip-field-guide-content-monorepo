@@ -30,25 +30,25 @@ if (error || !area) {
 
 <Layout title={`Preview: ${area.name}`}>
   <div class="container mx-auto px-4 py-8">
-    <div class="max-w-4xl mx-auto">
+    <div class="mx-auto max-w-4xl">
       <!-- Preview Banner -->
-      <div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-6">
+      <div class="mb-6 border-l-4 border-yellow-500 bg-yellow-100 p-4 text-yellow-700">
         <p class="font-bold">Preview Mode</p>
         <p class="text-sm">
-          You are viewing a preview. 
+          You are viewing a preview.
           {area.isDraft && <span class="font-semibold">This includes unpublished draft changes.</span>}
         </p>
       </div>
 
       <!-- Protected Area Content -->
-      <h1 class="text-4xl font-bold mb-2">{area.name}</h1>
-      <p class="text-xl text-gray-600 mb-6">{area.type}</p>
-      
-      {area.status === 'draft' && (
-        <div class="inline-block bg-gray-200 text-gray-700 px-3 py-1 rounded mb-4">
-          Draft
-        </div>
-      )}
+      <h1 class="mb-2 text-4xl font-bold">{area.name}</h1>
+      <p class="mb-6 text-xl text-gray-600">{area.type}</p>
+
+      {
+        area.status === 'draft' && (
+          <div class="mb-4 inline-block rounded bg-gray-200 px-3 py-1 text-gray-700">Draft</div>
+        )
+      }
 
       <div class="prose prose-lg max-w-none">
         <p>{area.description}</p>
@@ -56,16 +56,13 @@ if (error || !area) {
 
       <!-- Action Buttons -->
       <div class="mt-8 flex gap-4">
-        <a 
+        <a
           href={`${import.meta.env.PUBLIC_ADMIN_URL}/protected-areas/edit/${id}`}
-          class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+          class="rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
         >
           Edit in Dashboard
         </a>
-        <a 
-          href="/content/protected-areas"
-          class="bg-gray-200 text-gray-700 px-4 py-2 rounded hover:bg-gray-300"
-        >
+        <a href="/content/protected-areas" class="rounded bg-gray-200 px-4 py-2 text-gray-700 hover:bg-gray-300">
           Back to Protected Areas List
         </a>
       </div>
