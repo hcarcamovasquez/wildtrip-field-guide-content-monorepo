@@ -3,6 +3,7 @@ import { useUser } from '@clerk/clerk-react'
 import { useSearchParams } from 'react-router-dom'
 import UsersTable from '@/components/manage/UsersTable'
 import { apiClient } from '@/lib/api/client'
+import type { UserWithRole } from '@/types'
 
 export function UsersPage() {
   const { user } = useUser()
@@ -10,7 +11,7 @@ export function UsersPage() {
   const userRole = user?.publicMetadata?.role as string
   const [searchParams] = useSearchParams()
   
-  const [users, setUsers] = useState([])
+  const [users, setUsers] = useState<UserWithRole[]>([])
   const [pagination, setPagination] = useState({
     page: 1,
     limit: 20,
