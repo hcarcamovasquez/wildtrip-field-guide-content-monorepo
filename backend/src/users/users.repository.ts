@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { DbService } from '../db/db.service';
 import { users } from '../db/schema';
-import { eq, like, or, desc, asc, sql, and } from 'drizzle-orm';
+import { and, asc, desc, eq, like, or, sql } from 'drizzle-orm';
 import { UsernameGenerator } from '../utils/username-generator';
 
 @Injectable()
@@ -95,11 +95,20 @@ export class UsersRepository {
     };
   }
 
-  async findById(id: string) {
+  async findById(id: number) {
     const [user] = await this.db.db
       .select()
       .from(users)
-      .where(eq(users.clerkId, id))
+      .where(eq(users.id, id))
+      .limit(1);
+    return user;
+  }
+
+  async findByClerkId(clerkId: string) {
+    const [user] = await this.db.db
+      .select()
+      .from(users)
+      .where(eq(users.clerkId, clerkId))
       .limit(1);
     return user;
   }
@@ -113,14 +122,29 @@ export class UsersRepository {
     return user;
   }
 
-  async update(id: string, data: Partial<typeof users.$inferInsert>) {
+  async update(id: number, data: Partial<typeof users.$inferInsert>) {
     const [updatedUser] = await this.db.db
       .update(users)
       .set({
         ...data,
         updatedAt: new Date(),
       })
-      .where(eq(users.clerkId, id))
+      .where(eq(users.id, id))
+      .returning();
+    return updatedUser;
+  }
+
+  async updateByClerkId(
+    clerkId: string,
+    data: Partial<typeof users.$inferInsert>,
+  ) {
+    const [updatedUser] = await this.db.db
+      .update(users)
+      .set({
+        ...data,
+        updatedAt: new Date(),
+      })
+      .where(eq(users.clerkId, clerkId))
       .returning();
     return updatedUser;
   }
@@ -155,7 +179,7 @@ export class UsersRepository {
     };
 
     if (existingUser) {
-      return this.update(clerkUser.id, userData);
+      return this.updateByClerkId(clerkUser.id, userData);
     } else {
       // Generate unique username for new users
       const username = await this.usernameGenerator.generateUsername(
@@ -216,7 +240,7 @@ export class UsersRepository {
     profileImageUrl: string | null;
     role?: string;
   }) {
-    const existingUser = await this.findById(userData.clerkId);
+    const existingUser = await this.findByClerkId(userData.clerkId);
     if (!existingUser) {
       // If user doesn't exist and we have email, create it
       if (userData.email) {
@@ -251,7 +275,7 @@ export class UsersRepository {
       updateData.role = userData.role;
     }
 
-    return this.update(userData.clerkId, updateData);
+    return this.updateByClerkId(userData.clerkId, updateData);
   }
 
   async deleteByClerkId(clerkId: string) {

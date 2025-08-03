@@ -14,9 +14,12 @@ export function GalleryPage() {
   const page = searchParams.get('page') ? parseInt(searchParams.get('page')!, 10) : 1
 
   // Fetch directory contents based on URL params
-  const { data: browseData, isLoading } = useQuery({
+  const { data: browseData, isLoading, isFetching } = useQuery({
     queryKey: ['gallery', 'browse', { folderId, page }],
     queryFn: () => apiClient.gallery.browse({ folderId, page, limit: 20 }),
+    refetchOnWindowFocus: true,
+    refetchOnMount: true,
+    staleTime: 0,
   })
 
   // Fetch breadcrumb if we're in a folder
@@ -37,6 +40,9 @@ export function GalleryPage() {
       return breadcrumb
     },
     enabled: !!folderId,
+    refetchOnWindowFocus: true,
+    refetchOnMount: true,
+    staleTime: 0,
   })
 
   const currentFolder = folderId && breadcrumbData ? breadcrumbData[breadcrumbData.length - 1] : null
@@ -60,7 +66,7 @@ export function GalleryPage() {
       name: user?.fullName || user?.username || 'Unknown',
       role: user?.publicMetadata?.role as string || 'user'
     },
-    isLoading
+    isLoading: isLoading || isFetching
   }
 
   return (

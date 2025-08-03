@@ -83,6 +83,7 @@ export function UsersPage() {
         baseUrl="/users"
         isLoading={loading}
         error={error}
+        onRoleUpdate={fetchUsers}
       />
     </div>
   )

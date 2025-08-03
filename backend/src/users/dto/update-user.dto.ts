@@ -9,7 +9,7 @@ export class UpdateUserDto {
     'news_editor',
     'areas_editor',
     'species_editor',
-    'viewer',
+    'user',
   ])
   role?: string;
 

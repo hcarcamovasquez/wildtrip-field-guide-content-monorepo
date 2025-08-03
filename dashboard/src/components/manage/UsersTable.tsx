@@ -54,6 +54,7 @@ interface UsersTableProps {
   baseUrl: string
   isLoading?: boolean
   error?: string | null
+  onRoleUpdate?: () => void | Promise<void>
 }
 
 const getRoleVariant = (role: string): 'default' | 'secondary' | 'destructive' | 'outline' => {
@@ -92,7 +93,7 @@ const getRoleIcon = (role: string) => {
   }
 }
 
-export default function UsersTable({ users, pagination, currentUserId, currentUserRole, searchParams, baseUrl, isLoading, error }: UsersTableProps) {
+export default function UsersTable({ users, pagination, currentUserId, currentUserRole, searchParams, baseUrl, isLoading, error, onRoleUpdate }: UsersTableProps) {
   const navigate = useNavigate()
   const [roleChangeModal, setRoleChangeModal] = useState<{ open: boolean; user: UserWithRole | null }>({
     open: false,
@@ -148,8 +149,11 @@ export default function UsersTable({ users, pagination, currentUserId, currentUs
     setIsUpdating(true)
     try {
       await apiClient.users.update(roleChangeModal.user.id, { role: selectedRole })
-      // Refresh the current page to show changes
-      navigate(0)
+      closeRoleModal()
+      // Call the callback to refresh the user list
+      if (onRoleUpdate) {
+        await onRoleUpdate()
+      }
     } catch (error) {
       console.error('Error updating role:', error)
       alert('Error al actualizar el rol del usuario. Por favor, intenta nuevamente.')

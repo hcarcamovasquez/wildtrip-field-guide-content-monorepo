@@ -142,7 +142,7 @@ export interface ProtectedAreaWithBase extends BaseContent {
 
 // User interfaces
 export interface User {
-  id: string
+  id: number
   email: string
   firstName?: string | null
   lastName?: string | null

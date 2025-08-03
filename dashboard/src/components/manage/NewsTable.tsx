@@ -115,6 +115,7 @@ export default function NewsTable({ currentUserId, canDelete = false, onEdit, on
     totalPages: 0,
   })
   const [loading, setLoading] = useState(false)
+  const [isRefetching, setIsRefetching] = useState(false)
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('all')
   const [categoryFilter, setCategoryFilter] = useState('all')
@@ -125,6 +126,20 @@ export default function NewsTable({ currentUserId, canDelete = false, onEdit, on
   useEffect(() => {
     fetchNews()
   }, [pagination.page, statusFilter, categoryFilter])
+
+  // Refetch data when window gains focus
+  useEffect(() => {
+    const handleFocus = async () => {
+      if (!loading) {
+        setIsRefetching(true)
+        await fetchNews()
+        setIsRefetching(false)
+      }
+    }
+    
+    window.addEventListener('focus', handleFocus)
+    return () => window.removeEventListener('focus', handleFocus)
+  }, [pagination.page, statusFilter, categoryFilter, loading])
 
   const fetchNews = async () => {
     setLoading(true)
@@ -196,6 +211,12 @@ export default function NewsTable({ currentUserId, canDelete = false, onEdit, on
                     <HardDrive className="h-4 w-4" />
                     <span>{pagination.total} artículos</span>
                   </div>
+                  {isRefetching && (
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      <span>Actualizando...</span>
+                    </div>
+                  )}
                 </div>
                 <Button onClick={() => setShowCreateModal(true)}>
                   <Plus className="mr-2 h-4 w-4" />

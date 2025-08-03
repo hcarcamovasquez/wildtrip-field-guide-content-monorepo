@@ -69,7 +69,7 @@ export class UsersController {
   @Get(':id')
   @Roles('admin')
   findOne(@Param('id') id: string) {
-    return this.usersService.findOne(id);
+    return this.usersService.findOne(+id);
   }
 
   @Patch(':id')
@@ -79,6 +79,6 @@ export class UsersController {
     @Body() updateUserDto: UpdateUserDto,
     @CurrentUser() user: ICurrentUser,
   ) {
-    return this.usersService.update(id, updateUserDto, user.id, user.role);
+    return this.usersService.update(+id, updateUserDto, user.id, user.role);
   }
 }

@@ -205,13 +205,13 @@ export class APIClient {
   users = {
     findAll: (params?: any) => 
       this.request<any>({ method: 'GET', url: '/api/users', params }),
-    findById: (id: string) => 
+    findById: (id: number | string) => 
       this.request<any>({ method: 'GET', url: `/api/users/${id}` }),
     getMe: () => 
       this.request<any>({ method: 'GET', url: '/api/users/me' }),
     getStats: () => 
       this.request<any>({ method: 'GET', url: '/api/users/stats' }),
-    update: (id: string, data: any) => 
+    update: (id: number | string, data: any) => 
       this.request<any>({ method: 'PATCH', url: `/api/users/${id}`, data }),
   }
 

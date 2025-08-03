@@ -5,10 +5,21 @@ import {
 } from '@nestjs/common';
 import { UsersRepository } from './users.repository';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { createClerkClient } from '@clerk/backend';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class UsersService {
-  constructor(private readonly usersRepository: UsersRepository) {}
+  private clerkClient: ReturnType<typeof createClerkClient>;
+
+  constructor(
+    private readonly usersRepository: UsersRepository,
+    private readonly configService: ConfigService,
+  ) {
+    this.clerkClient = createClerkClient({
+      secretKey: this.configService.get<string>('CLERK_SECRET_KEY'),
+    });
+  }
 
   async findAll(params: {
     page?: number;
@@ -28,8 +39,10 @@ export class UsersService {
     });
   }
 
-  async findOne(id: string) {
-    const user = await this.usersRepository.findById(id);
+  async findOne(id: string | number) {
+    const user = typeof id === 'string' 
+      ? await this.usersRepository.findByClerkId(id)
+      : await this.usersRepository.findById(id);
     if (!user) {
       throw new NotFoundException(`User with ID ${id} not found`);
     }
@@ -37,17 +50,23 @@ export class UsersService {
   }
 
   async findByClerkId(clerkId: string) {
-    return this.usersRepository.findById(clerkId);
+    return this.usersRepository.findByClerkId(clerkId);
   }
 
   async update(
-    id: string,
+    id: number,
     updateUserDto: UpdateUserDto,
     currentUserId: string,
     currentUserRole: string,
   ) {
+    // Get the user first
+    const user = await this.usersRepository.findById(id);
+    if (!user) {
+      throw new NotFoundException(`User with ID ${id} not found`);
+    }
+
     // Prevent users from updating their own role
-    if (id === currentUserId && updateUserDto.role) {
+    if (user.clerkId === currentUserId && updateUserDto.role) {
       throw new ForbiddenException('You cannot change your own role');
     }
 
@@ -56,12 +75,28 @@ export class UsersService {
       throw new ForbiddenException('Only admins can change user roles');
     }
 
-    const user = await this.usersRepository.findById(id);
-    if (!user) {
-      throw new NotFoundException(`User with ID ${id} not found`);
+    // Update in database
+    const updatedUser = await this.usersRepository.update(id, updateUserDto);
+
+    // If role was updated, sync with Clerk
+    if (updateUserDto.role && updatedUser) {
+      await this.syncRoleToClerk(user.clerkId, updateUserDto.role);
     }
 
-    return this.usersRepository.update(id, updateUserDto);
+    return updatedUser;
+  }
+
+  private async syncRoleToClerk(clerkId: string, role: string) {
+    try {
+      await this.clerkClient.users.updateUser(clerkId, {
+        publicMetadata: { role },
+      });
+      console.log(`Successfully synced role ${role} to Clerk for user ${clerkId}`);
+    } catch (error) {
+      console.error(`Failed to sync role to Clerk for user ${clerkId}:`, error);
+      // We don't throw here to avoid breaking the update flow
+      // The database update has already happened
+    }
   }
 
   async syncFromClerk(clerkUser: any) {

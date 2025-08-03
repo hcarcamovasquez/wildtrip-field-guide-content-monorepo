@@ -10,7 +10,7 @@ function ProtectedAreasListPage() {
   const currentUserRole = user?.publicMetadata?.role || 'user'
   const currentUserId = Number(user?.publicMetadata?.userId) || 0
 
-  const { data: areas, isLoading, error } = useQuery({
+  const { data: areas, isLoading, error, isFetching } = useQuery({
     queryKey: ['protected-areas'],
     queryFn: async () => {
       console.log('Fetching protected areas...')
@@ -18,6 +18,9 @@ function ProtectedAreasListPage() {
       console.log('Protected areas result:', result)
       return result
     },
+    refetchOnWindowFocus: true,
+    refetchOnMount: true,
+    staleTime: 0,
   })
 
   return (
@@ -26,7 +29,7 @@ function ProtectedAreasListPage() {
         initialAreas={areas?.data || areas || []} 
         currentUserRole={currentUserRole as any} 
         currentUserId={currentUserId}
-        isLoading={isLoading}
+        isLoading={isLoading || isFetching}
         error={error}
       />
     </div>
