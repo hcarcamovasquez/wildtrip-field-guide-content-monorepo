@@ -22,11 +22,6 @@ export function PermissionGuard({ children }: PermissionGuardProps) {
   
   const userRole = (user?.publicMetadata?.role as Role) || 'user'
   
-  // Debug logging
-  console.log('User metadata:', user?.publicMetadata)
-  console.log('User role:', userRole)
-  console.log('Current path:', location.pathname)
-  
   const hasAccess = canAccessRoute(userRole, location.pathname)
   
   if (!hasAccess) {

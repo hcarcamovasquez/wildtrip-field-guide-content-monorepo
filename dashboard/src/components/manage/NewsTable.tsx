@@ -18,7 +18,6 @@ import {
 import { useState, useEffect } from 'react'
 import { CreateNewsModal } from './CreateNewsModal'
 import ResponsiveImage from './ResponsiveImage'
-// import PreviewModal from './PreviewModal' - Not currently used
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -121,7 +120,6 @@ export default function NewsTable({ currentUserId, canDelete = false, onEdit, on
   const [categoryFilter, setCategoryFilter] = useState('all')
   const [showCreateModal, setShowCreateModal] = useState(false)
   const [deleteId, setDeleteId] = useState<number | null>(null)
-  // const [previewData, setPreviewData] = useState<{ url: string; publicUrl?: string; title: string } | null>(null) - Not currently used
 
   useEffect(() => {
     fetchNews()

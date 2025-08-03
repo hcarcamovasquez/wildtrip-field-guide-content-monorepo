@@ -157,11 +157,7 @@ export default function NewsForm({ initialData, isEditing = false, newsId, curre
     if (!newsId) return
     
     try {
-      console.log('Checking lock status for news:', newsId)
       const data = await apiClient.news.checkLock(newsId)
-      console.log('Lock status response:', data)
-      console.log('Current user ID:', currentUserId, 'Type:', typeof currentUserId)
-      console.log('Locked by:', data?.lockedBy, 'Type:', typeof data?.lockedBy)
       
       if (data && data.lockedBy !== null) {
         // Ensure both values are numbers for comparison
