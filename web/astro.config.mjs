@@ -44,37 +44,6 @@ export default defineConfig({
     optimizeDeps: {
       exclude: ['@astrojs/react'],
     },
-    define: {
-      'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV || 'development'),
-    },
-    build: {
-      // Optimize for production
-      minify: 'terser',
-      terserOptions: {
-        compress: {
-          drop_console: true,
-          drop_debugger: true,
-        },
-      },
-      // Increase chunk size warning limit slightly
-      chunkSizeWarningLimit: 200,
-      rollupOptions: {
-        output: {
-          manualChunks: {
-            // Separate React core from other dependencies
-            'react-vendor': ['react', 'react-dom'],
-            // Clerk authentication in its own chunk
-            clerk: ['@clerk/clerk-react', '@clerk/shared'],
-            // UI components
-            'ui-vendor': ['lucide-react', 'clsx'],
-          },
-          // Use consistent chunk names for better caching
-          chunkFileNames: 'chunks/[name]-[hash].js',
-          entryFileNames: 'entries/[name]-[hash].js',
-          assetFileNames: 'assets/[name]-[hash].[ext]',
-        },
-      },
-    },
   },
   adapter: node({
     mode: 'standalone',
