@@ -3,8 +3,9 @@ import { useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { UserButton, useUser } from '@clerk/clerk-react'
 import { ThemeToggle } from './theme-toggle'
-import { ArrowLeft, Menu, X } from 'lucide-react'
+import { ArrowLeft, Menu } from 'lucide-react'
 import { Button } from './ui/button'
+import { Sheet, SheetContent, SheetHeader, SheetTrigger } from './ui/sheet'
 import { 
   canManageSpecies, 
   canManageAreas, 
@@ -94,47 +95,57 @@ export function Layout({ children }: LayoutProps) {
             <div className="flex items-center gap-2 lg:hidden">
               <ThemeToggle />
               <UserButton afterSignOutUrl={import.meta.env.VITE_WEB_URL} />
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className="lg:hidden"
-              >
-                {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-              </Button>
+              <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
+                <SheetTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="lg:hidden"
+                  >
+                    <Menu className="h-5 w-5" />
+                  </Button>
+                </SheetTrigger>
+                <SheetContent side="left" className="w-[280px] sm:w-[320px]">
+                  <SheetHeader>
+                    <div className="flex flex-col">
+                      <span className="text-lg font-bold text-gray-900 dark:text-gray-100">Wildtrip Admin</span>
+                      <div className="flex items-center gap-2 mt-1">
+                        <span className="text-xs text-gray-500 dark:text-gray-400">un servicio de</span>
+                        <img src={logo} alt="Wildtrip" className="h-4 w-auto" />
+                      </div>
+                    </div>
+                  </SheetHeader>
+                  <nav className="mt-6 space-y-2">
+                    {navItems.map((item) => (
+                      <Link
+                        key={item.path}
+                        to={item.path}
+                        onClick={() => setMobileMenuOpen(false)}
+                        className={`block px-4 py-3 rounded-md text-base font-medium transition-colors ${
+                          location.pathname.startsWith(item.path)
+                            ? 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100'
+                            : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100'
+                        }`}
+                      >
+                        {item.label}
+                      </Link>
+                    ))}
+                    <div className="border-t border-gray-200 dark:border-gray-800 mt-4 pt-4">
+                      <a 
+                        href={import.meta.env.VITE_WEB_URL || 'http://localhost:4321'} 
+                        className="block px-4 py-3 rounded-md text-base font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100"
+                      >
+                        <div className="flex items-center gap-2">
+                          <ArrowLeft className="h-4 w-4" />
+                          <span>Volver al sitio</span>
+                        </div>
+                      </a>
+                    </div>
+                  </nav>
+                </SheetContent>
+              </Sheet>
             </div>
           </div>
-          
-          {/* Mobile Navigation */}
-          {mobileMenuOpen && (
-            <div className="lg:hidden border-t border-gray-200 dark:border-gray-800 py-2">
-              <nav className="space-y-1">
-                {navItems.map((item) => (
-                  <Link
-                    key={item.path}
-                    to={item.path}
-                    onClick={() => setMobileMenuOpen(false)}
-                    className={`block px-3 py-2 rounded-md text-base font-medium transition-colors ${
-                      location.pathname.startsWith(item.path)
-                        ? 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100'
-                        : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100'
-                    }`}
-                  >
-                    {item.label}
-                  </Link>
-                ))}
-                <a 
-                  href={import.meta.env.VITE_WEB_URL || 'http://localhost:4321'} 
-                  className="block px-3 py-2 rounded-md text-base font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100"
-                >
-                  <div className="flex items-center gap-2">
-                    <ArrowLeft className="h-4 w-4" />
-                    <span>Volver al sitio</span>
-                  </div>
-                </a>
-              </nav>
-            </div>
-          )}
         </div>
       </header>
       <main className="flex-1 bg-gray-50 dark:bg-gray-950 flex flex-col overflow-hidden">
