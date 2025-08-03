@@ -554,6 +554,7 @@ pnpm build
 - Credenciales de Prueba:
   - Email: hcarcamovasquez+clerk_test@example.com
   - Password: Random12345A
+- los otros usuarios de prueba están en [ROLES_AND_PERMISSIONS](./ROLES_AND_PERMISSIONS.md)
 
 ## Seed de Usuarios
 
