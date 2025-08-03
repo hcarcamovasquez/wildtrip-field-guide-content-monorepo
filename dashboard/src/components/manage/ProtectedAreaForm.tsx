@@ -1,7 +1,8 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useToast } from '@/hooks/use-toast'
 import { useQueryClient } from '@tanstack/react-query'
+import { debounce } from '@/lib/utils'
 import TiptapEditorLazy from './TiptapEditorLazy'
 import { richContentToHtml, htmlToRichContent } from '@/lib/utils/tiptap-converter'
 import MediaPickerModal from './MediaPickerModal'
@@ -414,6 +415,14 @@ export default function ProtectedAreaForm({ initialData, isEditing, areaId, curr
     setFormData((prev) => ({ ...prev, [field]: value }))
     setHasLocalChanges(true)
   }
+
+  // Debounced version for content field (500ms delay)
+  const handleContentBlur = useCallback(
+    debounce((richContent: unknown) => {
+      handleFieldBlur('richContent', richContent)
+    }, 500),
+    [areaId, isEditMode, isEditing]
+  )
 
   const handlePublish = () => {
     // Verificar si realmente hay cambios para publicar
@@ -905,7 +914,7 @@ export default function ProtectedAreaForm({ initialData, isEditing, areaId, curr
                         })
 
                       if (hasContent || !initialData?.richContent?.blocks?.length) {
-                        handleFieldBlur('richContent', richContent)
+                        handleContentBlur(richContent)
                       }
                     }
                   }}

@@ -1,4 +1,5 @@
 import { useQueryClient } from '@tanstack/react-query'
+import { debounce } from '@/lib/utils'
 import TiptapEditorLazy from './TiptapEditorLazy'
 import { richContentToHtml, htmlToRichContent } from '@/lib/utils/tiptap-converter'
 import MediaPickerModal from './MediaPickerModal'
@@ -17,7 +18,7 @@ import {
   Edit3,
   Lock,
 } from 'lucide-react'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useToast } from '@/hooks/use-toast'
 import type { ContentBlock, ImageBlock } from '@wildtrip/shared/types'
@@ -301,6 +302,14 @@ export default function NewsForm({ initialData, isEditing = false, newsId, curre
       setUpdating(null)
     }
   }
+
+  // Debounced version for content field (500ms delay)
+  const handleContentBlur = useCallback(
+    debounce((richContent: unknown) => {
+      handleFieldBlur('content', richContent, true)
+    }, 500),
+    [newsId, isEditMode, isEditing]
+  )
 
   const handlePublish = () => {
     // Verificar si realmente hay cambios para publicar
@@ -801,7 +810,7 @@ export default function NewsForm({ initialData, isEditing = false, newsId, curre
                         })
 
                       if (hasContent || !initialData?.content?.blocks?.length) {
-                        handleFieldBlur('content', richContent, true)
+                        handleContentBlur(richContent)
                       }
                     }
                   }}

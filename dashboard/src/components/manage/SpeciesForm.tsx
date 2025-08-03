@@ -1,5 +1,6 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useCallback } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
+import { debounce } from '@/lib/utils'
 import {
   AlertCircle,
   Check,
@@ -408,6 +409,14 @@ export default function SpeciesForm({ species, currentUserId, isEditing }: Speci
       setUpdating(null)
     }
   }
+
+  // Debounced version for content field (500ms delay)
+  const handleContentBlur = useCallback(
+    debounce((richContent: RichContent) => {
+      handleFieldBlur('richContent', richContent)
+    }, 500),
+    [species.id, isEditMode, species.status]
+  )
 
   const handlePublish = async () => {
     setShowPublishDialog(false)
@@ -1065,7 +1074,7 @@ export default function SpeciesForm({ species, currentUserId, isEditing }: Speci
                         })
 
                       if (hasContent || !species?.richContent?.blocks?.length) {
-                        handleFieldBlur('richContent', richContent)
+                        handleContentBlur(richContent)
                       }
                     }
                   }}
@@ -1084,9 +1093,9 @@ export default function SpeciesForm({ species, currentUserId, isEditing }: Speci
                         richContent: richContent,
                       }))
 
-                      // Save the content change
+                      // Save the content change with debounce
                       if (isEditMode && species.id) {
-                        handleFieldBlur('richContent', richContent)
+                        handleContentBlur(richContent)
                       }
                     }}
                     placeholder="Escribe el contenido de la especie..."
