@@ -22,6 +22,13 @@
       "when": 1753222631153,
       "tag": "0002_perfect_bedlam",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1754191075501,
+      "tag": "0003_secret_wasp",
+      "breakpoints": true
     }
   ]
 }

@@ -99,10 +99,6 @@ export class UsersService {
     }
   }
 
-  async syncFromClerk(clerkUser: any) {
-    return this.usersRepository.syncFromClerk(clerkUser);
-  }
-
   async createUserFromClerk(userData: {
     clerkId: string;
     email: string;

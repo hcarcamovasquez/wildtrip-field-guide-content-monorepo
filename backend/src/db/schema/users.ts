@@ -6,6 +6,7 @@ import {
   text,
   timestamp,
   varchar,
+  index,
 } from 'drizzle-orm/pg-core';
 
 export const users = pgTable('users', {
@@ -35,6 +36,11 @@ export const users = pgTable('users', {
     .defaultNow()
     .notNull()
     .$onUpdate(() => new Date()),
+}, (table) => {
+  return {
+    clerkIdIdx: index('idx_users_clerk_id').on(table.clerkId),
+    emailIdx: index('idx_users_email').on(table.email),
+  };
 });
 
 export type User = typeof users.$inferSelect;

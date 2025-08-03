@@ -1,4 +1,4 @@
-import { relations } from 'drizzle-orm';
+import { relations, sql } from 'drizzle-orm';
 import {
   pgTable,
   serial,
@@ -7,6 +7,7 @@ import {
   json,
   timestamp,
   boolean,
+  index,
 } from 'drizzle-orm/pg-core';
 import type { RichContent } from '@wildtrip/shared';
 import { users } from './users';
@@ -78,6 +79,13 @@ export const protectedAreas = pgTable('protected_areas', {
   }),
   lockedAt: timestamp('locked_at'),
   lockExpiresAt: timestamp('lock_expires_at'),
+}, (table) => {
+  return {
+    statusIdx: index('idx_protected_areas_status').on(table.status),
+    slugIdx: index('idx_protected_areas_slug').on(table.slug),
+    typeIdx: index('idx_protected_areas_type').on(table.type),
+    regionIdx: index('idx_protected_areas_region').on(table.region),
+  };
 });
 
 export type ProtectedArea = typeof protectedAreas.$inferSelect;

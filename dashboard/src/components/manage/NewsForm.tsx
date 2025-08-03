@@ -1,5 +1,5 @@
 import { useQueryClient } from '@tanstack/react-query'
-import TiptapEditor from './TiptapEditor'
+import TiptapEditorLazy from './TiptapEditorLazy'
 import { richContentToHtml, htmlToRichContent } from '@/lib/utils/tiptap-converter'
 import MediaPickerModal from './MediaPickerModal'
 import PreviewModal from './PreviewModal'
@@ -806,7 +806,7 @@ export default function NewsForm({ initialData, isEditing = false, newsId, curre
                     }
                   }}
                 >
-                  <TiptapEditor
+                  <TiptapEditorLazy
                     content={editorContent}
                     onChange={(value) => {
                       setEditorContent(value)

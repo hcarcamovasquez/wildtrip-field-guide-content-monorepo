@@ -158,45 +158,6 @@ export class UsersRepository {
     await this.db.db.delete(users).where(eq(users.clerkId, id));
   }
 
-  async syncFromClerk(clerkUser: {
-    id: string;
-    emailAddresses: { emailAddress: string }[];
-    firstName?: string | null;
-    lastName?: string | null;
-    publicMetadata?: { role?: string };
-  }) {
-    const email = clerkUser.emailAddresses[0]?.emailAddress;
-    if (!email) return null;
-
-    const existingUser = await this.findById(clerkUser.id);
-
-    const userData = {
-      clerkId: clerkUser.id,
-      email,
-      firstName: clerkUser.firstName || null,
-      lastName: clerkUser.lastName || null,
-      role: clerkUser.publicMetadata?.role || 'user',
-    };
-
-    if (existingUser) {
-      return this.updateByClerkId(clerkUser.id, userData);
-    } else {
-      // Generate unique username for new users
-      const username = await this.usernameGenerator.generateUsername(
-        clerkUser.firstName || undefined,
-        clerkUser.lastName || undefined,
-        email,
-      );
-
-      return this.create({
-        ...userData,
-        username,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      });
-    }
-  }
-
   async createFromClerk(userData: {
     clerkId: string;
     email: string;

@@ -30,7 +30,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import TiptapEditor from './TiptapEditor'
+import TiptapEditorLazy from './TiptapEditorLazy'
 import { richContentToHtml, htmlToRichContent } from '@/lib/utils/tiptap-converter'
 import MediaPickerModal from './MediaPickerModal'
 import PreviewModal from './PreviewModal'
@@ -1070,7 +1070,7 @@ export default function SpeciesForm({ species, currentUserId, isEditing }: Speci
                     }
                   }}
                 >
-                  <TiptapEditor
+                  <TiptapEditorLazy
                     content={editorContent}
                     onChange={(value) => {
                       setEditorContent(value)

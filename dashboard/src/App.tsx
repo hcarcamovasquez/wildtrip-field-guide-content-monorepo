@@ -1,7 +1,8 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { QueryClientProvider } from '@tanstack/react-query'
 import { useAuth } from '@clerk/clerk-react'
 import { useEffect } from 'react'
+import { queryClient } from './lib/react-query'
 
 // Pages
 import { SpeciesPage } from './pages/species'
@@ -19,15 +20,6 @@ import { PermissionGuard } from './components/PermissionGuard'
 import { AuthProvider } from './contexts/AuthContext'
 import { AuthErrorHandler } from './components/AuthErrorHandler'
 import { ApiClientProvider } from './components/ApiClientProvider'
-
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      staleTime: 1000 * 60 * 5, // 5 minutes
-      retry: 1,
-    },
-  },
-})
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { isLoaded, isSignedIn } = useAuth()

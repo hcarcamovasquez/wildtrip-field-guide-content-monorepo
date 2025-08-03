@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback, memo } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { debounce } from '@/lib/utils'
 import {
   Edit,
   Eye,
@@ -81,7 +82,7 @@ const getConservationVariant = (status: string): 'default' | 'secondary' | 'outl
   }
 }
 
-export default function SpeciesTable({ canDelete = false }: SpeciesTableProps) {
+function SpeciesTableComponent({ canDelete = false }: SpeciesTableProps) {
   const navigate = useNavigate()
   const [species, setSpecies] = useState<SpeciesWithBase[]>([])
   const [pagination, setPagination] = useState({
@@ -99,25 +100,7 @@ export default function SpeciesTable({ canDelete = false }: SpeciesTableProps) {
   const [deleteId, setDeleteId] = useState<number | null>(null)
   const [previewData, setPreviewData] = useState<{ url: string; publicUrl?: string; title: string } | null>(null)
 
-  useEffect(() => {
-    fetchSpecies()
-  }, [pagination.page, statusFilter, conservationFilter])
-
-  // Refetch data when window gains focus
-  useEffect(() => {
-    const handleFocus = async () => {
-      if (!loading) {
-        setIsRefetching(true)
-        await fetchSpecies()
-        setIsRefetching(false)
-      }
-    }
-    
-    window.addEventListener('focus', handleFocus)
-    return () => window.removeEventListener('focus', handleFocus)
-  }, [pagination.page, statusFilter, conservationFilter, loading])
-
-  const fetchSpecies = async () => {
+  const fetchSpecies = useCallback(async () => {
     setLoading(true)
     try {
       const params = new URLSearchParams({
@@ -143,14 +126,34 @@ export default function SpeciesTable({ canDelete = false }: SpeciesTableProps) {
     } finally {
       setLoading(false)
     }
-  }
+  }, [pagination.page, pagination.limit, search, statusFilter, conservationFilter])
 
-  const handleSearch = () => {
-    setPagination((prev) => ({ ...prev, page: 1 }))
+  useEffect(() => {
     fetchSpecies()
-  }
+  }, [fetchSpecies])
 
-  const handleDelete = async () => {
+  // Refetch data when window gains focus
+  useEffect(() => {
+    const handleFocus = async () => {
+      if (!loading && document.visibilityState === 'visible') {
+        setIsRefetching(true)
+        await fetchSpecies()
+        setIsRefetching(false)
+      }
+    }
+    
+    window.addEventListener('focus', handleFocus)
+    return () => window.removeEventListener('focus', handleFocus)
+  }, [fetchSpecies, loading])
+
+  const handleSearch = useCallback(
+    debounce(() => {
+      setPagination((prev) => ({ ...prev, page: 1 }))
+    }, 300),
+    []
+  )
+
+  const handleDelete = useCallback(async () => {
     if (!deleteId) return
 
     try {
@@ -160,7 +163,7 @@ export default function SpeciesTable({ canDelete = false }: SpeciesTableProps) {
     } catch (error) {
       console.error('Error deleting species:', error)
     }
-  }
+  }, [deleteId, fetchSpecies])
 
   const formatDate = (date: string | Date) => {
     return new Date(date).toLocaleDateString('es-CL', {
@@ -474,3 +477,6 @@ export default function SpeciesTable({ canDelete = false }: SpeciesTableProps) {
     </>
   )
 }
+
+const SpeciesTable = memo(SpeciesTableComponent)
+export default SpeciesTable

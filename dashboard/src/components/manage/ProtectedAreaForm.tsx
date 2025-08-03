@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useToast } from '@/hooks/use-toast'
 import { useQueryClient } from '@tanstack/react-query'
-import TiptapEditor from './TiptapEditor'
+import TiptapEditorLazy from './TiptapEditorLazy'
 import { richContentToHtml, htmlToRichContent } from '@/lib/utils/tiptap-converter'
 import MediaPickerModal from './MediaPickerModal'
 import PreviewModal from './PreviewModal'
@@ -910,7 +910,7 @@ export default function ProtectedAreaForm({ initialData, isEditing, areaId, curr
                     }
                   }}
                 >
-                  <TiptapEditor
+                  <TiptapEditorLazy
                     content={editorContent}
                     onChange={(value) => {
                       setEditorContent(value)

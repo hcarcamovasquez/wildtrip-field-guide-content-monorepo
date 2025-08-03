@@ -59,20 +59,21 @@ export class SpeciesRepository {
 
     const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
 
-    // Get total count
-    const [{ count }] = await db
-      .select({ count: sql<number>`count(*)::int` })
-      .from(species)
-      .where(whereClause);
-
-    // Get data
-    const data = await db
-      .select()
+    // Get data with count using window function for better performance
+    const query = db
+      .select({
+        species: species,
+        totalCount: sql<number>`count(*) OVER()`,
+      })
       .from(species)
       .where(whereClause)
       .orderBy(desc(species.createdAt))
       .limit(limit)
       .offset(offset);
+
+    const results = await query;
+    const data = results.map(row => row.species);
+    const count = results.length > 0 ? results[0].totalCount : 0;
 
     return {
       data,

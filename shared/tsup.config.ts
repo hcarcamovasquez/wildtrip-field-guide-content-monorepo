@@ -11,7 +11,7 @@ export default defineConfig({
   dts: true,
   clean: true,
   sourcemap: true,
-  minify: false,
+  minify: process.env.NODE_ENV === 'production',
   splitting: false,
   treeshake: true,
   external: [],
