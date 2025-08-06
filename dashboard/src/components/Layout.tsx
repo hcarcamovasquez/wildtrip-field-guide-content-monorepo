@@ -36,7 +36,7 @@ export function Layout({ children }: LayoutProps) {
   // Filter nav items based on user permissions
   const navItems = allNavItems.filter(item => item.permission(userRole))
 
-  const logo = import.meta.env.VITE_R2_PUBLIC_URL + '/colored_logo.svg'
+  const logo = import.meta.env.VITE_R2_PUBLIC_URL + '/colored_logo_v2.svg'
 
   return (
     <div className="h-full flex flex-col">

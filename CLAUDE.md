@@ -552,7 +552,7 @@ pnpm build
 
 - Para realizar pruebas y playwright o manuales, el usuario de prueba es: Testing
 - Credenciales de Prueba:
-  - Email: hcarcamovasquez+clerk_test@example.com
+  - Email: admin+clerk_test@example.com
   - Password: Random12345A
 - los otros usuarios de prueba están en [ROLES_AND_PERMISSIONS](./ROLES_AND_PERMISSIONS.md)
 
