@@ -94,10 +94,11 @@ class SpeciesRepository {
       if (!response || response.status !== 'published') {
         return null
       }
-      // Map mainImage.url to mainImageUrl
+      // Map mainImage.url to mainImageUrl and galleryImages to images
       return {
         ...response,
         mainImageUrl: response.mainImage?.url || response.mainImageUrl || null,
+        images: response.galleryImages ? response.galleryImages.map((img: any) => img.url) : null,
       }
     } catch (error) {
       console.error('Error fetching species by slug:', error)
