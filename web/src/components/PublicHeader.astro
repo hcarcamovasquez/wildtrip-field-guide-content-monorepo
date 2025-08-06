@@ -23,14 +23,9 @@ const logo = import.meta.env.PUBLIC_R2_PUBLIC_URL + '/colored_logo_v2.svg'
   <nav class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
     <div class="flex h-16 justify-between">
       <div class="flex items-center">
-        <a href="/" class="flex items-center">
-          <div class="flex flex-col">
-            <span class="text-lg font-bold text-gray-900 dark:text-white">Guía de Campo</span>
-            <div class="flex items-center gap-2">
-              <span class="text-xs text-gray-500 dark:text-gray-400">un servicio de</span>
-              <img src={logo} alt="Wildtrip" class="h-4 w-auto" />
-            </div>
-          </div>
+        <a href="/" class="flex items-center gap-3">
+          <img src={logo} alt="Wildtrip" class="h-10 w-auto" />
+          <span class="text-xl font-bold text-gray-900 dark:text-white pt-3">Guía de Campo</span>
         </a>
       </div>
 
