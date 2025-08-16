@@ -10,8 +10,11 @@ const { species } = Astro.props
 
 {
   species.description && (
-    <div class="mb-8">
-      <p class="text-lg leading-relaxed text-gray-700 dark:text-gray-300">{species.description}</p>
-    </div>
+    <section class="mb-6">
+      <h2 class="mb-4 text-xl font-semibold text-gray-900 dark:text-white">Descripción General</h2>
+      <div class="rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-800/50">
+        <p class="text-sm leading-relaxed text-gray-700 dark:text-gray-300">{species.description}</p>
+      </div>
+    </section>
   )
 }

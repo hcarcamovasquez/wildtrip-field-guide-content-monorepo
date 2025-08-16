@@ -1,5 +1,5 @@
 ---
-import type { PublicDetailSpecie } from '../../lib/repositories'
+import type { PublicDetailSpecie } from '../../lib/repositories/SpeciesRepository'
 
 interface Props {
   species: PublicDetailSpecie
@@ -21,20 +21,28 @@ if (species.distribution) {
 
 {
   (species.habitat || distributionText) && (
-    <section class="mb-8">
-      <h2 class="mb-4 text-2xl font-bold text-gray-900 dark:text-white">Hábitat y distribución</h2>
-      <div class="rounded-lg bg-gray-50 p-4 dark:bg-gray-800">
-        <div class="space-y-4 text-gray-700 dark:text-gray-300">
+    <section class="mb-6">
+      <h2 class="mb-4 text-xl font-semibold text-gray-900 dark:text-white">Hábitat y Distribución</h2>
+      <div class="rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-800/50">
+        <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
           {species.habitat && (
             <div>
-              <h3 class="mb-2 font-semibold text-gray-900 dark:text-white">Hábitat</h3>
-              <p class="whitespace-pre-wrap">{species.habitat}</p>
+              <h3 class="mb-3 text-sm font-semibold uppercase tracking-wider text-gray-600 dark:text-gray-400">
+                Hábitat
+              </h3>
+              <p class="text-sm leading-relaxed text-gray-700 dark:text-gray-300">
+                {species.habitat}
+              </p>
             </div>
           )}
           {distributionText && (
             <div>
-              <h3 class="mb-2 font-semibold text-gray-900 dark:text-white">Distribución</h3>
-              <p class="whitespace-pre-wrap">{distributionText}</p>
+              <h3 class="mb-3 text-sm font-semibold uppercase tracking-wider text-gray-600 dark:text-gray-400">
+                Distribución Geográfica
+              </h3>
+              <p class="text-sm leading-relaxed text-gray-700 dark:text-gray-300">
+                {distributionText}
+              </p>
             </div>
           )}
         </div>
