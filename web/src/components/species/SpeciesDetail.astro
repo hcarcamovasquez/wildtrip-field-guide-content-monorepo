@@ -22,11 +22,11 @@ const { species } = Astro.props
 <article class="mx-auto max-w-4xl bg-white px-4 py-8 sm:px-6 lg:px-8 dark:bg-gray-900">
   <SpeciesHeader species={species} conservationStatuses={CONSERVATION_STATUSES} />
   <SpeciesMainImage species={species} />
+  <SpeciesTaxonomicInfo species={species} conservationStatuses={CONSERVATION_STATUSES} />
   <SpeciesCategory species={species} />
   <SpeciesDescription species={species} />
   <SpeciesDistinctiveFeatures species={species} />
   <SpeciesHabitatDistribution species={species} />
-  <SpeciesTaxonomicInfo species={species} conservationStatuses={CONSERVATION_STATUSES} />
   <SpeciesRichContent species={species} />
   <SpeciesGallery species={species} />
   <SpeciesReferences species={species} />

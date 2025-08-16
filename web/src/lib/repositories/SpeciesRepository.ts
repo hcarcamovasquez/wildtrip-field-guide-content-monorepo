@@ -94,6 +94,16 @@ class SpeciesRepository {
       if (!response || response.status !== 'published') {
         return null
       }
+      
+      // Debug log to check what we're receiving from backend
+      console.log('Species data from backend:', {
+        slug,
+        hasRichContent: !!response.richContent,
+        richContentType: typeof response.richContent,
+        richContentBlocks: response.richContent?.blocks?.length || 0,
+        richContent: response.richContent
+      })
+      
       // Map mainImage.url to mainImageUrl and galleryImages to images
       return {
         ...response,

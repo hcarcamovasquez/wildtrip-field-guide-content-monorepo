@@ -7,6 +7,17 @@ interface Props {
 }
 
 const { species } = Astro.props
+
+// Debug logging
+if (species.richContent) {
+  console.log('SpeciesRichContent component:', {
+    hasRichContent: true,
+    blocksCount: species.richContent.blocks?.length || 0,
+    firstBlock: species.richContent.blocks?.[0]
+  })
+} else {
+  console.log('SpeciesRichContent component: No richContent available')
+}
 ---
 
 {
