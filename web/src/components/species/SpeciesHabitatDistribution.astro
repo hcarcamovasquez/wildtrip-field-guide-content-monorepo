@@ -1,0 +1,44 @@
+---
+import type { PublicDetailSpecie } from '../../lib/repositories'
+
+interface Props {
+  species: PublicDetailSpecie
+}
+
+const { species } = Astro.props
+
+// Parse distribution if it's a JSON string or object
+let distributionText = ''
+if (species.distribution) {
+  if (typeof species.distribution === 'string') {
+    distributionText = species.distribution
+  } else if (typeof species.distribution === 'object') {
+    // If it's a GeoJSON or other object, try to extract meaningful text
+    distributionText = JSON.stringify(species.distribution)
+  }
+}
+---
+
+{
+  (species.habitat || distributionText) && (
+    <section class="mb-8">
+      <h2 class="mb-4 text-2xl font-bold text-gray-900 dark:text-white">Hábitat y distribución</h2>
+      <div class="rounded-lg bg-gray-50 p-4 dark:bg-gray-800">
+        <div class="space-y-4 text-gray-700 dark:text-gray-300">
+          {species.habitat && (
+            <div>
+              <h3 class="mb-2 font-semibold text-gray-900 dark:text-white">Hábitat</h3>
+              <p class="whitespace-pre-wrap">{species.habitat}</p>
+            </div>
+          )}
+          {distributionText && (
+            <div>
+              <h3 class="mb-2 font-semibold text-gray-900 dark:text-white">Distribución</h3>
+              <p class="whitespace-pre-wrap">{distributionText}</p>
+            </div>
+          )}
+        </div>
+      </div>
+    </section>
+  )
+}

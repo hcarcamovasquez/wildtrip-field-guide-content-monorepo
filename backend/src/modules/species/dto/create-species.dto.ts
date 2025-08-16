@@ -70,6 +70,9 @@ export class CreateSpeciesDto {
   habitat?: string;
 
   @IsOptional()
+  distribution?: any; // Can be string or GeoJSON object
+
+  @IsOptional()
   @Transform(({ value }) => (value === '' ? undefined : value))
   @IsEnum(
     [

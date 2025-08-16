@@ -5,6 +5,7 @@ import SpeciesDescription from './SpeciesDescription.astro'
 import SpeciesDistinctiveFeatures from './SpeciesDistinctiveFeatures.astro'
 import SpeciesCategory from './SpeciesCategory.astro'
 import SpeciesTaxonomicInfo from './SpeciesTaxonomicInfo.astro'
+import SpeciesHabitatDistribution from './SpeciesHabitatDistribution.astro'
 import SpeciesRichContent from './SpeciesRichContent.astro'
 import SpeciesGallery from './SpeciesGallery.astro'
 import SpeciesReferences from './SpeciesReferences.astro'
@@ -24,6 +25,7 @@ const { species } = Astro.props
   <SpeciesCategory species={species} />
   <SpeciesDescription species={species} />
   <SpeciesDistinctiveFeatures species={species} />
+  <SpeciesHabitatDistribution species={species} />
   <SpeciesTaxonomicInfo species={species} conservationStatuses={CONSERVATION_STATUSES} />
   <SpeciesRichContent species={species} />
   <SpeciesGallery species={species} />
